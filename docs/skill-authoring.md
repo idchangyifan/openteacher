@@ -1,78 +1,77 @@
-# Teaching Skill Authoring
+# 教学技能编写指南
 
-OpenTeacher skills should make excellent teaching reusable. A skill is not just a prompt. It is a structured teaching method that can be tested, reviewed, combined, and improved.
+OpenTeacher 的技能用于让优秀教学方法可以复用。技能不只是 prompt，而是一套结构化教学方法，可以被测试、审核、组合和改进。
 
-## Skill Types
+## 技能类型
 
-### Knowledge Skill
+### 知识技能
 
-Defines what to teach.
+定义要教什么。
 
-Examples:
+示例：
 
-- Junior Math: Linear Equations
-- Primary Chinese: Reading Comprehension
-- Senior Physics: Mechanics
+- 初中数学：一元一次方程
+- 小学语文：阅读理解
+- 高中物理：力学
 
-### Teacher Style Skill
+### 教师风格技能
 
-Defines how to teach.
+定义怎么教。
 
-Examples:
+示例：
 
-- Strict step-by-step questioning
-- Model-building physics explanation
-- Writing feedback with structure-first comments
+- 严格分步骤追问
+- 用模型建构方式讲物理
+- 先结构后语言的作文反馈
 
-### Task Skill
+### 任务技能
 
-Defines a teaching task.
+定义一种教学任务。
 
-Examples:
+示例：
 
-- Wrong-answer diagnosis
-- Essay review
-- Targeted practice generation
-- Weekly learning summary
+- 错题诊断
+- 作文批改
+- 针对性练习生成
+- 每周学习总结
 
-## Authoring Principles
+## 编写原则
 
-Good skills should include:
+好的技能应包含：
 
-- Knowledge scope
-- Teaching principles
-- Diagnosis questions
-- Common error patterns
-- Correction strategies
-- Practice policy
-- Assessment rubric
-- Forbidden teacher behaviors
+- 知识范围
+- 教学原则
+- 诊断问题
+- 常见错误模式
+- 纠错策略
+- 练习策略
+- 评价量表
+- 禁止的教师行为
 
-## Review Levels
+## 审核等级
 
-### Official
+### 官方
 
-Reviewed and maintained by the project.
+由项目维护者审核和维护。
 
-### Verified Teacher
+### 认证教师
 
-Submitted by a real educator and reviewed for correctness and safety.
+由真实教育工作者提交，并经过正确性和安全性审核。
 
-### Community Experiment
+### 社区实验
 
-Open contribution, visible for testing, not recommended by default for minors.
+开放贡献、可见可测试，但默认不推荐给未成年人使用。
 
-### Private Local
+### 私有本地
 
-Used by a school, teacher, or volunteer group in a self-hosted deployment.
+由学校、教师或志愿者团队在自部署环境中使用。
 
-## Skill Quality Checklist
+## 技能质量检查清单
 
-- Does it teach the reasoning process?
-- Does it avoid direct answer dumping?
-- Does it include common student mistakes?
-- Does it describe how to respond to repeated errors?
-- Does it avoid humiliating or manipulative language?
-- Is the knowledge scope clear enough to test?
-- Can another teacher understand and improve it?
-
+- 是否教授推理过程？
+- 是否避免直接倾倒答案？
+- 是否包含常见学生错误？
+- 是否说明如何应对重复错误？
+- 是否避免羞辱性或操纵性语言？
+- 知识范围是否清晰到可以测试？
+- 另一位老师是否能理解并改进它？

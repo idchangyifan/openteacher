@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class StudentContext(BaseModel):
@@ -7,10 +7,14 @@ class StudentContext(BaseModel):
     subject: str = "数学"
     teacher_style: str = "严格但温暖"
 
+    model_config = ConfigDict(str_strip_whitespace=True)
+
 
 class TeacherChatRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
     context: StudentContext = Field(default_factory=StudentContext)
+
+    model_config = ConfigDict(str_strip_whitespace=True)
 
 
 class MemoryEvent(BaseModel):

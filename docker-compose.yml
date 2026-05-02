@@ -2,19 +2,137 @@ services:
   postgres:
     image: postgres:16-alpine
     container_name: openteacher-postgres
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: openteacher
-      POSTGRES_USER: openteacher
-      POSTGRES_PASSWORD: openteacher
+      POSTGRES_DB: ${POSTGRES_DB:-openteacher}
+      POSTGRES_USER: ${POSTGRES_USER:-openteacher}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-openteacher}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_HOST_PORT:-127.0.0.1:5432}:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U openteacher -d openteacher"]
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-openteacher} -d ${POSTGRES_DB:-openteacher}",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend
+      network: host
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
+    container_name: openteacher-backend
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://openteacher:openteacher@postgres:5432/openteacher}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173,http://127.0.0.1:5173}
+      MEMORY_BACKEND: ${MEMORY_BACKEND:-mock}
+      RAG_BACKEND: ${RAG_BACKEND:-mock}
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+      OPENAI_MAX_OUTPUT_TOKENS: ${OPENAI_MAX_OUTPUT_TOKENS:-700}
+      OPENAI_TIMEOUT_SECONDS: ${OPENAI_TIMEOUT_SECONDS:-30}
+    ports:
+      - "${BACKEND_HOST_PORT:-127.0.0.1:8000}:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/alembic:/app/alembic
+      - ./backend/tests:/app/tests
+      - ./backend/alembic.ini:/app/alembic.ini
+    command: >
+      sh -c "alembic upgrade head &&
+      uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=2)\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+
+  frontend:
+    build:
+      context: ./frontend
+      network: host
+      args:
+        HTTP_PROXY: ${HTTP_PROXY:-}
+        HTTPS_PROXY: ${HTTPS_PROXY:-}
+        NO_PROXY: ${NO_PROXY:-}
+        http_proxy: ${http_proxy:-}
+        https_proxy: ${https_proxy:-}
+        no_proxy: ${no_proxy:-}
+    container_name: openteacher-frontend
+    restart: unless-stopped
+    environment:
+      VITE_BACKEND_ORIGIN: ${VITE_BACKEND_ORIGIN:-http://backend:8000}
+    ports:
+      - "${FRONTEND_HOST_PORT:-127.0.0.1:5173}:5173"
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+
+  adminer:
+    image: adminer:4
+    container_name: openteacher-adminer
+    restart: unless-stopped
+    profiles: ["tools"]
+    ports:
+      - "${ADMINER_HOST_PORT:-127.0.0.1:8080}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: openteacher-redis
+    restart: unless-stopped
+    profiles: ["cache"]
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "${REDIS_HOST_PORT:-127.0.0.1:6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  qdrant:
+    image: qdrant/qdrant:v1.12.6
+    container_name: openteacher-qdrant
+    restart: unless-stopped
+    profiles: ["rag"]
+    ports:
+      - "${QDRANT_HTTP_HOST_PORT:-127.0.0.1:6333}:6333"
+      - "${QDRANT_GRPC_HOST_PORT:-127.0.0.1:6334}:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+
 volumes:
   postgres-data:
+  redis-data:
+  qdrant-data:

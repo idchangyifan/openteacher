@@ -1,107 +1,106 @@
-# Student Memory System
+# 学生记忆系统
 
-The memory system should help OpenTeacher teach better over time while respecting privacy and the vulnerability of minors.
+记忆系统的目标是在尊重隐私、保护未成年人的前提下，让 OpenTeacher 随着时间推移教得更好。
 
-## Memory Goals
+## 记忆目标
 
-Memory should answer:
+记忆应该回答：
 
-- What is this student learning?
-- What does this student often misunderstand?
-- How should the teacher explain things to this student?
-- What learning behaviors should be reinforced or corrected?
-- What progress should be remembered and reflected back?
+- 这个学生正在学什么？
+- 这个学生经常误解什么？
+- 老师应该怎样向这个学生解释？
+- 哪些学习行为应该被强化或纠正？
+- 哪些进步值得记住并反馈给学生？
 
-Memory should not become a general personal diary.
+记忆不应该变成泛化的私人日记。
 
-## Memory Types
+## 记忆类型
 
-### 1. Profile Memory
+### 1. 画像记忆
 
-Stable, minimal student context.
+稳定、最小化的学生上下文。
 
-Fields:
+字段：
 
-- student_id
-- preferred_name
-- school_stage: primary | junior | senior
-- grade
-- region_level: optional, coarse only
-- active_subjects
-- textbook_version: optional
+- `student_id`
+- `preferred_name`
+- `school_stage`：`primary`、`junior`、`senior`
+- `grade`
+- `region_level`：可选，只保留粗粒度
+- `active_subjects`
+- `textbook_version`：可选
 
-### 2. Academic Memory
+### 2. 学业记忆
 
-Learning state by subject and knowledge point.
+按学科和知识点记录学习状态。
 
-Fields:
+字段：
 
-- subject
-- grade
-- knowledge_point_id
-- mastery_level: 0-5
-- evidence
-- last_practiced_at
-- common_errors
-- recommended_next_steps
+- `subject`
+- `grade`
+- `knowledge_point_id`
+- `mastery_level`：0-5
+- `evidence`
+- `last_practiced_at`
+- `common_errors`
+- `recommended_next_steps`
 
-### 3. Teaching Preference Memory
+### 3. 教学偏好记忆
 
-How this student learns better.
+记录这个学生怎样更容易学会。
 
-Fields:
+字段：
 
-- explanation_preference: concrete_examples | step_by_step | visual | exam_strategy
-- response_length_preference
-- strictness_tolerance: low | medium | high
-- needs_more_checkpoints
-- avoids_direct_answer: true
+- `explanation_preference`：`concrete_examples`、`step_by_step`、`visual`、`exam_strategy`
+- `response_length_preference`
+- `strictness_tolerance`：`low`、`medium`、`high`
+- `needs_more_checkpoints`
+- `avoids_direct_answer`：`true`
 
-### 4. Learning Behavior Memory
+### 4. 学习行为记忆
 
-Patterns observed in learning behavior.
+记录学习行为中反复出现的模式。
 
-Fields:
+字段：
 
-- often_skips_steps
-- often_requests_direct_answer
-- checks_work_carefully
-- persists_after_error
-- recent_attention_pattern
+- `often_skips_steps`
+- `often_requests_direct_answer`
+- `checks_work_carefully`
+- `persists_after_error`
+- `recent_attention_pattern`
 
-### 5. Encouragement Memory
+### 5. 鼓励记忆
 
-Concrete progress worth remembering.
+记录值得被再次提起的具体进步。
 
-Fields:
+字段：
 
-- progress_event
-- subject
-- evidence
-- date
-- reusable_encouragement
+- `progress_event`
+- `subject`
+- `evidence`
+- `date`
+- `reusable_encouragement`
 
-## Privacy Rules
+## 隐私规则
 
-Do not store:
+不要存储：
 
-- Exact home address
-- Family income
-- Parent phone numbers
-- Health conditions unless necessary and explicitly provided for accessibility
-- Political or religious beliefs
-- Sensitive family situations
-- Psychological labels or diagnoses
+- 精确家庭地址
+- 家庭收入
+- 家长电话号码
+- 健康状况，除非为无障碍支持所必需且学生明确提供
+- 政治或宗教信仰
+- 敏感家庭情况
+- 心理标签或诊断
 
-## Memory Update Policy
+## 记忆更新策略
 
-Memory should be updated only when:
+只有在以下情况下才应更新记忆：
 
-- The student shows a repeated academic pattern
-- The student completes a meaningful learning step
-- The student makes the same mistake multiple times
-- The student explicitly sets a learning preference
-- A teacher or volunteer confirms an observation
+- 学生表现出重复的学业模式
+- 学生完成了有意义的学习步骤
+- 学生多次犯同一个错误
+- 学生明确设置了学习偏好
+- 教师或志愿者确认了某个观察
 
-Memory should not be updated from one weak signal.
-
+不要因为一次很弱的信号就更新长期记忆。

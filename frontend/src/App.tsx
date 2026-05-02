@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { BookOpen, RotateCcw, Send, UserRound } from "lucide-react";
 
 type Role = "teacher" | "student";
@@ -7,6 +7,26 @@ type ChatMessage = {
   id: string;
   role: Role;
   content: string;
+};
+
+type StudentContext = {
+  student_id: string;
+  grade: string;
+  subject: string;
+  teacher_style: string;
+};
+
+type TeacherResponse = {
+  reply: string;
+  skill_id: string;
+  memory_events: { kind: string; summary: string }[];
+};
+
+const defaultContext: StudentContext = {
+  student_id: "demo-student",
+  grade: "初一",
+  subject: "数学",
+  teacher_style: "严格但温暖"
 };
 
 const initialMessages: ChatMessage[] = [
@@ -33,29 +53,51 @@ function localTeacherReply(message: string): string {
   return "收到。请补充题目原文和你已经写到的步骤，我会先判断你的卡点。";
 }
 
-async function askTeacher(message: string): Promise<string> {
+async function askTeacher(message: string, context: StudentContext): Promise<TeacherResponse> {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
+
   try {
-    const response = await fetch("/api/v1/teacher/chat", {
+    const response = await fetch(`${apiBaseUrl}/api/v1/teacher/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
+      body: JSON.stringify({ message, context })
     });
 
     if (!response.ok) {
       throw new Error("Teacher API request failed");
     }
 
-    const data = (await response.json()) as { reply: string };
-    return data.reply;
+    return (await response.json()) as TeacherResponse;
   } catch {
-    return localTeacherReply(message);
+    return {
+      reply: localTeacherReply(message),
+      skill_id: "local-fallback",
+      memory_events: [{ kind: "offline", summary: "后端不可用，前端使用本地兜底回复" }]
+    };
   }
 }
 
 export default function App() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
+  const [context, setContext] = useState<StudentContext>(defaultContext);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [apiState, setApiState] = useState<"checking" | "online" | "offline">("checking");
+  const [activeSkill, setActiveSkill] = useState("未选择");
+  const [memoryEvents, setMemoryEvents] = useState<TeacherResponse["memory_events"]>([]);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, isThinking]);
+
+  useEffect(() => {
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
+
+    fetch(`${apiBaseUrl}/api/v1/health`)
+      .then((response) => setApiState(response.ok ? "online" : "offline"))
+      .catch(() => setApiState("offline"));
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -69,12 +111,22 @@ export default function App() {
       { id: crypto.randomUUID(), role: "student", content: text }
     ]);
 
-    const reply = await askTeacher(text);
-    setMessages((current) => [
-      ...current,
-      { id: crypto.randomUUID(), role: "teacher", content: reply }
-    ]);
-    setIsThinking(false);
+    try {
+      const teacherResponse = await askTeacher(text, context);
+      setActiveSkill(teacherResponse.skill_id);
+      setMemoryEvents(teacherResponse.memory_events);
+      setApiState(teacherResponse.skill_id === "local-fallback" ? "offline" : "online");
+      setMessages((current) => [
+        ...current,
+        { id: crypto.randomUUID(), role: "teacher", content: teacherResponse.reply }
+      ]);
+    } finally {
+      setIsThinking(false);
+    }
+  }
+
+  function updateContext<Key extends keyof StudentContext>(key: Key, value: StudentContext[Key]) {
+    setContext((current) => ({ ...current, [key]: value }));
   }
 
   return (
@@ -92,7 +144,10 @@ export default function App() {
           <h2>学生画像</h2>
           <label>
             年级
-            <select defaultValue="初一">
+            <select
+              value={context.grade}
+              onChange={(event) => updateContext("grade", event.target.value)}
+            >
               <option>小学四年级</option>
               <option>初一</option>
               <option>初三</option>
@@ -101,7 +156,10 @@ export default function App() {
           </label>
           <label>
             科目
-            <select defaultValue="数学">
+            <select
+              value={context.subject}
+              onChange={(event) => updateContext("subject", event.target.value)}
+            >
               <option>数学</option>
               <option>语文</option>
               <option>英语</option>
@@ -110,7 +168,10 @@ export default function App() {
           </label>
           <label>
             教师风格
-            <select defaultValue="严格但温暖">
+            <select
+              value={context.teacher_style}
+              onChange={(event) => updateContext("teacher_style", event.target.value)}
+            >
               <option>严格但温暖</option>
               <option>耐心引导</option>
               <option>考试策略型</option>
@@ -121,9 +182,20 @@ export default function App() {
         <section className="panel">
           <h2>记忆摘要</h2>
           <ul className="memory-list">
-            <li>一元一次方程：移项符号容易错</li>
-            <li>需要分步骤检查，不适合直接长讲解</li>
-            <li>上次能独立完成去括号</li>
+            {memoryEvents.length > 0 ? (
+              memoryEvents.map((event) => (
+                <li key={`${event.kind}-${event.summary}`}>
+                  <strong>{event.kind}</strong>
+                  {event.summary}
+                </li>
+              ))
+            ) : (
+              <>
+                <li>一元一次方程：移项符号容易错</li>
+                <li>需要分步骤检查，不适合直接长讲解</li>
+                <li>上次能独立完成去括号</li>
+              </>
+            )}
           </ul>
         </section>
       </aside>
@@ -133,15 +205,25 @@ export default function App() {
           <div>
             <p>初中数学 · 一元一次方程</p>
             <h2>王老师式严格引导 Skill</h2>
+            <span className="skill-id">{activeSkill}</span>
           </div>
-          <button
-            className="ghost-button"
-            type="button"
-            aria-label="重置对话"
-            onClick={() => setMessages(initialMessages)}
-          >
-            <RotateCcw size={18} />
-          </button>
+          <div className="topbar-actions">
+            <span className={`api-state ${apiState}`}>
+              {apiState === "checking" ? "检查中" : apiState === "online" ? "API 在线" : "本地兜底"}
+            </span>
+            <button
+              className="ghost-button"
+              type="button"
+              aria-label="重置对话"
+              onClick={() => {
+                setMessages(initialMessages);
+                setMemoryEvents([]);
+                setActiveSkill("未选择");
+              }}
+            >
+              <RotateCcw size={18} />
+            </button>
+          </div>
         </header>
 
         <div className="chat">
@@ -155,6 +237,7 @@ export default function App() {
             </article>
           ))}
           {isThinking && <p className="thinking">老师正在判断你的卡点...</p>}
+          <div ref={chatEndRef} />
         </div>
 
         <form className="composer" onSubmit={handleSubmit}>
@@ -166,7 +249,7 @@ export default function App() {
           />
           <button type="submit" disabled={isThinking}>
             <Send size={18} />
-            发送
+            {isThinking ? "判断中" : "发送"}
           </button>
         </form>
       </section>

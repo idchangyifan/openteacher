@@ -1,114 +1,133 @@
 # OpenTeacher
 
-OpenTeacher is an open-source AI teacher project for students in under-resourced regions. The goal is to make high-quality, rigorous, warm teaching available to every child through an extensible agent harness, open teaching skills, and long-term student memory.
+OpenTeacher 是一个开源 AI 教师项目，面向教育资源不足地区的学生。项目目标是通过可扩展的智能体框架、开放教学技能和长期学生记忆，让每个孩子都能获得高质量、严格而温暖的教学。
 
-The project starts with a simple web prototype and grows toward a full AI teacher infrastructure:
+项目从一个简单的网页原型开始，逐步发展为完整的 AI 教师基础设施：
 
-- A teacher-like agent, not just a study companion
-- Subject and grade skills written by educators
-- Structured memory for student learning progress
-- Teacher and volunteer dashboard support
-- Open skill standards for community contribution
+- 像老师一样工作的智能体，而不是普通学习陪伴工具
+- 由教育工作者编写的学科和年级技能
+- 面向学生学习进展的结构化记忆
+- 教师和志愿者管理面板
+- 面向社区贡献的开放技能标准
 
-## Product Principles
+## 产品原则
 
-1. Be a teacher.
-   The agent should be warm, patient, demanding, and principled. It should not flatter students or simply provide answers.
+1. 做老师。
+   智能体应该温暖、耐心、严格、有原则。它不应该讨好学生，也不应该只是给答案。
 
-2. Teach the method, not only the answer.
-   The agent should diagnose where the student is stuck, guide step by step, and require the student to explain their thinking.
+2. 教方法，而不只是给结果。
+   智能体应该诊断学生卡在哪里，分步骤引导，并要求学生解释自己的思路。
 
-3. Remember with care.
-   Memory should improve teaching quality without collecting unnecessary personal information.
+3. 谨慎记忆。
+   记忆应该提升教学质量，但不能收集不必要的个人信息。
 
-4. Make great teaching reusable.
-   Excellent teachers should be able to encode their teaching style and methods as reusable skills.
+4. 让好教学可以复用。
+   优秀老师应该能够把自己的教学风格和方法编码成可复用的技能。
 
-5. Build for public good.
-   The project should be open, auditable, self-hostable, and friendly to schools, volunteers, and public-interest organizations.
+5. 为公共利益而构建。
+   项目应该开源、可审计、可自部署，并对学校、志愿者和公益组织友好。
 
-## Current MVP
+## 当前 MVP
 
-This repository currently contains:
+当前仓库包含：
 
-- A Python backend scaffold in `backend/`
-- A React frontend scaffold in `frontend/`
-- A PostgreSQL local development service in `docker-compose.yml`
-- A static web prototype in `web/`
-- The first teaching skill schema in `specs/teaching-skill.schema.yaml`
-- A sample junior math skill in `skills/junior-math-linear-equation.yaml`
-- The teacher persona policy in `docs/teacher-persona.md`
-- The first memory design in `docs/memory-system.md`
-- A contribution model for educator-written skills in `docs/skill-authoring.md`
+- `backend/`：Python 后端脚手架
+- `frontend/`：React 前端脚手架
+- `docker-compose.yml`：本地 PostgreSQL、后端、前端和可选中间件服务
+- `web/`：静态网页原型
+- `specs/teaching-skill.schema.yaml`：第一版教学技能 schema
+- `skills/junior-math-linear-equation.yaml`：初中数学一元一次方程示例技能
+- `docs/teacher-persona.md`：教师人格和行为边界
+- `docs/memory-system.md`：学生记忆系统设计
+- `docs/skill-authoring.md`：教师编写技能的贡献模型
 
-Open `web/index.html` in a browser to try the first prototype.
+可以直接在浏览器中打开 `web/index.html` 体验最早的静态原型。
 
-## Technology Stack
+## 技术栈
 
-- Backend: Python, FastAPI, SQLAlchemy, Alembic
-- Frontend: React, TypeScript, Vite
-- Relational database: PostgreSQL
-- Memory module storage: undecided, behind an interface
-- RAG storage: undecided, behind an interface
+- 后端：Python、FastAPI、SQLAlchemy、Alembic
+- 前端：React、TypeScript、Vite
+- 关系型数据库：PostgreSQL
+- 记忆模块存储：暂未最终决定，先放在服务接口后面
+- RAG 存储：暂未最终决定，先放在服务接口后面
 
-## Project Structure
+## 项目结构
 
 ```text
-backend/        Python API, agent harness, service interfaces
-frontend/       React web app
-docs/           Product and architecture notes
-skills/         Teaching skill examples
-specs/          Skill schema drafts
-web/            Static prototype kept for quick local preview
+backend/        Python API、智能体框架、服务接口
+frontend/       React Web 应用
+docs/           产品和架构说明
+skills/         教学技能示例
+specs/          技能 schema 草案
+web/            用于快速预览的静态原型
 ```
 
-## Local Development Target
+## Docker 开发方式
 
-The intended local development flow is:
+当前推荐在 Ubuntu 上使用 Docker Compose 开发：
 
 ```bash
-docker compose up -d postgres
-cd backend
-python -m venv .venv
-pip install -e ".[dev]"
-uvicorn app.main:app --reload
-
-cd ../frontend
-npm install
-npm run dev
+cp .env.example .env
+docker compose up --build
 ```
 
-This environment may not have Python or npm installed yet, so the scaffold is committed first and dependency setup can happen next.
+启动后访问：
 
-## Suggested Roadmap
+- 前端：`http://127.0.0.1:5173`
+- 后端健康检查：`http://127.0.0.1:8000/api/v1/health`
+- 后端就绪检查：`http://127.0.0.1:8000/api/v1/ready`
 
-### Phase 0: Foundation
+默认栈会启动 PostgreSQL、FastAPI 后端和 Vite 前端。未来可能用到的支持服务放在可选 Compose profile 中：
 
-- Define the teacher persona
-- Define the teaching skill format
-- Define the student memory model
-- Build a local web prototype
+```bash
+docker compose --profile tools up -d adminer
+docker compose --profile cache up -d redis
+docker compose --profile rag up -d qdrant
+```
 
-### Phase 1: First Real Teaching Loop
+原生后端和前端命令、运维注意事项见 `docs/dev-setup.md`。
 
-- Add a real LLM backend
-- Add student login
-- Save student learning memories
-- Support one strong sample skill: junior math linear equations
+## LLM 接入
 
-### Phase 2: Teacher Skill Ecosystem
+后端默认使用 mock 教师 provider，不需要任何密钥。要接入 OpenAI Responses API，在 `.env` 中设置：
 
-- Build a skill editor for teachers
-- Add skill validation and preview
-- Add review levels: official, verified teacher, community experiment
+```env
+LLM_PROVIDER=openai
+OPENAI_API_KEY=你的 token
+OPENAI_MODEL=你的模型名
+```
 
-### Phase 3: School and Volunteer Deployment
+不要把 `.env` 或任何真实密钥提交到仓库。
 
-- Add teacher dashboard
-- Add class and student progress views
-- Add self-hosting guide
-- Add privacy and safety controls for minors
+## 建议路线图
 
-## License
+### 阶段 0：基础
 
-License is not chosen yet. A public-good open-source license should be selected before accepting external contributions.
+- 定义教师人格
+- 定义教学技能格式
+- 定义学生记忆模型
+- 构建本地网页原型
+
+### 阶段 1：第一条真实教学闭环
+
+- 接入真实 LLM 后端
+- 增加学生登录或稳定学生标识
+- 保存学生学习记忆
+- 深入支持一个强示例技能：初中数学一元一次方程
+
+### 阶段 2：教师技能生态
+
+- 构建教师技能编辑器
+- 增加技能校验和预览
+- 增加审核等级：官方、认证教师、社区实验
+
+### 阶段 3：学校和志愿者部署
+
+- 增加教师管理面板
+- 增加班级和学生进展视图
+- 增加自部署指南
+- 增加面向未成年人的隐私和安全控制
+
+## 许可证
+
+许可证尚未选择。接受外部贡献前，应选择适合公共利益开源项目的许可证。
