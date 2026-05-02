@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OpenTeacher Prototype</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <aside class="sidebar" aria-label="Student profile">
+        <div class="brand">
+          <span class="mark">OT</span>
+          <div>
+            <h1>OpenTeacher</h1>
+            <p>开源 AI 教师原型</p>
+          </div>
+        </div>
+
+        <section class="panel">
+          <h2>学生画像</h2>
+          <label>
+            年级
+            <select id="grade">
+              <option>小学四年级</option>
+              <option selected>初一</option>
+              <option>初三</option>
+              <option>高一</option>
+            </select>
+          </label>
+          <label>
+            科目
+            <select id="subject">
+              <option selected>数学</option>
+              <option>语文</option>
+              <option>英语</option>
+              <option>物理</option>
+            </select>
+          </label>
+          <label>
+            教师风格
+            <select id="style">
+              <option selected>严格但温暖</option>
+              <option>耐心引导</option>
+              <option>考试策略型</option>
+            </select>
+          </label>
+        </section>
+
+        <section class="panel">
+          <h2>记忆摘要</h2>
+          <ul class="memory-list">
+            <li>一元一次方程：移项符号容易错</li>
+            <li>需要分步骤检查，不适合直接长讲解</li>
+            <li>上次能独立完成去括号</li>
+          </ul>
+        </section>
+      </aside>
+
+      <section class="workspace" aria-label="AI teacher chat">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">初中数学 · 一元一次方程</p>
+            <h2>王老师式严格引导 Skill</h2>
+          </div>
+          <button id="resetButton" type="button">重置对话</button>
+        </header>
+
+        <div id="chat" class="chat" aria-live="polite">
+          <article class="message teacher">
+            <span>AI 老师</span>
+            <p>把题目或你卡住的步骤发给我。注意，我不会直接给答案；我会先看你到底卡在哪里。</p>
+          </article>
+        </div>
+
+        <form id="chatForm" class="composer">
+          <textarea id="studentInput" rows="3" placeholder="例如：2(x - 3) = 10，我不知道下一步怎么做"></textarea>
+          <button type="submit">发送</button>
+        </form>
+      </section>
+    </main>
+    <script src="./prototype.js"></script>
+  </body>
+</html>
+

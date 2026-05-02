@@ -1,0 +1,96 @@
+schema_version: 0.1.0
+description: Minimal schema for an OpenTeacher teaching skill.
+
+required_fields:
+  - id
+  - name
+  - version
+  - skill_type
+  - target
+  - teaching_principles
+  - diagnosis
+  - error_patterns
+  - response_policy
+  - safety
+
+fields:
+  id:
+    type: string
+    description: Globally unique skill id.
+
+  name:
+    type: string
+    description: Human-readable skill name.
+
+  version:
+    type: string
+    description: Semantic version.
+
+  author:
+    type: object
+    fields:
+      name: string
+      role: string
+      organization: string
+      contact: string
+
+  skill_type:
+    type: enum
+    values:
+      - knowledge
+      - teacher_style
+      - task
+
+  target:
+    type: object
+    fields:
+      school_stages:
+        type: list
+        values:
+          - primary
+          - junior
+          - senior
+      grades: list
+      subjects: list
+      textbook_versions: list
+      knowledge_points: list
+
+  teaching_principles:
+    type: list
+    description: High-level teaching beliefs and rules.
+
+  diagnosis:
+    type: object
+    fields:
+      opening_questions: list
+      checkpoint_questions: list
+      mastery_signals: list
+
+  error_patterns:
+    type: list
+    item_fields:
+      id: string
+      name: string
+      signs: list
+      correction_strategy: list
+      followup_practice: list
+
+  response_policy:
+    type: object
+    fields:
+      direct_answer_policy: string
+      strictness_policy: string
+      praise_policy: string
+      repeated_error_policy: string
+
+  safety:
+    type: object
+    fields:
+      forbidden_phrases: list
+      forbidden_behaviors: list
+      privacy_notes: list
+
+  examples:
+    type: list
+    description: Example student inputs and ideal teacher responses.
+

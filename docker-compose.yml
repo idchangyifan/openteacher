@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: openteacher-postgres
+    environment:
+      POSTGRES_DB: openteacher
+      POSTGRES_USER: openteacher
+      POSTGRES_PASSWORD: openteacher
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openteacher -d openteacher"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-data:
