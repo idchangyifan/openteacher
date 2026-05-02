@@ -238,6 +238,11 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 提交前已运行 `git diff --check`，无格式空白问题。
 - 推送完成后应确认 remote URL 不包含明文凭据。
 
+2026-05-02，提交和推送已完成：
+
+- 已提交 `2001d7a chore: add docker stack and Chinese docs` 并推送到 `origin/main`。
+- 推送后已将本地 `origin` 改为不含明文凭据的 GitHub URL。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。
