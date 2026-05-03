@@ -23,7 +23,7 @@ class AgentHarness:
         self.llm_provider = llm_provider
 
     def reply(self, request: TeacherChatRequest) -> TeacherChatResponse:
-        skill = self.skill_registry.pick_skill(request.context.grade, request.context.subject)
+        skills = self.skill_registry.pick_skills(request.context.grade, request.context.subject)
         memory = self.memory_service.get_student_summary(request.context.student_id)
         retrieved_context = self.rag_service.retrieve(request.message)
         prompt = TeacherPrompt(
@@ -31,9 +31,19 @@ class AgentHarness:
             grade=request.context.grade,
             subject=request.context.subject,
             teacher_style=request.context.teacher_style,
-            skill_name=skill.name,
+            skill_name=f"{skills.core.name} + {skills.knowledge.name}",
+            skill_guidance="\n\n".join(
+                [
+                    f"教师核心 Skill：\n{skills.core.guidance}",
+                    f"知识点 Skill：\n{skills.knowledge.guidance}",
+                ]
+            ),
             memory_summary=memory,
             retrieved_context=retrieved_context,
+            core_skill_name=skills.core.name,
+            core_skill_guidance=skills.core.guidance,
+            knowledge_skill_name=skills.knowledge.name,
+            knowledge_skill_guidance=skills.knowledge.guidance,
         )
         reply = self._generate_reply(prompt)
 
@@ -46,7 +56,7 @@ class AgentHarness:
 
         return TeacherChatResponse(
             reply=reply,
-            skill_id=skill.id,
+            skill_id=skills.response_skill_id,
             memory_events=[MemoryEvent(kind=event.kind, summary=event.summary)],
         )
 

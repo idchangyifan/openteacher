@@ -14,12 +14,18 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:5173"
     memory_backend: str = "mock"
     rag_backend: str = "mock"
+    skills_dir: Path = ROOT_DIR / "skills"
     llm_provider: str = "mock"
     openai_api_key: SecretStr | None = None
     openai_base_url: str = "https://api.openai.com/v1"
     openai_model: str = ""
     openai_max_output_tokens: int = 700
     openai_timeout_seconds: float = 30.0
+    doubao_api_key: SecretStr | None = None
+    doubao_base_url: str = "https://ark.cn-beijing.volces.com/api/v3"
+    doubao_model: str = ""
+    doubao_max_tokens: int = 700
+    doubao_timeout_seconds: float = 30.0
 
     @property
     def cors_origins(self) -> list[str]:

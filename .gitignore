@@ -21,5 +21,6 @@ postgres-data/
 .tmp/
 tools/pnpm/
 logs/
+reports/
 .DS_Store
 Thumbs.db

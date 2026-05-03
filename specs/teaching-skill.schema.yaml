@@ -37,9 +37,11 @@ fields:
   skill_type:
     type: enum
     values:
+      - core
       - knowledge
       - teacher_style
       - task
+    description: Core skills define universal teacher behavior; knowledge skills define content-specific teaching strategy.
 
   target:
     type: object
@@ -66,6 +68,17 @@ fields:
       checkpoint_questions: list
       mastery_signals: list
 
+  learner_state_model:
+    type: object
+    description: Universal or skill-specific model for diagnosing student state before teaching.
+    fields:
+      states:
+        type: list
+        item_fields:
+          id: string
+          signs: list
+          teacher_move: list
+
   error_patterns:
     type: list
     item_fields:
@@ -82,6 +95,8 @@ fields:
       strictness_policy: string
       praise_policy: string
       repeated_error_policy: string
+      uncertainty_policy: string
+      emotional_support_policy: string
 
   safety:
     type: object
@@ -90,7 +105,13 @@ fields:
       forbidden_behaviors: list
       privacy_notes: list
 
+  composition_policy:
+    type: object
+    description: How this skill should be combined with core, knowledge, style, and task skills.
+    fields:
+      priority_order: list
+      instructions: list
+
   examples:
     type: list
     description: Example student inputs and ideal teacher responses.
-
