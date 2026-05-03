@@ -50,14 +50,16 @@ docker compose down
 ```bash
 docker compose --profile tools up -d adminer
 docker compose --profile cache up -d redis
+docker compose --profile memory up -d mongo
 docker compose --profile rag up -d qdrant
 ```
 
 - Adminer：在 `http://127.0.0.1:8080` 查看 PostgreSQL
 - Redis：预留给未来缓存、队列或轻量会话
-- Qdrant：预留给未来 RAG 或向量检索实验
+- MongoDB：预留给长期记忆、课堂历史恢复、结构化 memory cards 和 MongoDB Atlas Vector Search
+- Qdrant：预留给未来 RAG 或专用向量检索实验；第一阶段长期记忆优先使用 MongoDB
 
-在服务接口和产品行为更清晰之前，不要把记忆或 RAG 直接绑定到 Redis/Qdrant。
+长期记忆不要绑定到 PostgreSQL。第一阶段应先通过 `MemoryService`、`LessonService` 等服务边界接入 MongoDB；不要让业务代码直接依赖 MongoDB collection 细节。
 
 ## 原生后端
 

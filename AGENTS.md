@@ -387,6 +387,102 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 推送后检查 `git remote -v`，remote 仍显示 `https://ghproxy.net/https://github.com/idchangyifan/openteacher.git`，未包含明文凭据。
 - 注意：由于本次使用显式 URL 推送，`origin/main` 本地跟踪引用尚未自动更新；可在凭据和代理配置理顺后 fetch，或使用显式 URL fetch 更新远端跟踪引用。
 
+2026-05-03，本机已配置 GitHub HTTPS 推送凭据：
+
+- 用户允许把新的 GitHub token 记录在本地，但不要提交或推送；token 只写入本机 Git credential store，未写入仓库文件、`AGENTS.md`、remote URL 或 git 历史。
+- 已设置 `git config --global credential.helper store`，凭据文件为 `~/.git-credentials`，权限已设为 `600`。
+- 已移除全局 `url.https://ghproxy.net/https://github.com/.insteadof` rewrite；当前仍保留 `http.proxy` 和 `https.proxy` 指向 `127.0.0.1:7890`。
+- `git remote -v` 现在显示标准 `https://github.com/idchangyifan/openteacher.git`，不含凭据。
+- 已验证普通 `git push origin main` 可用，输出为 `Everything up-to-date`。
+- 本记录不含 token；除本记录外，不应把 `~/.git-credentials` 内容写入任何仓库文件或日志。
+
+2026-05-03，下一步产品方向研判：
+
+- 用户建议开始丰富应用功能和页面；已重新读取 `AGENTS.md`，查看 `frontend/src/App.tsx`、`frontend/src/styles.css`、`backend/app/schemas/teacher.py` 和 `backend/app/api/v1/router.py`。
+- 当前前端仍是单页聊天 demo：左侧学生画像和记忆摘要，右侧对话框，调用 `/api/v1/teacher/chat`，后端 API 也主要围绕 teacher chat、health/ready。
+- 判断下一步应做“学习工作台 v1”，而不是营销页或纯 UI 装饰：把聊天 demo 升级为学生真实学习界面，包含学科/年级/教师风格选择、当前学习任务、对话、下一步行动、学习记录/记忆事件、技能状态和服务状态。
+- 第一阶段建议仍尽量前端优先，不急着扩数据库或引入新中间件；必要时只补很薄的后端 read-only 接口，例如可用 skill/学科列表或 demo 学习任务。
+- 设计原则：教育工具应安静、清晰、任务导向，避免过度营销化；第一屏直接是可用学习工作台。
+
+2026-05-03，用户再次明确长期记忆和产品定位边界：
+
+- 长期记忆不要直接使用 PostgreSQL 实现，用户担心后续改起来麻烦。后续 memory 应继续保持在服务接口后面，具体存储要可替换；不要把长期记忆 schema、检索方式或写入策略过早绑定到 PG 表结构。
+- OpenTeacher 绝不能被做成“解题老师”“作业辅助老师”或“辅助写题工具”。它应该是可以主动授课的老师。
+- 产品功能和页面设计应从“主动教学”出发：课程目标、教学计划、授课节奏、诊断提问、讲解、课堂练习、纠错、复盘、课后任务，而不是只围绕学生发题、老师答题。
+- 下一步页面方向应从“学习工作台”进一步调整为“课堂/课程工作台”：学生进入后能看到今天要学什么、为什么学、老师正在讲哪一步、需要完成什么练习、掌握情况如何；聊天只是授课交互的一部分，不是整个产品。
+
+2026-05-03，纠偏后重新评估现有黄金评测：
+
+- 已查看 `backend/tests/fixtures/teacher-core-golden.yaml` 和 `docs/teacher-evaluation.md`。
+- 结论：现有黄金评测仍然可用，但定位应改成“被动答疑/学生发起互动场景下的教师底线评测”，不能代表 OpenTeacher 的完整教师能力。
+- 现有 10 条样例覆盖拒绝抄答案、信息不足、真实卡住、概念错误、步骤错误、情绪受挫、安全边界等通用教师行为，这些能力对主动授课同样必要，所以不应删除。
+- 现有评测缺口：没有评估老师是否能主动设定学习目标、规划课程、导入新课、讲授概念、设计诊断题、根据学生回答调整节奏、安排课堂练习、总结复盘、布置课后任务。
+- 下一步应新增一套主动授课黄金评测，例如 `teacher-lesson-golden.yaml`，覆盖 lesson_start、concept_instruction、guided_practice、diagnostic_check、adaptive_remediation、lesson_summary、homework_assignment 等课堂阶段。
+- 文档命名也应调整：当前 `teacher-core-golden.yaml` 保留为 interaction-safety/core-behavior 类评测；新增 lesson/teaching-flow 类评测，避免团队误以为 20/20 就代表“会主动授课”。
+
+2026-05-03，功能层架构进一步讨论：
+
+- 用户明确：评测先放一放，只留 TODO；当前重点转向功能层设计。
+- 用户提出整体 agent 框架可以考虑 DeepAgent；结论是可以调研/试点，但不要把业务直接耦合到某个 agent 框架。建议先定义 `TeachingAgentRuntime` 这类适配接口，把主动授课、被动答疑、工具调用、记忆读写都放在领域服务边界后面。
+- 用户强调长期记忆一定需要，核心功能包括历史会话查看和恢复，这对学生复习很重要。这里“长期记忆”至少要拆成两类：完整会话/课堂记录的 source of truth，以及从会话中抽取出的结构化学习记忆。
+- 历史会话查看和恢复更适合文档型存储，例如 MongoDB；不要用向量库做 source of truth。向量库适合语义检索，不适合承载完整会话恢复、分页、审计、可解释删除等主数据职责。
+- 记忆抽取需要独立 pipeline：从课堂/对话事件中抽取知识掌握、常见错误、学习行为、情绪/支持背景、复习建议等 memory cards；这些结构化 memory cards 可同时写入文档存储，并为摘要/片段生成 embedding 写入向量库。
+- 推荐方向：MongoDB 存 lesson sessions、messages、lesson state、memory cards、extraction jobs；Qdrant 或同类向量库存 message summaries、memory cards、知识片段的 embedding。PostgreSQL 继续只做当前基础关系数据或后续可替换，不承载长期记忆主路径。
+- 下一步功能实现建议：先设计课堂/课程 session 数据模型、历史会话恢复接口、memory card schema、记忆抽取 job 流程，再决定是否引入 MongoDB 和是否把现有 Qdrant profile 从预留变成实际依赖。
+
+2026-05-03，用户反驳并进一步收敛 agent 与记忆架构：
+
+- 用户明确希望整个项目主框架直接使用 LangChain 的 deepagents，不只是作为可替换候选。后续实现应围绕 deepagents/ LangGraph runtime 设计主动授课 agent，但仍应在业务层保留清晰服务边界，避免页面和数据库直接依赖 deepagents 内部细节。
+- 用户赞同记忆分层，但强调完整会话保存、记忆抽取、记忆冲突、何时调用/检索记忆是一套庞大工程，需要从一开始作为核心功能设计。
+- 为了简化中间件依赖，用户提出是否可以都用 MongoDB 搞定，因为 MongoDB 也支持向量检索。经官方资料确认，MongoDB Atlas Vector Search 支持向量检索、过滤和混合检索，可用任意 MongoDB driver 执行 `$vectorSearch` 聚合；因此现阶段可以采用“MongoDB 统一承载长期记忆和向量检索”的方案，暂不引入 Qdrant。
+- 修正推荐方向：MongoDB 作为长期记忆主存储，保存 lesson sessions、messages、lesson state snapshots、memory cards、memory conflicts、extraction jobs，以及 memory card / summary embeddings；使用 Atlas Vector Search 或本地 Atlas 部署能力做语义检索。
+- 仍需保持逻辑分层：完整会话是历史恢复 source of truth；memory cards 是抽取后的结构化教学记忆；embedding/vector index 是检索视图。即使物理上都在 MongoDB，也不要在领域模型里把三者混成一种数据。
+- 下一步应优先设计 MongoDB collection schema、索引、memory extraction pipeline、conflict resolution 策略和 lesson memory retrieval policy，再把 PostgreSQL 从长期记忆路径中排除。
+
+2026-05-03，已产出长期记忆架构定义：
+
+- 新增 `docs/memory-architecture.md`，定义 MongoDB 统一承载长期记忆和向量检索的第一阶段架构。
+- 文档明确三层逻辑：课堂事实层（`lesson_sessions`、`lesson_messages`、`lesson_state_snapshots`）、结构化记忆层（`memory_cards`、`memory_conflicts`）、检索视图层（embedding 和 MongoDB Atlas Vector Search）。
+- 文档定义了 MongoDB collection 示例 schema、建议索引、记忆抽取触发时机、抽取步骤、抽取原则、冲突类型、冲突解决策略、主动授课/课堂进行中/被动答疑/复习恢复四类记忆检索策略。
+- 文档定义 DeepAgents 接入边界：项目主 agent runtime 使用 LangChain deepagents，但数据库读写必须通过 `LessonService`、`MemoryService`、`MemoryExtractionService`、`TeachingAgentRuntime` 等领域服务和受控工具。
+- 更新 `docs/memory-system.md`，把它定位为产品原则摘要，并链接到 `docs/memory-architecture.md`；明确长期记忆不绑定 PostgreSQL，第一阶段使用 MongoDB 承载课堂记录、结构化记忆、抽取任务和向量检索。
+- 更新 `backend/app/services/memory.py` 注释，移除未来指向 PostgreSQL/pgvector 的表述，改为长期记忆应迁移到 MongoDB-backed lesson history、memory cards、extraction jobs 和 vector search。
+- 验证结果：`git diff --check` 无输出。本次主要是文档和注释变更，未运行后端/前端构建。
+- 下一步建议：基于 `docs/memory-architecture.md` 做第一阶段实现计划，优先加 MongoDB compose profile、配置项、repository 接口和 lesson session/message API；暂不实现复杂冲突解决和完整 DeepAgents 接入。
+
+2026-05-03，已实现长期记忆/课堂历史第一阶段骨架并充分验证：
+
+- 新增课堂历史后端 API：`POST /api/v1/lessons` 创建课堂，`GET /api/v1/lessons?student_id=...` 列出历史课堂，`GET /api/v1/lessons/{session_id}` 恢复课堂详情。
+- 新增 `backend/app/schemas/lesson.py`，定义 `LessonSession`、`LessonMessage`、`LessonSessionSummary`、`LessonSessionDetail` 和课堂阶段枚举。
+- 新增 `backend/app/services/lesson_store.py`，当前使用 `InMemoryLessonRepository` 作为 MongoDB 接入前的服务边界；后续 Mongo repository 应实现同等接口。
+- `TeacherChatRequest.context` 新增可选 `session_id`。`AgentHarness` 在收到带 `session_id` 的聊天请求时，会把学生消息和老师回复追加到对应课堂，支持历史恢复。
+- 新增 `backend/tests/test_lesson_sessions.py`，覆盖创建课堂、列出课堂、恢复课堂、chat 自动写入课堂消息和未知课堂 404。
+- 前端 `frontend/src/App.tsx` 已接入课堂历史：左侧可新建课堂、查看最近课堂、点击恢复历史消息；发送消息时会确保存在课堂并把 `session_id` 传给后端；顶部显示课堂标题、阶段和下一步动作。
+- 前端 `frontend/src/styles.css` 增加课堂历史列表、课堂状态和新建课堂按钮样式，保持工具型学习界面而非营销页。
+- `docker-compose.yml` 新增可选 `memory` profile：`mongo` 服务使用 `mongodb/mongodb-atlas-local:8.0`，默认不启动；`.env.example` 新增 `LESSON_STORE_BACKEND`、`MONGODB_URI`、`MONGODB_DATABASE`。
+- `docs/dev-setup.md` 新增 `docker compose --profile memory up -d mongo`，并明确长期记忆第一阶段通过 MongoDB 接入，不绑定 PostgreSQL。
+- 运行时冒烟：通过 `POST /api/v1/lessons` 创建课堂，再带 `session_id` 调用 `POST /api/v1/teacher/chat`，最后 `GET /api/v1/lessons/{session_id}` 成功恢复 3 条消息（teacher/student/teacher），summary 为“已进行 2 轮教师引导和 1 轮学生回应。”。
+- 验证结果：`docker compose exec -T backend pytest` 通过 21 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`docker compose exec -T frontend pnpm build` 通过；`docker compose config --quiet` 通过；`docker compose --profile memory config --services` 输出包含 `mongo`；`git diff --check` 无输出。
+- 未完成事项：MongoDB repository 尚未实现，当前课堂历史仍是内存实现，backend 重启会丢失；记忆抽取、冲突解决、MongoDB Vector Search 和 LangChain deepagents 接入仍待后续实现。
+- 下一步建议：实现 MongoDB-backed `LessonRepository`，将 `lesson_sessions` 和 `lesson_messages` 持久化；随后再做 `memory_cards` schema 和 lesson end 后的第一版记忆抽取。
+
+2026-05-03，用户测试发现一个关键教学行为问题：
+
+- 用户反馈：学生明明已经写出正确答案，老师仍执着要求解题步骤，像是没有看到学生已经写出正确结果。
+- 判断：这是当前应优先处理的教学行为缺陷，不只是 UI 或功能问题。现有教师核心规则过度强调“不要直接给答案、要求写步骤”，但缺少“识别正确答案/掌握信号/完成当前任务后推进下一阶段”的策略。
+- 修正方向：老师看到正确结果时应先明确确认“结果对了”，再根据教学目标要求学生补一句关键理由、做代入检验或进入下一题/复盘，而不是重复要求学生从头写步骤。
+- 后续应补充测试和黄金样例：学生给出正确答案但步骤不完整、学生给出正确答案且有理由、学生给出正确答案但理由错误三类场景，分别要求不同教师动作。
+
+2026-05-03，已修复“学生答对仍机械要求步骤”的教师行为问题：
+
+- 更新 `skills/universal-teacher-core.yaml`：新增 `correct_or_mastery_signal` 学生状态，要求老师先确认学生完成/答对，不要要求从头重写；如果理由缺失，只补一个短理由/验算；如果理由足够，则进入总结、下一题或下一教学阶段。
+- 更新 `skills/junior-math-linear-equation.yaml`：新增答对后的策略，学生已给出正确 `x` 时不重启完整解题；缺验证则要求代入，验证已完成则进入类似练习或总结。
+- 更新 `backend/app/services/llm_provider.py`：OpenAI/Doubao system prompt 增加“学生已给出正确结果时先明确确认正确，不机械从头重写”的规则；mock provider 对 `2(x-3)=10` 且 `x=8` 的场景会先确认正确，再根据是否已有验算决定要求代入或进入下一题。
+- 新增测试：`test_teacher_chat_acknowledges_correct_answer_before_requesting_reason` 和 `test_teacher_chat_advances_after_correct_answer_with_check`，固定正确答案无验算/有验算两种动作。
+- 验证结果：`docker compose exec -T backend pytest` 通过 23 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 无输出。
+- 真实模型冒烟：重启 backend 后，对 `2(x-3)=10，我算出来 x=8` 返回先确认 `x=8` 正确并要求代入验算；对 `2(x-3)=10，我算出来 x=8，代入左边右边都是10` 返回确认正确和验证到位，并要求一句关键理由，没有要求从头重写步骤。
+- 产品判断：OpenTeacher 是完整老师，不应执着于“拒绝答案/写步骤”；防抄答案只是底线，老师还必须识别掌握信号并推进课堂。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。

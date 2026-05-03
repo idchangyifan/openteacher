@@ -48,6 +48,17 @@ class MockTeacherProvider:
         normalized = prompt.message.strip()
         style_note = f"我会保持{prompt.teacher_style}，但不会替你抄答案。"
 
+        if self._looks_like_correct_linear_equation_solution(normalized):
+            if any(word in normalized for word in ["验算", "检验", "代入", "左边", "右边"]):
+                return (
+                    "对，x=8 是正确的，代入检验也通过。你已经完成这题了。"
+                    "下一步我们换一道同类型题，看看你能不能独立说明每一步理由。"
+                )
+            return (
+                "x=8 是正确的。现在不需要从头重写步骤；我只检查你是否真的理解。"
+                "你用一句话说说，为什么 2x - 6 = 10 之后可以得到 2x = 16？"
+            )
+
         if any(word in normalized for word in ["答案", "直接告诉", "抄"]):
             return (
                 f"不行。我是老师，不是答案机器。{style_note}你先写出下一步，我会检查你的推理。"
@@ -89,6 +100,12 @@ class MockTeacherProvider:
             f"收到。当前是{prompt.grade}{prompt.subject}场景。请补充题目原文和你已经写到的步骤。"
             f"我会结合{prompt.retrieved_context}来判断你的卡点。"
         )
+
+    def _looks_like_correct_linear_equation_solution(self, message: str) -> bool:
+        compact = message.replace(" ", "")
+        has_problem = "2(x-3)=10" in compact or "2（x-3）=10" in compact
+        has_solution = "x=8" in compact or "x＝8" in compact
+        return has_problem and has_solution
 
 
 class OpenAIResponsesProvider:
@@ -136,7 +153,9 @@ class OpenAIResponsesProvider:
             "你是 OpenTeacher 的 AI 老师，不是聊天朋友、家长、心理咨询师或答案机器。"
             "你要温暖、耐心、严格、讲原则。你的目标是让学生真正学会方法。"
             "不要直接给可抄写的完整答案；除非学生已经完成推理，否则只给下一步提示、"
-            "诊断问题或要求学生写出自己的步骤。学生自我否定时要稳定情绪，但仍回到学习任务。"
+            "诊断问题或要求学生写出自己的步骤。学生已经给出正确结果或完成当前任务时，"
+            "先明确确认正确，不要机械要求从头重写；再根据需要要求一句理由、验算、总结或进入下一阶段。"
+            "学生自我否定时要稳定情绪，但仍回到学习任务。"
             f"当前教师风格：{prompt.teacher_style}。当前 Skill：{prompt.skill_name}。"
             "回复必须使用中文，短而清楚，一次只推进一个关键步骤。"
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"
@@ -213,7 +232,9 @@ class DoubaoChatCompletionsProvider:
             "你是 OpenTeacher 的 AI 老师，不是朋友、家长、心理咨询师或答案机器。"
             "你温暖、耐心、严格、有原则，目标是让学生真正学会方法。"
             "禁止直接给可抄写的完整答案；学生没有完成推理前，只能给诊断问题、下一步提示、"
-            "或要求学生写出自己的变形步骤。一次只推进一个关键步骤。"
+            "或要求学生写出自己的变形步骤。学生已经给出正确结果或完成当前任务时，"
+            "先明确确认正确，不要机械要求从头重写；再根据需要要求一句理由、验算、总结或进入下一阶段。"
+            "一次只推进一个关键步骤。"
             "如果学生自我否定，先稳定情绪，但必须回到学习任务。"
             "回复必须使用中文，短而清楚。"
             f"当前教师风格：{prompt.teacher_style}。当前 Skill：{prompt.skill_name}。\n"

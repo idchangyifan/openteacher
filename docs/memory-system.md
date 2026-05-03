@@ -2,6 +2,17 @@
 
 记忆系统的目标是在尊重隐私、保护未成年人的前提下，让 OpenTeacher 随着时间推移教得更好。
 
+工程架构详见：
+
+- `docs/memory-architecture.md`
+
+当前结论：
+
+- 长期记忆不绑定 PostgreSQL。
+- 第一阶段使用 MongoDB 统一承载完整课堂记录、结构化记忆、抽取任务和向量检索。
+- MongoDB 可以同时作为历史会话恢复的 source of truth 和 Atlas Vector Search 的向量检索载体。
+- 物理存储可以统一，逻辑上仍必须区分课堂事实、结构化记忆和检索视图。
+
 ## 记忆目标
 
 记忆应该回答：

@@ -6,6 +6,7 @@ class StudentContext(BaseModel):
     grade: str = "初一"
     subject: str = "数学"
     teacher_style: str = "严格但温暖"
+    session_id: str | None = None
 
     model_config = ConfigDict(str_strip_whitespace=True)
 

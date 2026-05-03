@@ -10,8 +10,10 @@ class LearningEvent:
 class MemoryService:
     """Boundary for student memory storage.
 
-    The first version is intentionally in-memory/mock-like. Later this can point to
-    PostgreSQL, pgvector, a vector database, or a hybrid memory store.
+    The first version is intentionally in-memory/mock-like. Long-term memory should
+    move behind this boundary into MongoDB-backed lesson history, structured memory
+    cards, extraction jobs, and vector search. Do not bind student long-term memory
+    to PostgreSQL tables.
     """
 
     def get_student_summary(self, student_id: str) -> str:

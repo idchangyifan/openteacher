@@ -2,6 +2,7 @@ import logging
 
 from app.schemas.teacher import MemoryEvent, TeacherChatRequest, TeacherChatResponse
 from app.services.llm_provider import LlmProvider, MockTeacherProvider, TeacherPrompt, get_llm_provider
+from app.services.lesson_store import InMemoryLessonRepository, get_lesson_repository
 from app.services.memory import MemoryService, get_memory_service
 from app.services.rag import RagService, get_rag_service
 from app.services.skill_registry import SkillRegistry, get_skill_registry
@@ -16,13 +17,22 @@ class AgentHarness:
         rag_service: RagService,
         skill_registry: SkillRegistry,
         llm_provider: LlmProvider,
+        lesson_repository: InMemoryLessonRepository,
     ) -> None:
         self.memory_service = memory_service
         self.rag_service = rag_service
         self.skill_registry = skill_registry
         self.llm_provider = llm_provider
+        self.lesson_repository = lesson_repository
 
     def reply(self, request: TeacherChatRequest) -> TeacherChatResponse:
+        if request.context.session_id:
+            self.lesson_repository.append_message(
+                session_id=request.context.session_id,
+                role="student",
+                content=request.message,
+            )
+
         skills = self.skill_registry.pick_skills(request.context.grade, request.context.subject)
         memory = self.memory_service.get_student_summary(request.context.student_id)
         retrieved_context = self.rag_service.retrieve(request.message)
@@ -46,6 +56,13 @@ class AgentHarness:
             knowledge_skill_guidance=skills.knowledge.guidance,
         )
         reply = self._generate_reply(prompt)
+
+        if request.context.session_id:
+            self.lesson_repository.append_message(
+                session_id=request.context.session_id,
+                role="teacher",
+                content=reply,
+            )
 
         event = self.memory_service.record_learning_event(
             student_id=request.context.student_id,
@@ -74,4 +91,5 @@ def get_agent_harness() -> AgentHarness:
         rag_service=get_rag_service(),
         skill_registry=get_skill_registry(),
         llm_provider=get_llm_provider(),
+        lesson_repository=get_lesson_repository(),
     )

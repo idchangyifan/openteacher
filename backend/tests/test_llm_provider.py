@@ -92,3 +92,4 @@ def test_doubao_chat_completions_provider_system_message_contains_skill_guidance
     assert "Universal Teacher Core" in system_message
     assert "不要给可抄写完整答案" in system_message
     assert "移项要检查变号" in system_message
+    assert "先明确确认正确" in system_message

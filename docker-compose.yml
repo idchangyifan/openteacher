@@ -39,6 +39,9 @@ services:
       DATABASE_URL: ${DATABASE_URL:-postgresql+psycopg://openteacher:openteacher@postgres:5432/openteacher}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173,http://127.0.0.1:5173}
       MEMORY_BACKEND: ${MEMORY_BACKEND:-mock}
+      LESSON_STORE_BACKEND: ${LESSON_STORE_BACKEND:-memory}
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017}
+      MONGODB_DATABASE: ${MONGODB_DATABASE:-openteacher}
       RAG_BACKEND: ${RAG_BACKEND:-mock}
       SKILLS_DIR: ${SKILLS_DIR:-/app/skills}
       LLM_PROVIDER: ${LLM_PROVIDER:-mock}
@@ -139,7 +142,18 @@ services:
     volumes:
       - qdrant-data:/qdrant/storage
 
+  mongo:
+    image: mongodb/mongodb-atlas-local:8.0
+    container_name: openteacher-mongo
+    restart: unless-stopped
+    profiles: ["memory"]
+    ports:
+      - "${MONGODB_HOST_PORT:-127.0.0.1:27017}:27017"
+    volumes:
+      - mongo-data:/data/db
+
 volumes:
   postgres-data:
   redis-data:
   qdrant-data:
+  mongo-data:
