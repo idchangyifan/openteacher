@@ -371,6 +371,15 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 提交前检查：`git diff --check` 无输出；`git remote -v` 显示 remote URL 不含明文凭据；对 diff 中 `api_key`、`token`、`password`、`secret`、`DOUBAO_API_KEY`、`OPENAI_API_KEY` 等字样做快速扫描，只发现配置名、空占位符和测试 token，没有真实密钥。
 - 后续建议：提交后如需同步远端，再执行 `git push origin main`；推送前可按需确认代理可用。
 
+2026-05-03，尝试推送但远端凭据不可用：
+
+- 当前本地已有提交 `98c93a1 feat: add universal teacher core evaluation`，推送前 `main...origin/main [ahead 2]`。
+- 执行 `git push origin main` 失败，原因是全局 gitconfig 将 `https://github.com/` 重写为 `https://ghproxy.net/https://github.com/`，该代理 URL 在非交互环境要求用户名，错误为 `fatal: could not read Username for 'https://ghproxy.net': No such device or address`。
+- 临时忽略全局 rewrite 并显式使用代理推送标准 GitHub URL：`GIT_CONFIG_GLOBAL=/dev/null git -c http.proxy=http://127.0.0.1:7890 -c https.proxy=http://127.0.0.1:7890 push https://github.com/idchangyifan/openteacher.git main`，仍失败，原因是没有可用 HTTPS GitHub 凭据：`fatal: could not read Username for 'https://github.com': No such device or address`。
+- 检查 `gh`、git credential helper、`~/.git-credentials`、`~/.config/git/credentials`，均不可用或不存在。
+- 检查 SSH：存在 `~/.ssh/id_ed25519`，但 `ssh -T -o BatchMode=yes git@github.com` 返回 `Permission denied (publickey)`，说明该公钥未授权到 GitHub。
+- 下一步建议：配置一种非交互推送凭据后再推送，例如安装并登录 `gh`、配置 GitHub token 到 credential helper，或把当前 `~/.ssh/id_ed25519.pub` 加到 GitHub 账号/仓库 deploy key；也可临时移除/覆盖全局 `url.https://ghproxy.net/https://github.com/.insteadof` rewrite 后使用标准 GitHub 凭据。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。
