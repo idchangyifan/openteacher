@@ -2,7 +2,7 @@ import logging
 
 from app.schemas.teacher import MemoryEvent, TeacherChatRequest, TeacherChatResponse
 from app.services.llm_provider import LlmProvider, MockTeacherProvider, TeacherPrompt, get_llm_provider
-from app.services.lesson_store import InMemoryLessonRepository, get_lesson_repository
+from app.services.lesson_store import LessonRepository, get_lesson_repository
 from app.services.memory import MemoryService, get_memory_service
 from app.services.rag import RagService, get_rag_service
 from app.services.skill_registry import SkillRegistry, get_skill_registry
@@ -17,7 +17,7 @@ class AgentHarness:
         rag_service: RagService,
         skill_registry: SkillRegistry,
         llm_provider: LlmProvider,
-        lesson_repository: InMemoryLessonRepository,
+        lesson_repository: LessonRepository,
     ) -> None:
         self.memory_service = memory_service
         self.rag_service = rag_service

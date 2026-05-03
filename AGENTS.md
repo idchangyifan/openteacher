@@ -483,6 +483,25 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 真实模型冒烟：重启 backend 后，对 `2(x-3)=10，我算出来 x=8` 返回先确认 `x=8` 正确并要求代入验算；对 `2(x-3)=10，我算出来 x=8，代入左边右边都是10` 返回确认正确和验证到位，并要求一句关键理由，没有要求从头重写步骤。
 - 产品判断：OpenTeacher 是完整老师，不应执着于“拒绝答案/写步骤”；防抄答案只是底线，老师还必须识别掌握信号并推进课堂。
 
+2026-05-03，已提交并推送课堂历史基础与答对识别修复：
+
+- 提交 `c968625 feat: add lesson history foundation` 已推送到 `origin/main`。
+- 该提交包含长期记忆架构文档、课堂历史 API、前端课堂历史入口、MongoDB memory profile、答对后先确认的教师行为修复，以及相关测试。
+
+2026-05-03，已实现 MongoDB-backed 课堂历史落库：
+
+- `backend/pyproject.toml` 新增 `pymongo>=4.10.0`。
+- `backend/app/services/lesson_store.py` 新增 `LessonRepository` 协议和 `MongoLessonRepository`；当 `LESSON_STORE_BACKEND=mongodb` 时，`get_lesson_repository()` 会使用 MongoDB，否则继续使用内存实现。
+- MongoDB collections：`lesson_sessions` 和 `lesson_messages`；已创建索引 `student_updated`、`student_subject_updated`、`status_updated`、`session_created`、`student_created`。
+- `backend/app/api/v1/routes/lessons.py` 和 `backend/app/services/agent_harness.py` 已改为依赖 `LessonRepository` 协议，而不是具体内存实现。
+- `backend/tests/conftest.py` 固定测试使用内存 lesson store，并清理内存状态，避免测试依赖或污染 MongoDB。
+- 已执行 `docker compose build backend`，成功安装 `pymongo`。
+- 运行时 Mongo 落库验证：使用 `LESSON_STORE_BACKEND=mongodb docker compose --profile memory up -d mongo backend` 启动 MongoDB Atlas Local 和 backend；创建课堂、带 `session_id` 调用 `teacher/chat` 后，重启 backend 仍可通过 `GET /api/v1/lessons/{session_id}` 恢复 3 条消息，证明课堂历史已落入 MongoDB 而非内存。
+- 直接查 MongoDB：`lesson_sessions` 为 1 条，`lesson_messages` 为 3 条，索引列表包含上述自定义索引。
+- 验证结果：`docker compose exec -T backend pytest` 通过 23 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`docker compose exec -T frontend pnpm build` 通过；`docker compose config --quiet` 通过；`docker compose --profile memory config --services` 输出包含 `mongo`；`git diff --check` 无输出。
+- 关于 PostgreSQL 当前用途：PG 目前主要是脚手架级基础数据库，Compose 默认启动并供 `GET /api/v1/ready` 和 Alembic 使用；已有 `students`、`conversations`、`messages`、`learning_events` 初始表和 SQLAlchemy models，但当前 teacher chat、lesson history 和长期记忆主流程没有真正把业务数据写入 PG。长期记忆和课堂历史已转向 MongoDB；PG 后续可只保留给账号、权限、运营关系数据，或在产品边界更清楚后裁剪。
+- 下一步建议：提交并推送 MongoDB-backed lesson repository；之后做 `memory_cards` collection 和 lesson end 后的第一版记忆抽取，不要再把长期记忆写回 PG。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。
