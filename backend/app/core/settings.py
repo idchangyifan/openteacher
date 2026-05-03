@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_database: str = "openteacher"
     rag_backend: str = "mock"
+    agent_runtime: str = "provider"
+    deepagents_model: str = ""
     skills_dir: Path = ROOT_DIR / "skills"
     llm_provider: str = "mock"
     openai_api_key: SecretStr | None = None

@@ -1,6 +1,8 @@
 import logging
 
+from app.core.settings import settings
 from app.schemas.teacher import MemoryEvent, TeacherChatRequest, TeacherChatResponse
+from app.services.deepagents_runtime import DeepAgentsTeachingRuntime
 from app.services.llm_provider import LlmProvider, MockTeacherProvider, TeacherPrompt, get_llm_provider
 from app.services.lesson_store import LessonRepository, get_lesson_repository
 from app.services.memory import MemoryService, get_memory_service
@@ -18,14 +20,21 @@ class AgentHarness:
         skill_registry: SkillRegistry,
         llm_provider: LlmProvider,
         lesson_repository: LessonRepository,
+        deepagents_runtime: DeepAgentsTeachingRuntime,
     ) -> None:
         self.memory_service = memory_service
         self.rag_service = rag_service
         self.skill_registry = skill_registry
         self.llm_provider = llm_provider
         self.lesson_repository = lesson_repository
+        self.deepagents_runtime = deepagents_runtime
 
     def reply(self, request: TeacherChatRequest) -> TeacherChatResponse:
+        effective_subject = self._infer_effective_subject(
+            message=request.message,
+            fallback_subject=request.context.subject,
+        )
+
         if request.context.session_id:
             self.lesson_repository.append_message(
                 session_id=request.context.session_id,
@@ -33,13 +42,13 @@ class AgentHarness:
                 content=request.message,
             )
 
-        skills = self.skill_registry.pick_skills(request.context.grade, request.context.subject)
+        skills = self.skill_registry.pick_skills(request.context.grade, effective_subject)
         memory = self.memory_service.get_student_summary(request.context.student_id)
         retrieved_context = self.rag_service.retrieve(request.message)
         prompt = TeacherPrompt(
             message=request.message,
             grade=request.context.grade,
-            subject=request.context.subject,
+            subject=effective_subject,
             teacher_style=request.context.teacher_style,
             skill_name=f"{skills.core.name} + {skills.knowledge.name}",
             skill_guidance="\n\n".join(
@@ -55,7 +64,7 @@ class AgentHarness:
             knowledge_skill_name=skills.knowledge.name,
             knowledge_skill_guidance=skills.knowledge.guidance,
         )
-        reply = self._generate_reply(prompt)
+        reply = self._generate_reply(request, prompt)
 
         if request.context.session_id:
             self.lesson_repository.append_message(
@@ -66,7 +75,7 @@ class AgentHarness:
 
         event = self.memory_service.record_learning_event(
             student_id=request.context.student_id,
-            subject=request.context.subject,
+            subject=effective_subject,
             message=request.message,
             reply=reply,
         )
@@ -77,19 +86,41 @@ class AgentHarness:
             memory_events=[MemoryEvent(kind=event.kind, summary=event.summary)],
         )
 
-    def _generate_reply(self, prompt: TeacherPrompt) -> str:
+    def _generate_reply(self, request: TeacherChatRequest, prompt: TeacherPrompt) -> str:
+        if settings.agent_runtime == "deepagents":
+            try:
+                return self.deepagents_runtime.generate_reply(request, prompt).reply
+            except Exception:
+                logger.exception("DeepAgents runtime failed; falling back to LLM provider")
+
         try:
             return self.llm_provider.generate_reply(prompt)
         except Exception:
             logger.exception("LLM provider failed; falling back to mock teacher provider")
             return MockTeacherProvider().generate_reply(prompt)
 
+    def _infer_effective_subject(self, message: str, fallback_subject: str) -> str:
+        normalized = message.lower()
+        if any(keyword in normalized for keyword in ["浮力", "受力", "重力", "斜面", "物理"]):
+            return "物理"
+        if any(keyword in normalized for keyword in ["英语", "单词", "语法", "yesterday", "verb", "go "]):
+            return "英语"
+        if any(keyword in normalized for keyword in ["语文", "作文", "阅读", "比喻", "修辞"]):
+            return "语文"
+        return fallback_subject
+
 
 def get_agent_harness() -> AgentHarness:
+    lesson_repository = get_lesson_repository()
+    memory_service = get_memory_service()
     return AgentHarness(
-        memory_service=get_memory_service(),
+        memory_service=memory_service,
         rag_service=get_rag_service(),
         skill_registry=get_skill_registry(),
         llm_provider=get_llm_provider(),
-        lesson_repository=get_lesson_repository(),
+        lesson_repository=lesson_repository,
+        deepagents_runtime=DeepAgentsTeachingRuntime(
+            memory_service=memory_service,
+            lesson_repository=lesson_repository,
+        ),
     )

@@ -102,3 +102,24 @@ def test_teacher_chat_advances_after_correct_answer_with_check() -> None:
     assert "正确" in body["reply"]
     assert "代入检验也通过" in body["reply"]
     assert "换一道同类型题" in body["reply"]
+
+
+def test_teacher_chat_does_not_force_physics_question_into_math_skill() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "我想开始学浮力，不是做题",
+            "context": {
+                "student_id": "subject-inference-student",
+                "grade": "初一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["skill_id"] == "opent-teacher-general"

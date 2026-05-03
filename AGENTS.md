@@ -502,6 +502,28 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 关于 PostgreSQL 当前用途：PG 目前主要是脚手架级基础数据库，Compose 默认启动并供 `GET /api/v1/ready` 和 Alembic 使用；已有 `students`、`conversations`、`messages`、`learning_events` 初始表和 SQLAlchemy models，但当前 teacher chat、lesson history 和长期记忆主流程没有真正把业务数据写入 PG。长期记忆和课堂历史已转向 MongoDB；PG 后续可只保留给账号、权限、运营关系数据，或在产品边界更清楚后裁剪。
 - 下一步建议：提交并推送 MongoDB-backed lesson repository；之后做 `memory_cards` collection 和 lesson end 后的第一版记忆抽取，不要再把长期记忆写回 PG。
 
+2026-05-03，用户再次指出智能层仍是 demo 级并要求接入 DeepAgents：
+
+- 用户反馈：当前智能仍然像只会用很蠢方式教一元一次方程，怀疑只是简单 demo。判断成立：当前 `AgentHarness` 主要靠单点 skill 和 prompt 规则，不具备真正的课程规划、模式判断、记忆调用和主动授课能力。
+- 用户明确：需要把 LangChain `deepagents` 作为 harness agent 框架用起来，包括如何调用记忆点。
+- 已查官方资料：LangChain Deep Agents 官方定位是 agent harness，基于 LangChain/LangGraph，内置 planning、filesystem、subagents、长期记忆等能力；`create_deep_agent` 是主入口并返回 compiled LangGraph graph。
+- 下一步实现方向：新增 `TeachingAgentRuntime` / DeepAgents adapter，定义工具边界（读取课堂状态、检索 memory cards、保存课堂消息、生成练习、创建记忆抽取任务），逐步替换当前简单 `AgentHarness` 的“单轮 prompt 调 provider”模式。
+- 近期不要继续堆页面或存储外围功能；优先重构智能层，让 OpenTeacher 能判断主动授课/被动答疑/诊断/练习/复盘，并基于长期记忆选择教学动作。
+
+2026-05-03，已完成 DeepAgents harness 第一版可选接入：
+
+- `backend/pyproject.toml` 新增 `deepagents>=0.3.0` 和 `langchain-openai>=1.0.0`；实际构建安装到 `deepagents 0.5.6`。
+- 新增 `backend/app/services/deepagents_runtime.py`，定义 `DeepAgentsTeachingRuntime`。该 runtime 使用 `create_deep_agent` 构建 LangChain DeepAgents graph，并提供四个教学工具：`retrieve_student_memory`、`load_lesson_state`、`plan_next_teaching_move`、`create_memory_extraction_hint`。
+- 新增配置：`AGENT_RUNTIME`，默认 `provider`；`DEEPAGENTS_MODEL` 可选。`AGENT_RUNTIME=deepagents` 时 `AgentHarness` 先尝试 DeepAgents runtime；失败时回退当前 LLM provider，再失败回退 mock teacher。
+- DeepAgents system prompt 明确：OpenTeacher 是完整老师，主动授课是主轴，被动答疑只是能力之一；每轮应判断 active_lesson、qa、diagnostic_check、guided_practice、review、lesson_summary 等模式；不要把所有输入都当成一元一次方程解题。
+- 为了减少“一元一次方程 demo 感”，`AgentHarness` 增加轻量 subject inference：消息中出现“浮力/受力/重力/斜面/物理”时使用物理；出现英语/单词/语法/yesterday 等使用英语；出现语文/作文/阅读/比喻/修辞等使用语文。这样前端默认 subject 是数学时，学生说“学浮力”不会再走一元一次方程 skill。
+- 新增 `backend/tests/test_deepagents_runtime.py`，覆盖 DeepAgents system prompt 的主动授课约束，以及工具读取学生记忆和课堂状态。
+- 更新 `backend/tests/test_teacher_chat.py`，覆盖“浮力”输入不会被强制塞到数学一元一次方程 skill。
+- 验证结果：`docker compose build backend` 成功，确认 `deepagents` 和 `langchain_openai` 可导入；`docker compose exec -T backend pytest` 通过 26 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`docker compose exec -T frontend pnpm build` 通过；`docker compose config --quiet` 通过；`git diff --check` 无输出。
+- 运行时冒烟：用 `AGENT_RUNTIME=deepagents` 重启 backend 后，请求“我想开始学浮力，不是做题”（context 仍传数学）返回 `skill_id=opent-teacher-general`，回复进入浮力概念主动授课并要求学生举生活例子；之后已把 backend 恢复为默认 `AGENT_RUNTIME=provider`。
+- 未完成事项：DeepAgents 已作为可选 harness 接入，但还没有成为默认 runtime；记忆工具目前读取的是 mock summary，还没有接 `memory_cards`；`create_memory_extraction_hint` 还只是候选提示，未落 extraction job。
+- 下一步建议：实现 `memory_cards` Mongo collection 和 `retrieve_student_memory` 的真实检索；随后把 DeepAgents runtime 接入 lesson start/continue API，让主动授课不再依赖单轮 chat。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。
