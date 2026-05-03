@@ -524,6 +524,23 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 未完成事项：DeepAgents 已作为可选 harness 接入，但还没有成为默认 runtime；记忆工具目前读取的是 mock summary，还没有接 `memory_cards`；`create_memory_extraction_hint` 还只是候选提示，未落 extraction job。
 - 下一步建议：实现 `memory_cards` Mongo collection 和 `retrieve_student_memory` 的真实检索；随后把 DeepAgents runtime 接入 lesson start/continue API，让主动授课不再依赖单轮 chat。
 
+2026-05-03，用户澄清 harness agent 的真正含义：
+
+- 用户说的 harness agent 不是简单 deepagents runtime adapter，而是 OpenTeacher 主控智能体架构。
+- 基本架构应包含 planner、executor、verifier 三层：planner 负责课程/本轮教学计划和工具选择；executor 负责执行授课、答疑、练习、记忆调用和工具动作；verifier 负责检查教学质量、是否越界、是否识别学生状态、是否需要修正输出。
+- harness agent 还必须包含：记忆层（记住每个学生情况）、guardrails（规范教师行为、安全边界、隐私边界、反作弊但不机械）、skill 广场/生态（可开放给老师自己编写技能，二期也要预留接口）、LangSmith 可视化 agent 调试和追踪。
+- 之前 `077894a feat: add deepagents teaching runtime` 只是第一版可选 runtime 接入，不等同于完整 harness agent。后续应补正式架构规格，定义 planner/executor/verifier/memory/guardrails/skills/observability 的边界和数据流。
+- 下一步建议：先产出 `docs/harness-agent-architecture.md`，再按架构逐步重构，而不是继续随手往 `AgentHarness` 加 prompt 或工具。
+
+2026-05-03，已补充正式 harness agent 架构规格：
+
+- 新增 `docs/harness-agent-architecture.md`，明确 OpenTeacher harness agent 是主控教师智能体，而不是简单 LLM provider 包装或单个 deepagents adapter。
+- 文档定义 planner、executor、verifier 三层核心：planner 负责教学模式/学习状态/工具计划/记忆检索计划/技能选择计划；executor 负责执行授课、答疑、练习、保存课堂、创建记忆抽取任务；verifier 负责检查教师身份、教学质量、安全隐私、是否机械要求步骤、是否识别掌握信号等。
+- 文档定义记忆层、guardrails、skill 广场、LangSmith observability、API/service 边界和分阶段实现路线。
+- 更新 `docs/architecture.md`，链接 `docs/harness-agent-architecture.md` 和 `docs/memory-architecture.md`，并把当前技术方向更新为 MongoDB 长期记忆、MongoDB Atlas Vector Search、LangChain DeepAgents / LangGraph runtime。
+- 更新 `docs/memory-architecture.md`，反向链接主控 harness 架构。
+- 重要判断：`backend/app/services/deepagents_runtime.py` 是接入点，不是完整 harness agent。下一步应优先实现 planner 数据结构、真实 `memory_cards` 检索工具和 verifier 第一版规则，而不是继续堆单 prompt。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。

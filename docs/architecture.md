@@ -2,13 +2,22 @@
 
 OpenTeacher 被设计为一个模块化 AI 教师系统。
 
+核心智能体架构详见：
+
+- `docs/harness-agent-architecture.md`
+
+长期记忆架构详见：
+
+- `docs/memory-architecture.md`
+
 ## 当前技术选型
 
 - Python 后端
 - React Web 前端
 - PostgreSQL 关系型数据库
-- 记忆存储稍后决定
-- RAG 存储稍后决定
+- MongoDB 长期记忆和课堂历史存储
+- MongoDB Atlas Vector Search 作为第一阶段记忆向量检索方向
+- LangChain DeepAgents / LangGraph 作为 harness agent runtime 方向
 
 记忆和 RAG 的具体存储方案应当始终放在接口后面，这样项目可以在不重写智能体框架的情况下逐步演进。
 
@@ -24,33 +33,33 @@ app/
   services/     智能体、LLM、记忆、技能和 RAG 接口
 ```
 
-## 第一版运行流程
+## 当前运行流程
 
 1. 学生从 React 应用发送消息。
 2. 后端通过 `/api/v1/teacher/chat` 接收消息。
-3. 智能体框架加载学生上下文、技能上下文、记忆摘要和教学边界。
-4. LLM provider 或 mock provider 生成教师式引导回复。
-5. 记忆服务记录轻量学习事件。
-6. 前端展示教师回复、当前技能和记忆事件。
+3. `AgentHarness` 加载学生上下文、技能上下文、记忆摘要和教学边界。
+4. 默认 runtime 使用 provider 生成教师回复；`AGENT_RUNTIME=deepagents` 时可选尝试 DeepAgents runtime，并在失败时回退 provider。
+5. 如果绑定 lesson session，课堂消息会写入 lesson store；`LESSON_STORE_BACKEND=mongodb` 时持久化到 MongoDB。
+6. 记忆服务记录轻量学习事件。
+7. 前端展示教师回复、当前技能、课堂历史和记忆事件。
 
 ## 存储边界
 
-PostgreSQL 是关系型产品数据的事实来源：
+PostgreSQL 当前是关系型产品数据的候选来源和基础脚手架，适合后续承载：
 
 - 学生
 - 班级
 - 教师和志愿者
-- 对话
-- 消息
 - 技能元数据
-- 学习事件
+- 账号、权限和运营关系数据
 
-记忆和 RAG 未来可能使用：
+长期记忆和课堂历史第一阶段使用 MongoDB：
 
-- PostgreSQL 表
-- pgvector
-- 向量数据库
-- 对象存储加搜索索引
-- 混合存储
+- `lesson_sessions`
+- `lesson_messages`
+- `lesson_state_snapshots`
+- `memory_cards`
+- `memory_conflicts`
+- `memory_extraction_jobs`
 
-第一版实现应优先暴露服务接口，不要过早绑定最终存储方案。
+不要把长期记忆绑定到 PostgreSQL。即使物理存储后续调整，也应保持 `LessonService`、`MemoryService`、`MemoryExtractionService` 等服务边界。
