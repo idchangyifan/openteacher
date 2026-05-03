@@ -380,6 +380,13 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 检查 SSH：存在 `~/.ssh/id_ed25519`，但 `ssh -T -o BatchMode=yes git@github.com` 返回 `Permission denied (publickey)`，说明该公钥未授权到 GitHub。
 - 下一步建议：配置一种非交互推送凭据后再推送，例如安装并登录 `gh`、配置 GitHub token 到 credential helper，或把当前 `~/.ssh/id_ed25519.pub` 加到 GitHub 账号/仓库 deploy key；也可临时移除/覆盖全局 `url.https://ghproxy.net/https://github.com/.insteadof` rewrite 后使用标准 GitHub 凭据。
 
+2026-05-03，用户提供新的 GitHub token 后已完成第一段推送：
+
+- 使用临时 HTTPS token 认证推送本地 3 个提交到 `main`，未把 token 写入代码、`AGENTS.md`、git remote 或仓库配置。
+- 推送输出显示 `9887924..41dc97f  main -> main`，包括 `98c93a1 feat: add universal teacher core evaluation` 和 `41dc97f docs: record push credential blocker`。
+- 推送后检查 `git remote -v`，remote 仍显示 `https://ghproxy.net/https://github.com/idchangyifan/openteacher.git`，未包含明文凭据。
+- 注意：由于本次使用显式 URL 推送，`origin/main` 本地跟踪引用尚未自动更新；可在凭据和代理配置理顺后 fetch，或使用显式 URL fetch 更新远端跟踪引用。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。
