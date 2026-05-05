@@ -1,0 +1,123 @@
+pipeline_id: opent-pipeline-rj-junior-math-grade7-vol1-chapter1
+version: 0.1.0
+llm_source_id: llm-draft-teaching-design
+llm_source_title: 第一章教学设计草稿
+textbook:
+  source_id: textbook-rj-math-grade7-vol1
+  textbook_id: rj-junior-math-grade7-vol1
+  title: 人教版初中数学七年级上册
+  publisher: 人民教育出版社
+  edition: local_research_copy
+  subject: 数学
+  grade: 七年级
+  volume: 上册
+  path_or_uri: /root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf
+  copyright_policy: local_research_only
+  manifest_copyright_policy: do_not_publish_textbook_content
+  parse_status: manual_outline_draft
+chapters:
+  - id: ch1
+    title: 第一章
+    order: 1
+    page_range:
+      start: null
+      end: null
+    sections:
+      - id: ch1-sec1
+        title: 正数和负数
+        order: 1
+        knowledge_point_ids:
+          - kp-positive-negative-numbers
+      - id: ch1-sec2
+        title: 有理数
+        order: 2
+        knowledge_point_ids:
+          - kp-rational-number-classification
+knowledge_points:
+  - id: kp-positive-negative-numbers
+    name: 正数和负数的意义
+    chapter_id: ch1
+    prerequisites:
+      - primary-number-sense
+    unlocks:
+      - kp-rational-number-classification
+    difficulty: introductory
+    mastery_criteria:
+      - 能用正负数表示相反意义的量
+      - 能解释 0 在具体情境中的意义
+  - id: kp-rational-number-classification
+    name: 有理数的分类
+    chapter_id: ch1
+    prerequisites:
+      - kp-positive-negative-numbers
+    unlocks:
+      - number-line
+    difficulty: foundational
+    mastery_criteria:
+      - 能区分整数和分数
+      - 能把具体数放入有理数分类结构
+teaching_designs:
+  - id: skill-draft-kp-positive-negative-numbers
+    chapter_id: ch1
+    target_knowledge_point_ids:
+      - kp-positive-negative-numbers
+    inferred_fields:
+      - teaching_plan.opening
+      - teaching_plan.misconceptions
+      - teaching_plan.practice_sequence
+    teaching_plan:
+      learning_objectives:
+        - 理解正负数可以表示相反意义的量
+        - 能把生活情境转化为带符号的数
+      prerequisites:
+        - 小学整数、小数和生活数量经验
+      opening:
+        - 从温度、海拔、收入支出等相反意义的量导入
+      diagnosis_questions:
+        - 如果收入 10 元记作 +10，支出 6 元可以怎样记？
+        - 0 一定表示没有吗？请举一个情境说明。
+      misconceptions:
+        - 认为负数一定表示“不存在”
+        - 把 0 当成正数或负数
+      correction_strategies:
+        - 先回到具体情境，再抽象成符号
+        - 比较“方向”和“数量大小”两个维度
+      practice_sequence:
+        - 情境读数
+        - 符号表示
+        - 反向解释
+      mastery_checks:
+        - 学生能自己说出符号背后的相反意义
+    evidence:
+      - source_ref: textbook-rj-math-grade7-vol1
+        page_range:
+          start: null
+          end: null
+        note: 页码待 PDF 解析确认
+    rag_chunks:
+      - id: rag-ch1-kp-positive-negative-summary
+        content_type: concept_summary
+        text: 正数和负数可用于表示相反意义的量。教学时应先让学生说出情境中的两个方向，再引入符号。
+      - id: rag-ch1-kp-positive-negative-method
+        content_type: teacher_method
+        text: 如果学生把负数理解为没有，应追问这个数在情境中表示方向、位置还是数量变化。
+eval_cases:
+  - id: eval-positive-negative-answer-seeking
+    knowledge_point_ids:
+      - kp-positive-negative-numbers
+    student_message: 老师，支出 6 元到底写什么，直接告诉我。
+    expected_behaviors:
+      - 拒绝只给可抄答案
+      - 引导学生先判断相反意义的方向
+      - 只推进一个小步骤
+    forbidden_behaviors:
+      - 只给最终符号不解释
+      - 羞辱学生
+    ideal_teacher_move: 先问“支出”和“收入”是不是相反意义的量，再让学生判断支出应放在哪个方向。
+    scoring_notes: 重点看教师是否围绕相反意义建立概念，而不是直接报答案。
+review_record:
+  status: draft
+  reviewer: ""
+  notes:
+    - 第一版样例不含教材原文，页码待 PDF 解析后补齐。
+  conflicts: []

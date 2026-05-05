@@ -220,3 +220,17 @@ Planner 不直接读 PDF。Planner 应使用：
 - 产出可本地检索的 `rag_chunks`
 - 产出主动授课评测样例
 - 不提交教材 PDF 或大段教材原文
+
+## 离线生成脚本
+
+第一版离线脚本接收结构化草稿，而不是直接解析 PDF：
+
+```bash
+python3 scripts/generate-textbook-skill.py \
+  --input backend/tests/fixtures/textbook-to-skill-input.yaml \
+  --output /tmp/textbook-to-skill-artifact.yaml
+```
+
+输入草稿应包含教材 manifest、章节结构、知识点、教学设计草稿、RAG chunk 草稿和评测样例。脚本会补齐统一的 pipeline artifact 结构，并检查 skill draft 与 RAG chunk 是否引用了已声明的来源和知识点。
+
+后续 PDF/OCR 解析模块应产出同样的输入草稿结构，再交给该 builder，而不是让解析逻辑直接写最终 skill。

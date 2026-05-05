@@ -648,6 +648,16 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 验证结果：`docker compose exec -T backend pytest` 通过 34 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 无输出。
 - 下一步建议：实现离线生成脚本或服务骨架，先读取本地教材 manifest/人工章节草稿，输出上述 pipeline YAML/JSON；随后再补 PDF 解析依赖和文件型 `TextbookRagService` smoke。
 
+2026-05-05，已实现 `TextbookToTeachingSkill` 离线生成骨架：
+
+- 新增 `backend/app/services/textbook_to_skill_pipeline.py`，提供 `build_textbook_to_skill_artifact()` 和 `PipelineInputError`。第一版输入是人工/工具整理的结构化草稿，不直接解析 PDF；后续 PDF/OCR 解析模块应产出同样输入结构。
+- 新增 `scripts/generate-textbook-skill.py`，支持 `--input`、`--output` 和 `--format yaml|json`，从结构化 YAML/JSON 草稿生成完整 pipeline artifact。
+- 新增 `backend/tests/fixtures/textbook-to-skill-input.yaml`，作为七年级上册第一章的结构化输入草稿；继续避免提交教材 PDF 或大段教材原文。
+- 更新 `backend/tests/test_textbook_to_skill_pipeline.py`，覆盖 builder 输出结构和错误引用检测；更新 `docs/textbook-to-skill-pipeline.md`，加入离线脚本用法。
+- 已运行脚本 smoke：`python3 scripts/generate-textbook-skill.py --input backend/tests/fixtures/textbook-to-skill-input.yaml --output /tmp/openteacher-textbook-to-skill-artifact.yaml`，成功生成 1 个 skill draft 和 2 个 rag chunks。
+- 验证结果：`docker compose exec -T backend pytest` 通过 36 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 无输出。
+- 下一步建议：把这批离线生成骨架提交；随后做文件型 `TextbookRagService`，读取生成 artifact 的 `rag_chunks` 做本地检索 smoke，并让 `RagService` 在 `RAG_BACKEND=textbook_file` 时使用它。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。

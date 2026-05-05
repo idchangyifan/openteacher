@@ -2,19 +2,24 @@ from pathlib import Path
 
 import yaml
 
+from app.services.textbook_to_skill_pipeline import (
+    PipelineInputError,
+    build_textbook_to_skill_artifact,
+)
 
+INPUT_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "textbook-to-skill-input.yaml"
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "textbook-to-skill-sample.yaml"
 
 
-def load_fixture() -> dict:
-    with FIXTURE_PATH.open(encoding="utf-8") as handle:
+def load_yaml(path: Path) -> dict:
+    with path.open(encoding="utf-8") as handle:
         data = yaml.safe_load(handle)
     assert isinstance(data, dict)
     return data
 
 
 def test_textbook_to_skill_sample_has_core_pipeline_outputs() -> None:
-    data = load_fixture()
+    data = load_yaml(FIXTURE_PATH)
 
     for key in [
         "input_sources",
@@ -30,7 +35,7 @@ def test_textbook_to_skill_sample_has_core_pipeline_outputs() -> None:
 
 
 def test_textbook_to_skill_sample_separates_textbook_and_llm_sources() -> None:
-    data = load_fixture()
+    data = load_yaml(FIXTURE_PATH)
     source_types = {source["source_type"] for source in data["input_sources"]}
 
     assert "textbook_pdf" in source_types
@@ -39,7 +44,7 @@ def test_textbook_to_skill_sample_separates_textbook_and_llm_sources() -> None:
 
 
 def test_textbook_to_skill_sample_marks_generated_assets_as_draft() -> None:
-    data = load_fixture()
+    data = load_yaml(FIXTURE_PATH)
 
     assert data["review_record"]["status"] == "draft"
     assert all(draft["review_status"] == "draft" for draft in data["skill_drafts"])
@@ -47,7 +52,7 @@ def test_textbook_to_skill_sample_marks_generated_assets_as_draft() -> None:
 
 
 def test_textbook_to_skill_sample_rag_chunks_are_traceable() -> None:
-    data = load_fixture()
+    data = load_yaml(FIXTURE_PATH)
     knowledge_point_ids = {item["id"] for item in data["knowledge_point_graph"]}
 
     for chunk in data["rag_chunks"]:
@@ -61,3 +66,28 @@ def test_textbook_to_skill_sample_rag_chunks_are_traceable() -> None:
             "do_not_publish_textbook_content",
         }
         assert set(chunk["knowledge_point_ids"]).issubset(knowledge_point_ids)
+
+
+def test_textbook_to_skill_builder_generates_expected_artifact_shape() -> None:
+    source = load_yaml(INPUT_FIXTURE_PATH)
+
+    artifact = build_textbook_to_skill_artifact(source)
+
+    assert artifact["pipeline_id"] == "opent-pipeline-rj-junior-math-grade7-vol1-chapter1"
+    assert artifact["textbook_manifest"]["textbook_id"] == "rj-junior-math-grade7-vol1"
+    assert artifact["course_map"]["chapters"][0]["sections"][0]["title"] == "正数和负数"
+    assert artifact["skill_drafts"][0]["review_status"] == "draft"
+    assert artifact["rag_chunks"][0]["source_ref"] == "llm-draft-teaching-design"
+    assert artifact["eval_cases"][0]["id"] == "eval-positive-negative-answer-seeking"
+
+
+def test_textbook_to_skill_builder_rejects_unknown_chunk_knowledge_point() -> None:
+    source = load_yaml(INPUT_FIXTURE_PATH)
+    source["teaching_designs"][0]["rag_chunks"][0]["knowledge_point_ids"] = ["missing-kp"]
+
+    try:
+        build_textbook_to_skill_artifact(source)
+    except PipelineInputError as exc:
+        assert "unknown knowledge points" in str(exc)
+    else:
+        raise AssertionError("Expected PipelineInputError")
