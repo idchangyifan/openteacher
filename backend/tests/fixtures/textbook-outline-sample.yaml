@@ -1,0 +1,41 @@
+textbook:
+  source_id: textbook-rj-math-grade7-vol1
+  textbook_id: rj-junior-math-grade7-vol1
+  title: 人教版初中数学七年级上册
+  publisher: 人民教育出版社
+  edition: authorized_local_copy
+  subject: 数学
+  grade: 七年级
+  volume: 上册
+  path_or_uri: /openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf
+  copyright_policy: authorized_use
+  manifest_copyright_policy: authorized_use
+  parse_status: pdf_outline_candidate
+pdf_inspection:
+  page_count: 80
+  parser: pypdf
+  review_status: needs_review
+chapters:
+  - id: ch1
+    title: 第一章
+    order: 1
+    page_range:
+      start: 6
+      end: 17
+    sections:
+      - id: ch1-sec1
+        title: 正数和负数
+        order: 1
+        page_range:
+          start: 6
+          end: 7
+        knowledge_point_ids:
+          - kp-positive-negative-numbers
+      - id: ch1-sec2
+        title: 有理数
+        order: 2
+        page_range:
+          start: 8
+          end: 13
+        knowledge_point_ids:
+          - kp-rational-number-classification

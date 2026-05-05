@@ -4,10 +4,12 @@ import yaml
 
 from app.services.textbook_to_skill_pipeline import (
     PipelineInputError,
+    apply_outline_to_pipeline_source,
     build_textbook_to_skill_artifact,
 )
 
 INPUT_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "textbook-to-skill-input.yaml"
+OUTLINE_FIXTURE_PATH = Path(__file__).parent / "fixtures" / "textbook-outline-sample.yaml"
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "textbook-to-skill-sample.yaml"
 
 
@@ -40,7 +42,7 @@ def test_textbook_to_skill_sample_separates_textbook_and_llm_sources() -> None:
 
     assert "textbook_pdf" in source_types
     assert "llm_inferred" in source_types
-    assert data["textbook_manifest"]["copyright_policy"] == "do_not_publish_textbook_content"
+    assert data["textbook_manifest"]["copyright_policy"] == "authorized_use"
 
 
 def test_textbook_to_skill_sample_marks_generated_assets_as_draft() -> None:
@@ -64,6 +66,7 @@ def test_textbook_to_skill_sample_rag_chunks_are_traceable() -> None:
             "generated_review_required",
             "local_research_only",
             "do_not_publish_textbook_content",
+            "authorized_use",
         }
         assert set(chunk["knowledge_point_ids"]).issubset(knowledge_point_ids)
 
@@ -79,6 +82,23 @@ def test_textbook_to_skill_builder_generates_expected_artifact_shape() -> None:
     assert artifact["skill_drafts"][0]["review_status"] == "draft"
     assert artifact["rag_chunks"][0]["source_ref"] == "llm-draft-teaching-design"
     assert artifact["eval_cases"][0]["id"] == "eval-positive-negative-answer-seeking"
+
+
+def test_textbook_to_skill_builder_can_apply_pdf_outline_page_ranges() -> None:
+    source = load_yaml(INPUT_FIXTURE_PATH)
+    outline = load_yaml(OUTLINE_FIXTURE_PATH)
+
+    merged_source = apply_outline_to_pipeline_source(source, outline)
+    artifact = build_textbook_to_skill_artifact(merged_source)
+
+    chapter = artifact["course_map"]["chapters"][0]
+    sections = {section["id"]: section for section in chapter["sections"]}
+
+    assert artifact["textbook_manifest"]["copyright_policy"] == "authorized_use"
+    assert artifact["textbook_manifest"]["parse_status"] == "pdf_outline_candidate"
+    assert chapter["page_range"] == {"start": 6, "end": 17}
+    assert sections["ch1-sec1"]["page_range"] == {"start": 6, "end": 7}
+    assert sections["ch1-sec2"]["page_range"] == {"start": 8, "end": 13}
 
 
 def test_textbook_to_skill_builder_rejects_unknown_chunk_knowledge_point() -> None:

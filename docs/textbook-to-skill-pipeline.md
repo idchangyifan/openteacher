@@ -246,3 +246,12 @@ python3 scripts/generate-textbook-skill.py \
 输入草稿应包含教材 manifest、章节结构、知识点、教学设计草稿、RAG chunk 草稿和评测样例。脚本会补齐统一的 pipeline artifact 结构，并检查 skill draft 与 RAG chunk 是否引用了已声明的来源和知识点。
 
 后续 PDF/OCR 解析模块应产出同样的输入草稿结构，再交给该 builder，而不是让解析逻辑直接写最终 skill。
+
+如果已经有 PDF 目录/页码 inspection 结果，可以用 `--outline` 覆盖输入草稿中的章节和小节页码：
+
+```bash
+python3 scripts/generate-textbook-skill.py \
+  --input backend/tests/fixtures/textbook-to-skill-input.yaml \
+  --outline backend/tests/fixtures/textbook-outline-sample.yaml \
+  --output /tmp/textbook-to-skill-artifact.yaml
+```

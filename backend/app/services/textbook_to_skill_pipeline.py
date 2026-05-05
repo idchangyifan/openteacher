@@ -41,6 +41,65 @@ def build_textbook_to_skill_artifact(source: Mapping[str, Any]) -> dict[str, Any
     return artifact
 
 
+def apply_outline_to_pipeline_source(
+    source: Mapping[str, Any], outline: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Merge a PDF outline inspection draft into a pipeline source draft."""
+
+    merged = deepcopy(dict(source))
+    outline_textbook = outline.get("textbook")
+    if isinstance(outline_textbook, Mapping):
+        textbook = dict(merged.get("textbook") or {})
+        for key, value in outline_textbook.items():
+            if value not in (None, ""):
+                textbook[key] = deepcopy(value)
+        merged["textbook"] = textbook
+
+    source_chapters = {
+        chapter.get("id"): deepcopy(chapter)
+        for chapter in merged.get("chapters", []) or []
+        if isinstance(chapter, Mapping)
+    }
+    for outline_chapter in outline.get("chapters", []) or []:
+        if not isinstance(outline_chapter, Mapping):
+            continue
+        chapter_id = outline_chapter.get("id")
+        if not isinstance(chapter_id, str):
+            continue
+        chapter = source_chapters.get(chapter_id, {"id": chapter_id})
+        if outline_chapter.get("page_range") is not None:
+            chapter["page_range"] = deepcopy(outline_chapter["page_range"])
+
+        source_sections = {
+            section.get("id"): deepcopy(section)
+            for section in chapter.get("sections", []) or []
+            if isinstance(section, Mapping)
+        }
+        for outline_section in outline_chapter.get("sections", []) or []:
+            if not isinstance(outline_section, Mapping):
+                continue
+            section_id = outline_section.get("id")
+            if not isinstance(section_id, str):
+                continue
+            section = source_sections.get(section_id, {"id": section_id})
+            for key in ["title", "order", "knowledge_point_ids", "page_range"]:
+                if outline_section.get(key) is not None:
+                    section[key] = deepcopy(outline_section[key])
+            source_sections[section_id] = section
+
+        chapter["sections"] = sorted(
+            source_sections.values(),
+            key=lambda section: int(section.get("order") or 999),
+        )
+        source_chapters[chapter_id] = chapter
+
+    merged["chapters"] = sorted(
+        source_chapters.values(),
+        key=lambda chapter: int(chapter.get("order") or 999),
+    )
+    return merged
+
+
 def _build_input_sources(
     textbook: Mapping[str, Any],
     source: Mapping[str, Any],
@@ -118,6 +177,7 @@ def _build_course_map(textbook: Mapping[str, Any], chapters: list[Any]) -> dict[
                     "id": _required_str(section, "id"),
                     "title": _required_str(section, "title"),
                     "order": int(section.get("order") or len(sections) + 1),
+                    "page_range": _page_range(section.get("page_range")),
                     "knowledge_point_ids": list(section.get("knowledge_point_ids") or []),
                 }
             )

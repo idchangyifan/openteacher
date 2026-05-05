@@ -7,7 +7,7 @@ input_sources:
     path_or_uri: /root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf
     author: 人民教育出版社
     review_status: draft
-    copyright_policy: local_research_only
+    copyright_policy: authorized_use
   - id: llm-draft-teaching-design
     source_type: llm_inferred
     title: 第一章教学设计草稿
@@ -19,14 +19,14 @@ textbook_manifest:
   textbook_id: rj-junior-math-grade7-vol1
   title: 人教版初中数学七年级上册
   publisher: 人民教育出版社
-  edition: local_research_copy
+  edition: authorized_local_copy
   subject: 数学
   grade: 七年级
   volume: 上册
   source_refs:
     - textbook-rj-math-grade7-vol1
-  copyright_policy: do_not_publish_textbook_content
-  parse_status: manual_outline_draft
+  copyright_policy: authorized_use
+  parse_status: pdf_outline_candidate
 course_map:
   course_id: rj-junior-math-grade7-vol1
   chapters:
@@ -34,17 +34,23 @@ course_map:
       title: 第一章
       order: 1
       page_range:
-        start: null
-        end: null
+        start: 6
+        end: 17
       sections:
         - id: ch1-sec1
           title: 正数和负数
           order: 1
+          page_range:
+            start: 6
+            end: 7
           knowledge_point_ids:
             - kp-positive-negative-numbers
         - id: ch1-sec2
           title: 有理数
           order: 2
+          page_range:
+            start: 8
+            end: 13
           knowledge_point_ids:
             - kp-rational-number-classification
 knowledge_point_graph:
@@ -108,9 +114,9 @@ skill_drafts:
     evidence:
       - source_ref: textbook-rj-math-grade7-vol1
         page_range:
-          start: null
-          end: null
-        note: 页码待 PDF 解析确认
+          start: 6
+          end: 7
+        note: 来自 PDF outline inspection 的页码候选，仍需人工审核。
 rag_chunks:
   - id: rag-ch1-kp-positive-negative-summary
     source_ref: llm-draft-teaching-design
@@ -119,12 +125,12 @@ rag_chunks:
     knowledge_point_ids:
       - kp-positive-negative-numbers
     page_range:
-      start: null
-      end: null
+      start: 6
+      end: 7
     text: 正数和负数可用于表示相反意义的量。教学时应先让学生说出情境中的两个方向，再引入符号。
     text_role: llm_inferred
     review_status: draft
-    copyright_policy: generated_review_required
+    copyright_policy: authorized_use
   - id: rag-ch1-kp-positive-negative-method
     source_ref: llm-draft-teaching-design
     content_type: teacher_method
@@ -132,12 +138,12 @@ rag_chunks:
     knowledge_point_ids:
       - kp-positive-negative-numbers
     page_range:
-      start: null
-      end: null
+      start: 6
+      end: 7
     text: 如果学生把负数理解为没有，应追问这个数在情境中表示方向、位置还是数量变化。
     text_role: llm_inferred
     review_status: draft
-    copyright_policy: generated_review_required
+    copyright_policy: authorized_use
 eval_cases:
   - id: eval-positive-negative-answer-seeking
     knowledge_point_ids:
@@ -156,5 +162,5 @@ review_record:
   status: draft
   reviewer: ""
   notes:
-    - 第一版样例不含教材原文，页码待 PDF 解析后补齐。
+    - 已根据 PDF outline inspection 补入第一章页码候选，仍需人工审核。
   conflicts: []

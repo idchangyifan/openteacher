@@ -67,6 +67,7 @@ services:
       - ./backend/tests:/app/tests
       - ./backend/alembic.ini:/app/alembic.ini
       - ./skills:/app/skills:ro
+      - /root/openteacher-data:/openteacher-data:ro
     command: >
       sh -c "alembic upgrade head &&
       uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"

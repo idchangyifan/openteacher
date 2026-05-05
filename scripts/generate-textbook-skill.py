@@ -14,7 +14,10 @@ BACKEND_DIR = ROOT_DIR / "backend"
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from app.services.textbook_to_skill_pipeline import build_textbook_to_skill_artifact
+from app.services.textbook_to_skill_pipeline import (
+    apply_outline_to_pipeline_source,
+    build_textbook_to_skill_artifact,
+)
 
 
 def main() -> int:
@@ -22,6 +25,7 @@ def main() -> int:
         description="Generate a TextbookToTeachingSkill pipeline artifact from a structured draft."
     )
     parser.add_argument("--input", required=True, help="Input YAML or JSON draft path.")
+    parser.add_argument("--outline", help="Optional PDF outline inspection YAML or JSON path.")
     parser.add_argument("--output", required=True, help="Output YAML or JSON artifact path.")
     parser.add_argument(
         "--format",
@@ -32,6 +36,8 @@ def main() -> int:
     args = parser.parse_args()
 
     source = _load_mapping(Path(args.input))
+    if args.outline:
+        source = apply_outline_to_pipeline_source(source, _load_mapping(Path(args.outline)))
     artifact = build_textbook_to_skill_artifact(source)
     _write_artifact(Path(args.output), artifact, args.format)
     print(

@@ -668,6 +668,26 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 验证结果：`docker compose exec -T backend pytest` 通过 40 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 无输出。
 - 下一步建议：用户可先按文档生成 artifact，再用 `RAG_BACKEND=textbook_file` 重启 backend，通过 `/api/v1/teacher/chat` 问“支出 6 元怎么用正数和负数表示？”观察真实模型是否利用教材 chunk；后续再做 PDF 目录/页码解析。
 
+2026-05-05，用户查看 `TextbookToTeachingSkill` MVP 后询问下一步：
+
+- 当前本地 `main...origin/main [ahead 4]`，工作区干净。
+- 判断下一步应优先做“教材 PDF 目录/页码解析 MVP”，而不是先做前端、完整向量库或更多手写样例。
+- 目标是让 `TextbookToTeachingSkill` 从人工草稿推进到半自动：读取本地人教版七年级上册 PDF，抽取或人工校准第一章目录、章节页码和可引用页码范围，生成带页码 evidence 的 pipeline artifact。
+- 建议实现方式：先补稳定 PDF 解析依赖或容器内解析能力；新增 `scripts/inspect-textbook-pdf.py` / parser service，输出 `textbook_manifest` 和 chapter outline draft；再把该 outline 喂给现有 `build_textbook_to_skill_artifact()`。
+- 成功标准：`textbook-to-skill-sample.yaml` 中第一章、正数和负数、有理数等节点不再是 `page_range: null`，而有来自 PDF 的页码或至少可人工确认的页码候选；仍不提交 PDF 或大段教材原文。
+
+2026-05-05，用户确认教材已获得授权，并继续完善 `TextbookToTeachingSkill`：
+
+- 用户明确“不用考虑版权问题，我们是拿到授权了的”。后续不再把教材内容授权作为当前研发阻塞，但仍要保留来源、页码、审核状态和 evidence，保证教学资产可追溯、可审校。
+- `backend/pyproject.toml` 新增 `pypdf>=5.0.0`；`docker-compose.yml` 将 `/root/openteacher-data` 只读挂载到 backend 容器的 `/openteacher-data`，用于解析本地授权教材。
+- 新增 `backend/app/services/textbook_pdf_parser.py` 和 `scripts/inspect-textbook-pdf.py`，第一版支持人教版七年级上册第一章 preset，用 `pypdf` 抽文本并按小节关键词顺序生成页码候选。
+- 新增 `backend/tests/test_textbook_pdf_parser.py`，覆盖顺序匹配，避免目录页关键词导致小节页码倒挂。
+- 新增 `apply_outline_to_pipeline_source()`，并给 `scripts/generate-textbook-skill.py` 增加 `--outline`，可把 PDF inspection 的章节/小节页码合并进现有 pipeline source。
+- 新增 `backend/tests/fixtures/textbook-outline-sample.yaml`；更新 `textbook-to-skill-input.yaml` 和 `textbook-to-skill-sample.yaml`，将第一章样例改为授权状态，并填入 PDF inspection 页码候选：第一章 6-17 页，正数和负数 6-7 页，有理数 8-13 页；数轴 14-15 页、相反数 16-17 页、绝对值 18 页起已在真实 PDF smoke 输出中观察到，后续可扩展进完整第一章 skill。
+- 真实 PDF smoke：在 backend 容器中读取 `/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf` 前 80 页，成功输出第一章页码候选。
+- 验证结果：`docker compose build backend` 成功；`docker compose up -d --force-recreate backend` 成功；`docker compose exec -T backend pytest` 通过 43 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`python3 -m py_compile scripts/inspect-textbook-pdf.py scripts/generate-textbook-skill.py` 通过；`git diff --check` 无输出。
+- 下一步建议：把第一章剩余小节（数轴、相反数、绝对值、有理数运算等）补进 `knowledge_point_graph` 和 `skill_drafts`，并让 PDF inspection 生成的 outline 覆盖更多小节；然后生成第一章多个知识点 skill 草稿，而不是只停留在“正数和负数”。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。

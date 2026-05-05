@@ -7,14 +7,14 @@ textbook:
   textbook_id: rj-junior-math-grade7-vol1
   title: 人教版初中数学七年级上册
   publisher: 人民教育出版社
-  edition: local_research_copy
+  edition: authorized_local_copy
   subject: 数学
   grade: 七年级
   volume: 上册
   path_or_uri: /root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf
-  copyright_policy: local_research_only
-  manifest_copyright_policy: do_not_publish_textbook_content
-  parse_status: manual_outline_draft
+  copyright_policy: authorized_use
+  manifest_copyright_policy: authorized_use
+  parse_status: pdf_outline_candidate
 chapters:
   - id: ch1
     title: 第一章
