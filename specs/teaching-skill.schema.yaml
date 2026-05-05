@@ -41,7 +41,8 @@ fields:
       - knowledge
       - teacher_style
       - task
-    description: Core skills define universal teacher behavior; knowledge skills define content-specific teaching strategy.
+      - generator
+    description: Core skills define universal teacher behavior; knowledge skills define content-specific teaching strategy; generator skills produce reviewable teaching assets rather than directly teaching students.
 
   target:
     type: object

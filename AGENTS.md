@@ -636,6 +636,18 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 推荐顺序：先写 `docs/textbook-to-skill-pipeline.md`，明确 `rag_chunks` schema；再用七年级上册第一章生成本地 JSON/YAML 样例；随后实现一个文件型/内存型 `TextbookRagService` 用于本地检索 smoke；最后再决定是否接 MongoDB Atlas Vector Search、Qdrant 或其他向量存储。
 - 重要原则：先把“教什么”和“怎么教”的资产边界做好，不要为了一开始能向量检索而把教材原文、版权内容或存储选择过早绑定进仓库和业务逻辑。
 
+2026-05-05，本次提交 Planner v1 并开始构建 `TextbookToTeachingSkill`：
+
+- 已检查此前未提交改动，确认其主要内容是 Planner v1 接入 harness：新增 `backend/app/services/planner.py` 和 `backend/tests/test_planner.py`，`AgentHarness` 会把 planner 决策注入 OpenAI、Doubao 和 DeepAgents prompt；相关架构文档也已更新。
+- 提交前验证：`docker compose exec -T backend pytest` 通过 30 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 无输出；敏感信息扫描只发现配置名、空占位符和测试 token，没有真实密钥。
+- 已提交 `8d49d7d feat: add planner to teaching harness`；当前本地 `main` 相对 `origin/main` ahead。
+- 已新增 `docs/textbook-to-skill-pipeline.md`，定义 `TextbookToTeachingSkill` 的输入、输出、教材/教案/LLM 推断合并规则、RAG chunks 边界、Planner 关系和七上第一章试点范围。
+- 已新增 `specs/textbook-to-skill-pipeline.schema.yaml`，作为生成型流水线产物 schema 草案；同时在 `specs/teaching-skill.schema.yaml` 和 `docs/skill-authoring.md` 中加入 `generator` / 生成型技能说明。
+- 已新增 `backend/tests/fixtures/textbook-to-skill-sample.yaml`，用人教版七年级上册第一章做不含教材原文的样例产物，覆盖 `input_sources`、`textbook_manifest`、`course_map`、`knowledge_point_graph`、`skill_drafts`、`rag_chunks`、`eval_cases` 和 `review_record`。
+- 已新增 `backend/tests/test_textbook_to_skill_pipeline.py`，验证样例产物有核心输出、区分教材与 LLM 来源、生成资产默认 draft、RAG chunks 可追溯。
+- 验证结果：`docker compose exec -T backend pytest` 通过 34 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 无输出。
+- 下一步建议：实现离线生成脚本或服务骨架，先读取本地教材 manifest/人工章节草稿，输出上述 pipeline YAML/JSON；随后再补 PDF 解析依赖和文件型 `TextbookRagService` smoke。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。

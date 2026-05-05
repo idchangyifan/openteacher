@@ -1,0 +1,147 @@
+schema_version: 0.1.0
+description: Schema draft for TextbookToTeachingSkill pipeline artifacts.
+
+required_fields:
+  - pipeline_id
+  - version
+  - input_sources
+  - textbook_manifest
+  - course_map
+  - knowledge_point_graph
+  - skill_drafts
+  - rag_chunks
+  - eval_cases
+  - review_record
+
+fields:
+  pipeline_id:
+    type: string
+    description: Unique id for this generation pipeline run or template.
+
+  version:
+    type: string
+    description: Semantic version for the artifact format.
+
+  input_sources:
+    type: list
+    item_fields:
+      id: string
+      source_type:
+        type: enum
+        values:
+          - textbook_pdf
+          - teacher_lesson_plan
+          - teacher_notes
+          - classroom_transcript
+          - llm_inferred
+      title: string
+      path_or_uri: string
+      author: string
+      review_status: string
+      copyright_policy: string
+
+  textbook_manifest:
+    type: object
+    fields:
+      textbook_id: string
+      title: string
+      publisher: string
+      edition: string
+      subject: string
+      grade: string
+      volume: string
+      source_refs: list
+      copyright_policy: string
+      parse_status: string
+
+  course_map:
+    type: object
+    fields:
+      course_id: string
+      chapters:
+        type: list
+        item_fields:
+          id: string
+          title: string
+          order: integer
+          page_range: object
+          sections: list
+
+  knowledge_point_graph:
+    type: list
+    item_fields:
+      id: string
+      name: string
+      chapter_id: string
+      prerequisites: list
+      unlocks: list
+      difficulty: string
+      mastery_criteria: list
+
+  skill_drafts:
+    type: list
+    item_fields:
+      id: string
+      target_knowledge_point_ids: list
+      source_refs: list
+      review_status: string
+      inferred_fields: list
+      teaching_plan: object
+      evidence: list
+
+  rag_chunks:
+    type: list
+    item_fields:
+      id: string
+      source_ref: string
+      content_type:
+        type: enum
+        values:
+          - concept_summary
+          - definition
+          - example
+          - exercise
+          - teacher_method
+          - misconception
+          - review_prompt
+      chapter_id: string
+      knowledge_point_ids: list
+      page_range: object
+      text: string
+      text_role:
+        type: enum
+        values:
+          - source_excerpt
+          - paraphrase
+          - summary
+          - teacher_authored
+          - llm_inferred
+      review_status: string
+      copyright_policy: string
+
+  eval_cases:
+    type: list
+    item_fields:
+      id: string
+      knowledge_point_ids: list
+      student_message: string
+      expected_behaviors: list
+      forbidden_behaviors: list
+      ideal_teacher_move: string
+      scoring_notes: string
+
+  review_record:
+    type: object
+    fields:
+      status:
+        type: enum
+        values:
+          - draft
+          - needs_review
+          - approved_local
+          - certified
+          - rejected
+          - deprecated
+      reviewer: string
+      notes: list
+      conflicts: list
