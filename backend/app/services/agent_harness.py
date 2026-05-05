@@ -6,6 +6,7 @@ from app.services.deepagents_runtime import DeepAgentsTeachingRuntime
 from app.services.llm_provider import LlmProvider, MockTeacherProvider, TeacherPrompt, get_llm_provider
 from app.services.lesson_store import LessonRepository, get_lesson_repository
 from app.services.memory import MemoryService, get_memory_service
+from app.services.planner import PlannerService, get_planner_service
 from app.services.rag import RagService, get_rag_service
 from app.services.skill_registry import SkillRegistry, get_skill_registry
 
@@ -21,6 +22,7 @@ class AgentHarness:
         llm_provider: LlmProvider,
         lesson_repository: LessonRepository,
         deepagents_runtime: DeepAgentsTeachingRuntime,
+        planner_service: PlannerService,
     ) -> None:
         self.memory_service = memory_service
         self.rag_service = rag_service
@@ -28,6 +30,7 @@ class AgentHarness:
         self.llm_provider = llm_provider
         self.lesson_repository = lesson_repository
         self.deepagents_runtime = deepagents_runtime
+        self.planner_service = planner_service
 
     def reply(self, request: TeacherChatRequest) -> TeacherChatResponse:
         effective_subject = self._infer_effective_subject(
@@ -44,6 +47,18 @@ class AgentHarness:
 
         skills = self.skill_registry.pick_skills(request.context.grade, effective_subject)
         memory = self.memory_service.get_student_summary(request.context.student_id)
+        lesson_detail = (
+            self.lesson_repository.get_session_detail(request.context.session_id)
+            if request.context.session_id
+            else None
+        )
+        planner_decision = self.planner_service.plan(
+            request,
+            effective_subject=effective_subject,
+            skills=skills,
+            memory_summary=memory,
+            lesson_detail=lesson_detail,
+        )
         retrieved_context = self.rag_service.retrieve(request.message)
         prompt = TeacherPrompt(
             message=request.message,
@@ -63,6 +78,7 @@ class AgentHarness:
             core_skill_guidance=skills.core.guidance,
             knowledge_skill_name=skills.knowledge.name,
             knowledge_skill_guidance=skills.knowledge.guidance,
+            planner_context=planner_decision.to_prompt_context(),
         )
         reply = self._generate_reply(request, prompt)
 
@@ -123,4 +139,5 @@ def get_agent_harness() -> AgentHarness:
             memory_service=memory_service,
             lesson_repository=lesson_repository,
         ),
+        planner_service=get_planner_service(),
     )

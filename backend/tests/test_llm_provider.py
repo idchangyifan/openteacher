@@ -22,6 +22,7 @@ def make_prompt(message: str = "2(x - 3) = 10，我不会下一步") -> TeacherP
         core_skill_guidance="不要给可抄写完整答案；要求学生表达当前步骤。",
         knowledge_skill_name="初中数学一元一次方程严格引导 Skill",
         knowledge_skill_guidance="移项要检查变号；最后代入检验。",
+        planner_context="teaching_mode=guided_practice\nlearner_state=genuinely_stuck",
     )
 
 
@@ -93,3 +94,4 @@ def test_doubao_chat_completions_provider_system_message_contains_skill_guidance
     assert "不要给可抄写完整答案" in system_message
     assert "移项要检查变号" in system_message
     assert "先明确确认正确" in system_message
+    assert "teaching_mode=guided_practice" in system_message

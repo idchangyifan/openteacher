@@ -38,10 +38,13 @@ app/
 1. 学生从 React 应用发送消息。
 2. 后端通过 `/api/v1/teacher/chat` 接收消息。
 3. `AgentHarness` 加载学生上下文、技能上下文、记忆摘要和教学边界。
-4. 默认 runtime 使用 provider 生成教师回复；`AGENT_RUNTIME=deepagents` 时可选尝试 DeepAgents runtime，并在失败时回退 provider。
-5. 如果绑定 lesson session，课堂消息会写入 lesson store；`LESSON_STORE_BACKEND=mongodb` 时持久化到 MongoDB。
-6. 记忆服务记录轻量学习事件。
-7. 前端展示教师回复、当前技能、课堂历史和记忆事件。
+4. Planner v1 输出教学模式、学生状态、下一步教师目标、记忆检索计划、技能选择计划和工具计划。
+5. 默认 runtime 使用 provider 生成教师回复；`AGENT_RUNTIME=deepagents` 时可选尝试 DeepAgents runtime，并在失败时回退 provider。
+6. Executor 当前由 provider 或 DeepAgents adapter 承担，生成回复时会收到 Planner 决策。
+7. Verifier 仍待实现；当前只靠 prompt 和测试约束基础行为。
+8. 如果绑定 lesson session，课堂消息会写入 lesson store；`LESSON_STORE_BACKEND=mongodb` 时持久化到 MongoDB。
+9. 记忆服务记录轻量学习事件。
+10. 前端展示教师回复、当前技能、课堂历史和记忆事件。
 
 ## 存储边界
 

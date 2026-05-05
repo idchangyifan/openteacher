@@ -156,7 +156,8 @@ class DeepAgentsTeachingRuntime:
 
     def _build_system_prompt(self, prompt: TeacherPrompt) -> str:
         return (
-            "你是 OpenTeacher 的主授课 agent，由 LangChain DeepAgents harness 执行。"
+            "你是 OpenTeacher harness agent 的 Executor，由 LangChain DeepAgents runtime 执行。"
+            "Planner 已经给出本轮结构化教学计划；你必须按计划执行，不能自行把 OpenTeacher 简化成解题 bot。"
             "OpenTeacher 是真正的老师，主动授课是主轴，被动答疑只是其中一种能力。"
             "每轮先判断当前模式：active_lesson、qa、diagnostic_check、guided_practice、"
             "review 或 lesson_summary。不要把所有输入都当成一元一次方程解题。"
@@ -171,7 +172,8 @@ class DeepAgentsTeachingRuntime:
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"
             f"教师核心规则：\n{prompt.effective_core_skill_guidance}\n"
             f"知识点 Skill：{prompt.effective_knowledge_skill_name}\n"
-            f"知识点规则：\n{prompt.effective_knowledge_skill_guidance}"
+            f"知识点规则：\n{prompt.effective_knowledge_skill_guidance}\n"
+            f"Planner 决策：\n{prompt.planner_context or '未提供结构化 planner 决策。'}"
         )
 
     def _build_user_message(self, request: TeacherChatRequest, prompt: TeacherPrompt) -> str:
@@ -182,6 +184,7 @@ class DeepAgentsTeachingRuntime:
                 f"session_id：{request.context.session_id or 'none'}",
                 f"记忆摘要：{prompt.memory_summary}",
                 f"检索上下文：{prompt.retrieved_context}",
+                f"Planner 决策：{prompt.planner_context or 'none'}",
                 f"学生消息：{request.message}",
             ]
         )
@@ -213,4 +216,3 @@ class DeepAgentsTeachingRuntime:
                     return value.strip()
 
         raise ValueError("DeepAgents result did not contain a teacher reply")
-

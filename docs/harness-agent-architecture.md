@@ -4,6 +4,16 @@ OpenTeacher 的 harness agent 是主控教师智能体，不是简单的 LLM pro
 
 本架构长期采用 LangChain DeepAgents / LangGraph 作为 agent runtime 基础，但 OpenTeacher 的教师职责、记忆策略、guardrails、skill 生态和评测观测必须定义在项目自己的领域层。
 
+## 关键边界
+
+这里的 harness agent 指 OpenTeacher 自己的主控教师架构，而不是某个第三方库的薄封装。
+
+- DeepAgents / LangGraph 是 runtime：负责执行 agent 图、工具调用和后续 subagent 编排。
+- OpenTeacher harness 是产品主控层：负责 planner、executor、verifier、记忆策略、guardrails、skill 选择、课堂状态和可观测性。
+- planner / executor / verifier 是最小三层结构。即使第一阶段规则很轻，也必须显式存在，不能把所有判断塞进一个 system prompt。
+- LangSmith 是调试和追踪层，不是教学决策来源；trace 应服务于复盘“为什么这样教”。
+- Skill 广场可以二期建设，但 runtime selection、schema validation、来源和版本字段必须提前预留。
+
 ## 目标
 
 harness agent 应该让 OpenTeacher 能够：
@@ -234,22 +244,22 @@ LangSmith 用途：
 
 当前状态：
 
-- `backend/app/services/agent_harness.py` 仍是单轮 orchestration。
+- `backend/app/services/agent_harness.py` 仍是单轮 orchestration，但已开始接入结构化 planner 决策。
+- `backend/app/services/planner.py` 是第一版规则 Planner，负责输出教学模式、学生状态、下一步教学目标、记忆检索计划、技能选择计划和工具计划。
 - `backend/app/services/deepagents_runtime.py` 是第一版 DeepAgents adapter。
 - `backend/app/services/lesson_store.py` 已有 Mongo-backed lesson history。
 - `MemoryService` 仍是 mock summary。
 - Verifier 尚未实现。
-- Planner 尚未独立实现。
 
-这意味着当前系统还不是完整 harness agent。`deepagents_runtime.py` 只是接入点。
+这意味着当前系统仍不是完整 harness agent。`deepagents_runtime.py` 只是 runtime 接入点，`planner.py` 只是第一块骨架；后续还必须补真实记忆、verifier、guardrails 服务和 observability。
 
 ## 分阶段实现
 
 ### Phase 1：骨架
 
 - 定义 planner/executor/verifier 数据结构。
-- 在 `AgentHarness` 中显式产出 teaching mode 和 learner state。
-- DeepAgents runtime 使用 planner 输出，而不是直接吃 raw prompt。
+- 在 `AgentHarness` 中显式产出 teaching mode 和 learner state。（已完成 Planner v1）
+- DeepAgents runtime 使用 planner 输出，而不是直接吃 raw prompt。（已完成 Planner v1 注入）
 - Memory tools 接真实 `memory_cards`。
 
 ### Phase 2：记忆闭环
@@ -288,4 +298,3 @@ LangSmith 用途：
 3. Verifier 的第一版规则检查。
 
 不要继续把智能提升寄托在单个 prompt 或单个知识点 skill 上。
-

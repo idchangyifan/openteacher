@@ -541,6 +541,101 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 更新 `docs/memory-architecture.md`，反向链接主控 harness 架构。
 - 重要判断：`backend/app/services/deepagents_runtime.py` 是接入点，不是完整 harness agent。下一步应优先实现 planner 数据结构、真实 `memory_cards` 检索工具和 verifier 第一版规则，而不是继续堆单 prompt。
 
+2026-05-03，已开始把 harness agent 三层架构落到代码：
+
+- 新增 `backend/app/services/planner.py`，实现 Planner v1 规则骨架，显式产出 `teaching_mode`、`learner_state`、`next_teacher_goal`、`memory_retrieval_plan`、`skill_selection_plan`、`tool_plan` 和 guardrail notes。
+- `AgentHarness` 现在会先调用 Planner，再把 planner 决策注入 `TeacherPrompt`；OpenAI、Doubao 和 DeepAgents runtime 都会收到结构化 Planner 决策。
+- `DeepAgentsTeachingRuntime` 的角色文案已调整为 OpenTeacher harness 的 Executor，由 DeepAgents runtime 执行；文档中进一步明确 DeepAgents / LangGraph 是 runtime，OpenTeacher harness 才是产品主控层。
+- 新增 `backend/tests/test_planner.py`，覆盖掌握信号、主动授课请求、直接要答案和结构化 prompt context；更新 LLM provider 与 DeepAgents runtime 测试，确认 planner 决策进入 prompt。
+- 更新 `docs/harness-agent-architecture.md`：新增关键边界，明确 harness agent 不是第三方库薄封装；planner/executor/verifier 是最小三层，LangSmith 是调试追踪层，Skill 广场可二期但接口要预留。
+- 更新 `docs/architecture.md` 当前运行流程，加入 Planner v1、Executor 当前边界和 Verifier 待实现状态。
+- 验证结果：`docker compose exec -T backend pytest` 通过 30 项；`docker compose exec -T backend ruff check app tests alembic` 通过。
+- 未完成事项：Verifier 仍未实现；memory tools 仍未接真实 `memory_cards`；LangSmith tracing 尚未配置；Skill 广场还只是架构预留。
+- 下一步建议：优先做 Verifier v1 规则检查，固定“答对先确认、不机械要求步骤、不能给可抄答案、主动授课不能退化成答疑、隐私/安全边界”等质量门；随后做 MongoDB `memory_cards` 和真实记忆检索。
+
+2026-05-04，本次按用户要求查看 `agent.md`/记忆文件并确认项目进度：
+
+- 已按约定先读取 `AGENTS.md`，并查看最新尾部记录、`git status --short --branch` 和 `git log --oneline -8`。
+- 当前 `main...origin/main` 无 ahead/behind 提示，但工作区存在未提交改动：`AGENTS.md`、`backend/app/services/agent_harness.py`、`backend/app/services/deepagents_runtime.py`、`backend/app/services/llm_provider.py`、`backend/tests/test_deepagents_runtime.py`、`backend/tests/test_llm_provider.py`、`docs/architecture.md`、`docs/harness-agent-architecture.md`，以及新增 `backend/app/services/planner.py`、`backend/tests/test_planner.py`。
+- 最近已提交到 git 的进度包括：harness agent 架构文档、DeepAgents runtime 可选接入、MongoDB 课堂历史落库、课堂历史基础和答对识别修复。
+- 当前最新未提交方向是 Planner v1：把 OpenTeacher harness agent 从简单 provider 调用推进到 planner/executor/verifier 三层架构的第一步；Verifier、真实 `memory_cards` 检索、LangSmith tracing 和 Skill 广场仍待实现。
+- 本次未改业务代码、未运行测试；只补充本记录。
+
+2026-05-04，用户指出当前教师对话仍然“迷、没重点”，并提出是否应提供教材、按教材章节做 skill 和 RAG：
+
+- 重要产品判断：问题不只是 prompt 不够好，而是老师缺少教材章节、课程目标、本节课边界、知识先后顺序和评价标准，因此对话容易像泛泛答疑，缺少严谨教师的授课主线。
+- 用户倾向：如果提供教材，应围绕教材章节构建教学能力；教材内容可拆成章节/小节/知识点/例题/练习/课后题，分别进入 Teaching Skill 和 RAG。
+- 建议架构方向：教材章节结构用于课程地图和 lesson plan；Teaching Skill 负责“怎么教”某章节/知识点，包括目标、重难点、前置知识、常见误区、诊断题、讲解路径、练习设计和掌握标准；RAG 负责“教什么”的可引用教材内容、例题、定义、课文片段、题目和解析证据。
+- 下一步建议：先选择一本教材的一章作为试点，建立 `course -> chapter -> lesson -> knowledge_point` 的内容结构，抽取一个章节 skill，并接入 RAG 检索；再让 Planner 根据学生当前位置选择本节课目标和下一步教学动作。
+
+2026-05-04，已查看用户提供的教材仓库 `https://github.com/TapXWorld/ChinaTextbook`：
+
+- 仓库 README 说明其目标是集中小初高、大学 PDF 教材资源；GitHub 页面显示约 70k stars、15k forks，顶层目录包含 `小学`、`初中`、`高中`、`大学`、五四学制目录和练习题目录。
+- 未发现 GitHub license API 返回明确开源许可证；因此该仓库可作为本地研发试点/目录发现来源，但公开发布、再分发、商用或把教材原文提交入本仓库前必须处理版权授权问题。
+- 目录结构适合课程地图抽取：例如 `初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf`，同级还有七下；`初中/物理/人教版-人民教育出版社/八年级/义务教育教科书·物理八年级上册.pdf`、八下；`初中/英语/人教版-人民教育出版社/七年级/义务教育教科书·英语七年级上册.pdf`、七下。
+- 通过 GitHub API 查看目录即可，不建议整仓 clone；README 提到部分超过 GitHub 文件大小限制的 PDF 会拆成 `.pdf.1`、`.pdf.2` 等片段，需要合并。本次查看的人教版初中数学七上/七下、物理八上/八下、英语七上/七下均显示为单个 PDF，大小约 9-18MB。
+- 尝试临时下载数学七上 PDF 到 `/tmp` 查看内容，raw 下载较慢并中止；未把教材内容加入仓库。
+- 下一步建议：先围绕 `初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf` 做一章试点，优先抽目录、章节结构和一章内容，生成 `course_map`、章节 Teaching Skill 和 RAG chunks；不要全量下载或提交 PDF。
+
+2026-05-04，已接收并整理用户上传的人教版初中数学教材：
+
+- 用户明确只需要 `初中/数学/人教版-人民教育出版社`，不需要其他版本教材。
+- 用户上传的文件为 `/root/openteacher-data/textbooks/ChinaTextbook/初中/数学/middle_school_math.zip`，大小约 53MB。
+- zip 内包含 6 个 PDF 和 6 个 `__MACOSX/._*` 元数据文件；zip 内中文文件名显示为乱码，但 PDF 文件大小与仓库中人教版初中数学六册一致。
+- 已用 Python 标准库解压并按规范路径重命名到：
+  - `/root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf`，9975261 bytes
+  - `/root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级下册.pdf`，15097728 bytes
+  - `/root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/八年级/义务教育教科书·数学八年级上册.pdf`，9055875 bytes
+  - `/root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/八年级/义务教育教科书·数学八年级下册.pdf`，13183195 bytes
+  - `/root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/九年级/义务教育教科书·数学九年级上册.pdf`，8925172 bytes
+  - `/root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/九年级/义务教育教科书·数学九年级下册.pdf`，9688920 bytes
+- 已确认六个 PDF 文件头分别为 `%PDF-1.6` 或 `%PDF-1.7`。
+- 环境观察：服务器没有 `unzip`、`pdfinfo`、`pdftotext`、`pypdf/PyPDF2/pdfplumber/fitz`；尝试 `apt-get install subversion` 因系统代理链路返回 502 失败；尝试安装 `pypdf` 到独立 target 也被全局 pip 代理拖慢并中止。后续 PDF 解析建议通过 Docker 容器、项目 dev 依赖，或先补一个稳定的本地教材处理环境。
+- 下一步建议：先做教材利用方案和最小 pipeline：为人教版初中数学生成 `textbook_manifest`，抽取目录和章节页码，再选七年级上册一章做 `course_map`、章节 Teaching Skill、RAG chunks 和主动授课评测样例。
+
+2026-05-04，用户提出教材抽取与教学设计本身也应成为一个 Skill：
+
+- 已按约定先读取 `AGENTS.md`；本次主要做可行性研判，不开始动业务代码。
+- 重要产品判断：从教材抽取知识点并确定如何教学是可行的，而且应该被设计成一种专门的 Skill，暂命名方向可为 `TextbookToTeachingSkill` / `教材到教学技能生成 Skill`。
+- 该 Skill 不应只做 PDF 摘要，而应产出可教学资产：教材 manifest、目录/章节结构、知识点图谱、课程目标、前置知识、重难点、常见误区、诊断问题、讲解路径、课堂练习、掌握标准、课后任务，以及可进入 RAG 的教材 chunks。
+- 该 Skill 应作为“技能生产流水线”运行：上传教材 -> 解析版面和目录 -> 抽取章节和知识点 -> 生成章节/知识点 Teaching Skill 草稿 -> 建立 RAG 索引 -> 生成评测样例 -> 人工审核/修订 -> 发布为官方/认证/本地 Skill。
+- 需要明确版权边界：教材 PDF 和原文 chunks 不应提交进本仓库；公开发布或再分发教材内容前必须处理授权。研发阶段可把用户上传教材放在 `/root/openteacher-data` 等本地数据目录。
+- 需要明确质量边界：自动抽取结果不能直接等同于可靠教学方案，必须支持来源引用、人工审核、版本管理、评测回归和失败样例修正。
+- 下一步建议：先写一份 `docs/textbook-to-skill-pipeline.md` 规格，定义输入/输出、数据结构、审核流程、与 Teaching Skill schema/RAG/Planner 的关系；再用人教版初中数学七年级上册一章做最小闭环试点。
+
+2026-05-04，开始共同设计 `TextbookToTeachingSkill`：
+
+- 已重新读取 `AGENTS.md`、`specs/teaching-skill.schema.yaml` 和 `docs/skill-authoring.md`，确认当前 schema 只有 `core`、`knowledge`、`teacher_style`、`task` 四种 skill 类型。
+- 设计判断：`TextbookToTeachingSkill` 不应被当作普通 `knowledge` skill，而应作为“元技能/生产型技能”，负责把教材和教师输入转化为可审核、可评测、可发布的知识点 Teaching Skill、课程地图和 RAG 资产。
+- 初步分层建议：教材解析层负责 PDF/图片/OCR/公式/版面；课程结构层负责 book/chapter/section/lesson/knowledge_point；教学设计层负责目标、前置知识、重难点、误区、诊断、讲解路径、练习、掌握标准；审核发布层负责人审、版本、来源引用、版权边界和评测。
+- 关键原则：生成物必须保留教材来源和页码证据；教材原文和 PDF 不提交仓库；自动生成的 skill 默认是 draft，必须经过人工审核或评测门槛后才能进入官方/认证技能。
+- 后续 schema 可能需要新增 `generator` / `pipeline` 类 skill，或单独建立 `skill_generation_pipeline` schema，而不是把生成流程硬塞进现有 Teaching Skill schema。
+
+2026-05-04，用户补充教师教案输入口：
+
+- `TextbookToTeachingSkill` 不能只从教材抽取，也必须保留“老师提供教案/教学设计/课堂经验”的输入口。
+- 教材主要提供知识结构、原文证据、例题和练习；教师教案主要补充“某个知识点应该如何教学”，包括导入方式、讲解顺序、提问设计、常见学生反应、纠错方法、练习安排、板书/类比/活动设计等。
+- 教案应更新 Teaching Skill 的教学方法层，而不是无审查地覆盖教材事实层；如果教案与教材知识点、定义或例题解释冲突，应标记为 `needs_review` 交给人工审核。
+- 后续设计中应支持多来源合并：教材抽取草稿 + 教师教案增强 + 名师经验/校本策略增强；每条教学策略应保留来源、作者/审核状态、适用范围和版本。
+
+2026-05-04，`TextbookToTeachingSkill` 第一版设计共识：
+
+- 该能力是 OpenTeacher 的核心“技能工厂”，定位为 generator/pipeline skill：把教材、LLM 教学设计和未来教师教案转成课程地图、知识点 Teaching Skill、RAG 证据库和评测样例。
+- 第一版输入源可以先只有教材 PDF 与 LLM 推断；教师教案、课堂实录、老师笔记、校本策略作为可选增强输入预留。
+- 核心数据流：`textbook_manifest` -> `course_map` -> `knowledge_point_graph` -> `skill_draft` -> `rag_chunks` -> `eval_cases` -> `review_record` -> `published_skill`。
+- 事实层与方法层必须分离：教材事实、定义、例题和练习必须带页码/来源；教学目标、讲解路径、常见误区和练习策略可以由 LLM 推断，但默认标记为 `llm_inferred`、`draft` 和可审核。
+- 生成的 Teaching Skill 草稿建议包含：适用范围、学习目标、前置知识、核心概念、讲解顺序、诊断问题、常见误区、纠错策略、例题路径、分层练习、掌握标准、复习安排、评测样例和来源证据。
+- 审核状态建议至少包括：`draft`、`needs_review`、`approved_local`、`certified`、`rejected`、`deprecated`。公开/官方技能必须经过审核与评测，不应由模型直接发布。
+- 最小试点建议：人教版初中数学七年级上册第一章，先做离线 pipeline 规格与样例产物，不急着做上传页面；成功标准是能生成一章 course map、1-3 个知识点 skill 草稿、RAG chunks 和主动授课评测样例。
+
+2026-05-05，关于 `TextbookToTeachingSkill` 是否要先建 RAG：
+
+- 已按约定重新读取 `AGENTS.md`，并查看 `backend/app/services/rag.py`、RAG 相关文档和当前 `git status --short`。
+- 当前 `RagService` 仍是 mock 边界，只返回固定“一元一次方程”样板上下文；`settings.rag_backend` 存在但未接真实后端。Qdrant 只是 Compose profile 预留，不应立刻变成硬依赖。
+- 判断：不需要先建完整线上 RAG 系统或向量库；但必须先定义“RAG 资产格式”和离线 `rag_chunks` 产物。`TextbookToTeachingSkill` 的第一版输出应包含可检索 chunk、来源页码、内容类型、知识点关联和版权/审核状态。
+- 推荐顺序：先写 `docs/textbook-to-skill-pipeline.md`，明确 `rag_chunks` schema；再用七年级上册第一章生成本地 JSON/YAML 样例；随后实现一个文件型/内存型 `TextbookRagService` 用于本地检索 smoke；最后再决定是否接 MongoDB Atlas Vector Search、Qdrant 或其他向量存储。
+- 重要原则：先把“教什么”和“怎么教”的资产边界做好，不要为了一开始能向量检索而把教材原文、版权内容或存储选择过早绑定进仓库和业务逻辑。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。

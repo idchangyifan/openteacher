@@ -20,6 +20,7 @@ class TeacherPrompt:
     core_skill_guidance: str = ""
     knowledge_skill_name: str = ""
     knowledge_skill_guidance: str = ""
+    planner_context: str = ""
 
     @property
     def effective_core_skill_name(self) -> str:
@@ -161,7 +162,8 @@ class OpenAIResponsesProvider:
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"
             f"教师核心规则：\n{prompt.effective_core_skill_guidance}\n"
             f"知识点 Skill：{prompt.effective_knowledge_skill_name}\n"
-            f"知识点教学规则：\n{prompt.effective_knowledge_skill_guidance}"
+            f"知识点教学规则：\n{prompt.effective_knowledge_skill_guidance}\n"
+            f"Planner 决策：\n{prompt.planner_context or '未提供结构化 planner 决策。'}"
         )
 
     def _build_input(self, prompt: TeacherPrompt) -> str:
@@ -171,6 +173,7 @@ class OpenAIResponsesProvider:
                 f"科目：{prompt.subject}",
                 f"学生记忆摘要：{prompt.memory_summary}",
                 f"检索到的教学上下文：{prompt.retrieved_context}",
+                f"Planner 决策：{prompt.planner_context or 'none'}",
                 f"学生消息：{prompt.message}",
             ]
         )
@@ -241,7 +244,8 @@ class DoubaoChatCompletionsProvider:
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"
             f"教师核心规则：\n{prompt.effective_core_skill_guidance}\n"
             f"知识点 Skill：{prompt.effective_knowledge_skill_name}\n"
-            f"知识点教学规则：\n{prompt.effective_knowledge_skill_guidance}"
+            f"知识点教学规则：\n{prompt.effective_knowledge_skill_guidance}\n"
+            f"Planner 决策：\n{prompt.planner_context or '未提供结构化 planner 决策。'}"
         )
 
     def _build_user_message(self, prompt: TeacherPrompt) -> str:
@@ -251,6 +255,7 @@ class DoubaoChatCompletionsProvider:
                 f"科目：{prompt.subject}",
                 f"学生记忆摘要：{prompt.memory_summary}",
                 f"检索到的教学上下文：{prompt.retrieved_context}",
+                f"Planner 决策：{prompt.planner_context or 'none'}",
                 f"学生消息：{prompt.message}",
             ]
         )

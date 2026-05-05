@@ -20,6 +20,7 @@ def make_prompt() -> TeacherPrompt:
         core_skill_guidance="主动授课；识别掌握信号。",
         knowledge_skill_name="通用知识 Skill",
         knowledge_skill_guidance="根据学科选择教学动作。",
+        planner_context="teaching_mode=active_lesson\nlearner_state=insufficient_information",
     )
 
 
@@ -32,6 +33,8 @@ def test_deepagents_system_prompt_prioritizes_active_teaching() -> None:
     system_prompt = runtime._build_system_prompt(make_prompt())
 
     assert "主动授课是主轴" in system_prompt
+    assert "Executor" in system_prompt
+    assert "teaching_mode=active_lesson" in system_prompt
     assert "不要把所有输入都当成一元一次方程解题" in system_prompt
     assert "先确认正确" in system_prompt
 
