@@ -658,6 +658,16 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 验证结果：`docker compose exec -T backend pytest` 通过 36 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 无输出。
 - 下一步建议：把这批离线生成骨架提交；随后做文件型 `TextbookRagService`，读取生成 artifact 的 `rag_chunks` 做本地检索 smoke，并让 `RagService` 在 `RAG_BACKEND=textbook_file` 时使用它。
 
+2026-05-05，已实现文件型教材 RAG 第一版：
+
+- `backend/app/services/rag.py` 新增 `TextbookFileRagService`，可读取 `TextbookToTeachingSkill` pipeline artifact 中的 `rag_chunks`，用轻量关键词/结构化字段评分返回可追溯教材上下文。
+- 新增配置：`RAG_BACKEND=textbook_file` 时 `get_rag_service()` 返回 `TextbookFileRagService`；`TEXTBOOK_RAG_ARTIFACT_PATH` 指向本地 artifact。`.env.example` 和 `docker-compose.yml` 已加入该配置，默认仍保持 `RAG_BACKEND=mock`。
+- 新增 `backend/tests/test_textbook_file_rag.py`，覆盖 chunk 检索、无匹配 fallback、后端选择，以及 RAG context 进入 `AgentHarness` 的 `TeacherPrompt.retrieved_context`。
+- 更新 `docs/textbook-to-skill-pipeline.md`，记录 `RAG_BACKEND=textbook_file` 的本地 smoke 用法。
+- Smoke 验证：`docker compose exec -T backend python - <<'PY' ... TextbookFileRagService('/app/tests/fixtures/textbook-to-skill-sample.yaml').retrieve('支出 6 元怎么用正数和负数表示？') ... PY` 返回两条 `kp-positive-negative-numbers` chunks。
+- 验证结果：`docker compose exec -T backend pytest` 通过 40 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 无输出。
+- 下一步建议：用户可先按文档生成 artifact，再用 `RAG_BACKEND=textbook_file` 重启 backend，通过 `/api/v1/teacher/chat` 问“支出 6 元怎么用正数和负数表示？”观察真实模型是否利用教材 chunk；后续再做 PDF 目录/页码解析。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。

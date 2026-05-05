@@ -43,6 +43,7 @@ services:
       MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017}
       MONGODB_DATABASE: ${MONGODB_DATABASE:-openteacher}
       RAG_BACKEND: ${RAG_BACKEND:-mock}
+      TEXTBOOK_RAG_ARTIFACT_PATH: ${TEXTBOOK_RAG_ARTIFACT_PATH:-/app/tests/fixtures/textbook-to-skill-sample.yaml}
       SKILLS_DIR: ${SKILLS_DIR:-/app/skills}
       LLM_PROVIDER: ${LLM_PROVIDER:-mock}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}

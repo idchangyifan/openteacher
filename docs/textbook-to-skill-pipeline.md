@@ -194,6 +194,18 @@ course -> chapter -> section -> lesson -> knowledge_point
 3. 结合真实课堂和评测检查 chunk 是否足够支持授课。
 4. 再选择 MongoDB Atlas Vector Search、Qdrant 或其他向量存储。
 
+当前可用的本地 smoke 后端是 `RAG_BACKEND=textbook_file`。它读取 `TEXTBOOK_RAG_ARTIFACT_PATH` 指向的 pipeline artifact，并对其中 `rag_chunks` 做轻量关键词检索。
+
+示例：
+
+```bash
+RAG_BACKEND=textbook_file \
+TEXTBOOK_RAG_ARTIFACT_PATH=/tmp/textbook-to-skill-artifact.yaml \
+docker compose up -d --force-recreate backend
+```
+
+然后调用 `/api/v1/teacher/chat`，学生问题中包含“正数”“负数”“支出”“相反意义”等词时，后端会把命中的教材 RAG chunk 注入教师 prompt。
+
 ## 与 Planner 的关系
 
 Planner 不直接读 PDF。Planner 应使用：

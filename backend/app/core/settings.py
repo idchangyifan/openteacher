@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_database: str = "openteacher"
     rag_backend: str = "mock"
+    textbook_rag_artifact_path: Path = ROOT_DIR / "backend/tests/fixtures/textbook-to-skill-sample.yaml"
     agent_runtime: str = "provider"
     deepagents_model: str = ""
     skills_dir: Path = ROOT_DIR / "skills"
