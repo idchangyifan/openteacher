@@ -1,20 +1,20 @@
 pipeline_id: opent-pipeline-rj-junior-math-grade7-vol1-chapter1
 version: 0.1.0
 input_sources:
-  - id: textbook-rj-math-grade7-vol1
-    source_type: textbook_pdf
-    title: 人教版初中数学七年级上册
-    path_or_uri: /root/openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf
-    author: 人民教育出版社
-    review_status: draft
-    copyright_policy: authorized_use
-  - id: llm-draft-teaching-design
-    source_type: llm_inferred
-    title: 第一章教学设计草稿
-    path_or_uri: ""
-    author: OpenTeacher pipeline
-    review_status: draft
-    copyright_policy: generated_review_required
+- id: textbook-rj-math-grade7-vol1
+  source_type: textbook_pdf
+  title: 人教版初中数学七年级上册
+  path_or_uri: /openteacher-data/textbooks/ChinaTextbook/初中/数学/人教版-人民教育出版社/七年级/义务教育教科书·数学七年级上册.pdf
+  author: 人民教育出版社
+  review_status: draft
+  copyright_policy: authorized_use
+- id: llm-draft-teaching-design
+  source_type: llm_inferred
+  title: 第一章教学设计草稿
+  path_or_uri: ''
+  author: OpenTeacher pipeline
+  review_status: draft
+  copyright_policy: generated_review_required
 textbook_manifest:
   textbook_id: rj-junior-math-grade7-vol1
   title: 人教版初中数学七年级上册
@@ -24,143 +24,757 @@ textbook_manifest:
   grade: 七年级
   volume: 上册
   source_refs:
-    - textbook-rj-math-grade7-vol1
+  - textbook-rj-math-grade7-vol1
   copyright_policy: authorized_use
   parse_status: pdf_outline_candidate
 course_map:
   course_id: rj-junior-math-grade7-vol1
   chapters:
-    - id: ch1
-      title: 第一章
+  - id: ch1
+    title: 第一章
+    order: 1
+    page_range:
+      start: 6
+      end: 56
+    sections:
+    - id: ch1-sec1
+      title: 正数和负数
       order: 1
       page_range:
         start: 6
-        end: 17
-      sections:
-        - id: ch1-sec1
-          title: 正数和负数
-          order: 1
-          page_range:
-            start: 6
-            end: 7
-          knowledge_point_ids:
-            - kp-positive-negative-numbers
-        - id: ch1-sec2
-          title: 有理数
-          order: 2
-          page_range:
-            start: 8
-            end: 13
-          knowledge_point_ids:
-            - kp-rational-number-classification
-knowledge_point_graph:
-  - id: kp-positive-negative-numbers
-    name: 正数和负数的意义
-    chapter_id: ch1
-    prerequisites:
-      - primary-number-sense
-    unlocks:
+        end: 7
+      knowledge_point_ids:
+      - kp-positive-negative-numbers
+    - id: ch1-sec2
+      title: 有理数
+      order: 2
+      page_range:
+        start: 8
+        end: 13
+      knowledge_point_ids:
       - kp-rational-number-classification
-    difficulty: introductory
-    mastery_criteria:
-      - 能用正负数表示相反意义的量
-      - 能解释 0 在具体情境中的意义
-  - id: kp-rational-number-classification
-    name: 有理数的分类
-    chapter_id: ch1
-    prerequisites:
-      - kp-positive-negative-numbers
-    unlocks:
-      - number-line
-    difficulty: foundational
-    mastery_criteria:
-      - 能区分整数和分数
-      - 能把具体数放入有理数分类结构
+    - id: ch1-sec3
+      title: 数轴
+      order: 3
+      page_range:
+        start: 14
+        end: 15
+      knowledge_point_ids:
+      - kp-number-line
+    - id: ch1-sec4
+      title: 相反数
+      order: 4
+      page_range:
+        start: 16
+        end: 17
+      knowledge_point_ids:
+      - kp-opposite-numbers
+    - id: ch1-sec5
+      title: 绝对值
+      order: 5
+      page_range:
+        start: 18
+        end: 22
+      knowledge_point_ids:
+      - kp-absolute-value
+    - id: ch1-sec6
+      title: 有理数的加减法
+      order: 6
+      page_range:
+        start: 23
+        end: 34
+      knowledge_point_ids:
+      - kp-rational-add-subtract
+    - id: ch1-sec7
+      title: 有理数的乘除法
+      order: 7
+      page_range:
+        start: 35
+        end: 47
+      knowledge_point_ids:
+      - kp-rational-multiply-divide
+    - id: ch1-sec8
+      title: 有理数的乘方
+      order: 8
+      page_range:
+        start: 48
+        end: 50
+      knowledge_point_ids:
+      - kp-rational-powers
+    - id: ch1-sec9
+      title: 科学记数法与近似数
+      order: 9
+      page_range:
+        start: 51
+        end: 56
+      knowledge_point_ids:
+      - kp-scientific-notation
+      - kp-approximation
+knowledge_point_graph:
+- id: kp-positive-negative-numbers
+  name: 正数和负数的意义
+  chapter_id: ch1
+  prerequisites:
+  - primary-number-sense
+  unlocks:
+  - kp-rational-number-classification
+  difficulty: introductory
+  mastery_criteria:
+  - 能用正负数表示相反意义的量
+  - 能解释 0 在具体情境中的意义
+- id: kp-rational-number-classification
+  name: 有理数的分类
+  chapter_id: ch1
+  prerequisites:
+  - kp-positive-negative-numbers
+  unlocks:
+  - number-line
+  difficulty: foundational
+  mastery_criteria:
+  - 能区分整数和分数
+  - 能把具体数放入有理数分类结构
+- id: kp-number-line
+  name: 数轴
+  chapter_id: ch1
+  prerequisites:
+  - kp-rational-number-classification
+  unlocks:
+  - kp-opposite-numbers
+  - kp-absolute-value
+  difficulty: foundational
+  mastery_criteria:
+  - 能说出数轴的三要素
+  - 能把有理数在数轴上表示出来
+- id: kp-opposite-numbers
+  name: 相反数
+  chapter_id: ch1
+  prerequisites:
+  - kp-number-line
+  unlocks:
+  - kp-absolute-value
+  difficulty: foundational
+  mastery_criteria:
+  - 能从数轴位置解释相反数
+  - 能写出一个数的相反数
+- id: kp-absolute-value
+  name: 绝对值
+  chapter_id: ch1
+  prerequisites:
+  - kp-number-line
+  - kp-opposite-numbers
+  unlocks:
+  - kp-rational-add-subtract
+  difficulty: core
+  mastery_criteria:
+  - 能把绝对值解释为到原点的距离
+  - 能比较含负数的有理数大小
+- id: kp-rational-add-subtract
+  name: 有理数的加减法
+  chapter_id: ch1
+  prerequisites:
+  - kp-absolute-value
+  unlocks:
+  - kp-rational-multiply-divide
+  difficulty: core
+  mastery_criteria:
+  - 能按同号、异号规则计算有理数加法
+  - 能把减法转化为加上相反数
+- id: kp-rational-multiply-divide
+  name: 有理数的乘除法
+  chapter_id: ch1
+  prerequisites:
+  - kp-rational-add-subtract
+  - kp-opposite-numbers
+  unlocks:
+  - kp-rational-powers
+  difficulty: core
+  mastery_criteria:
+  - 能先判断积或商的符号
+  - 能把除法转化为乘以倒数
+- id: kp-rational-powers
+  name: 有理数的乘方
+  chapter_id: ch1
+  prerequisites:
+  - kp-rational-multiply-divide
+  unlocks:
+  - kp-scientific-notation
+  difficulty: core
+  mastery_criteria:
+  - 能区分底数、指数和幂
+  - 能处理负数乘方的符号
+- id: kp-scientific-notation
+  name: 科学记数法
+  chapter_id: ch1
+  prerequisites:
+  - kp-rational-powers
+  unlocks:
+  - kp-approximation
+  difficulty: application
+  mastery_criteria:
+  - 能把较大的数写成 a × 10^n 的形式
+  - 能判断 a 的范围和 n 的意义
+- id: kp-approximation
+  name: 近似数
+  chapter_id: ch1
+  prerequisites:
+  - kp-scientific-notation
+  unlocks: []
+  difficulty: application
+  mastery_criteria:
+  - 能按要求取近似数
+  - 能说明近似数精确到哪一位
 skill_drafts:
-  - id: skill-draft-kp-positive-negative-numbers
-    target_knowledge_point_ids:
-      - kp-positive-negative-numbers
-    source_refs:
-      - textbook-rj-math-grade7-vol1
-      - llm-draft-teaching-design
-    review_status: draft
-    inferred_fields:
-      - teaching_plan.opening
-      - teaching_plan.misconceptions
-      - teaching_plan.practice_sequence
-    teaching_plan:
-      learning_objectives:
-        - 理解正负数可以表示相反意义的量
-        - 能把生活情境转化为带符号的数
-      prerequisites:
-        - 小学整数、小数和生活数量经验
-      opening:
-        - 从温度、海拔、收入支出等相反意义的量导入
-      diagnosis_questions:
-        - 如果收入 10 元记作 +10，支出 6 元可以怎样记？
-        - 0 一定表示没有吗？请举一个情境说明。
-      misconceptions:
-        - 认为负数一定表示“不存在”
-        - 把 0 当成正数或负数
-      correction_strategies:
-        - 先回到具体情境，再抽象成符号
-        - 比较“方向”和“数量大小”两个维度
-      practice_sequence:
-        - 情境读数
-        - 符号表示
-        - 反向解释
-      mastery_checks:
-        - 学生能自己说出符号背后的相反意义
-    evidence:
-      - source_ref: textbook-rj-math-grade7-vol1
-        page_range:
-          start: 6
-          end: 7
-        note: 来自 PDF outline inspection 的页码候选，仍需人工审核。
+- id: skill-draft-kp-positive-negative-numbers
+  target_knowledge_point_ids:
+  - kp-positive-negative-numbers
+  source_refs:
+  - textbook-rj-math-grade7-vol1
+  - llm-draft-teaching-design
+  review_status: draft
+  inferred_fields:
+  - teaching_plan.opening
+  - teaching_plan.misconceptions
+  - teaching_plan.practice_sequence
+  teaching_plan:
+    learning_objectives:
+    - 理解正负数可以表示相反意义的量
+    - 能把生活情境转化为带符号的数
+    prerequisites:
+    - 小学整数、小数和生活数量经验
+    opening:
+    - 从温度、海拔、收入支出等相反意义的量导入
+    diagnosis_questions:
+    - 如果收入 10 元记作 +10，支出 6 元可以怎样记？
+    - 0 一定表示没有吗？请举一个情境说明。
+    misconceptions:
+    - 认为负数一定表示“不存在”
+    - 把 0 当成正数或负数
+    correction_strategies:
+    - 先回到具体情境，再抽象成符号
+    - 比较“方向”和“数量大小”两个维度
+    practice_sequence:
+    - 情境读数
+    - 符号表示
+    - 反向解释
+    mastery_checks:
+    - 学生能自己说出符号背后的相反意义
+  evidence:
+  - source_ref: textbook-rj-math-grade7-vol1
+    page_range:
+      start: 6
+      end: 7
+    note: 页码待 PDF 解析确认
+- id: skill-draft-kp-number-line
+  target_knowledge_point_ids:
+  - kp-number-line
+  source_refs:
+  - textbook-rj-math-grade7-vol1
+  - llm-draft-teaching-design
+  review_status: draft
+  inferred_fields:
+  - teaching_plan.opening
+  - teaching_plan.misconceptions
+  - teaching_plan.practice_sequence
+  teaching_plan:
+    learning_objectives:
+    - 理解数轴用点表示有理数
+    - 掌握原点、正方向和单位长度三要素
+    prerequisites:
+    - 正数、负数和 0 的意义
+    opening:
+    - 从温度计或直线路标导入，把位置和数联系起来
+    diagnosis_questions:
+    - 如果 0 在中间，+3 和 -3 应该分别在原点哪一边？
+    - 单位长度变了，点表示的数会怎样变化？
+    misconceptions:
+    - 只画直线不标原点或单位长度
+    - 认为负数越靠左数值越大
+    correction_strategies:
+    - 先补齐三要素，再定位点
+    - 用“离原点几个单位、向哪边”描述位置
+    practice_sequence:
+    - 识别数轴三要素
+    - 在数轴上标点
+    - 根据点读数
+    mastery_checks:
+    - 学生能解释一个点为什么表示某个有理数
+  evidence:
+  - source_ref: textbook-rj-math-grade7-vol1
+    note: 页码由 PDF outline inspection 补入
+    page_range:
+      start: 14
+      end: 15
+- id: skill-draft-kp-opposite-numbers
+  target_knowledge_point_ids:
+  - kp-opposite-numbers
+  source_refs:
+  - textbook-rj-math-grade7-vol1
+  - llm-draft-teaching-design
+  review_status: draft
+  inferred_fields:
+  - teaching_plan.opening
+  - teaching_plan.misconceptions
+  - teaching_plan.practice_sequence
+  teaching_plan:
+    learning_objectives:
+    - 理解相反数表示数轴上关于原点对称的两个数
+    - 能求一个数的相反数
+    prerequisites:
+    - 数轴和有理数表示
+    opening:
+    - 从数轴上 +2 与 -2 到原点距离相同、方向相反导入
+    diagnosis_questions:
+    - 3 的相反数是什么？为什么？
+    - 0 的相反数是什么？
+    misconceptions:
+    - 认为相反数一定是负数
+    - 忘记 0 的相反数仍是 0
+    correction_strategies:
+    - 回到“只有符号不同”而不是“变成负数”
+    - 用数轴对称位置解释 0
+    practice_sequence:
+    - 写出具体数的相反数
+    - 从数轴读相反数
+    - 判断两个数是否互为相反数
+    mastery_checks:
+    - 学生能说明相反数与原点对称的关系
+  evidence:
+  - source_ref: textbook-rj-math-grade7-vol1
+    note: 页码由 PDF outline inspection 补入
+    page_range:
+      start: 16
+      end: 17
+- id: skill-draft-kp-absolute-value
+  target_knowledge_point_ids:
+  - kp-absolute-value
+  source_refs:
+  - textbook-rj-math-grade7-vol1
+  - llm-draft-teaching-design
+  review_status: draft
+  inferred_fields:
+  - teaching_plan.opening
+  - teaching_plan.misconceptions
+  - teaching_plan.practice_sequence
+  teaching_plan:
+    learning_objectives:
+    - 理解绝对值是数轴上点到原点的距离
+    - 能用绝对值比较有理数大小
+    prerequisites:
+    - 数轴和相反数
+    opening:
+    - 从 -3 和 +3 到原点距离都为 3 导入
+    diagnosis_questions:
+    - '|-5| 为什么等于 5？'
+    - -5 和 -2 哪个大？你能用数轴解释吗？
+    misconceptions:
+    - 把绝对值当作“去掉负号”的机械规则
+    - 比较负数大小时只看数字大小
+    correction_strategies:
+    - 先说距离，再写符号结果
+    - 用数轴位置判断大小
+    practice_sequence:
+    - 求绝对值
+    - 比较两个负数
+    - 解释绝对值相等的两个数
+    mastery_checks:
+    - 学生能用距离语言解释绝对值
+  evidence:
+  - source_ref: textbook-rj-math-grade7-vol1
+    note: 页码由 PDF outline inspection 补入
+    page_range:
+      start: 18
+      end: 22
+- id: skill-draft-kp-rational-add-subtract
+  target_knowledge_point_ids:
+  - kp-rational-add-subtract
+  source_refs:
+  - textbook-rj-math-grade7-vol1
+  - llm-draft-teaching-design
+  review_status: draft
+  inferred_fields:
+  - teaching_plan.opening
+  - teaching_plan.misconceptions
+  - teaching_plan.practice_sequence
+  teaching_plan:
+    learning_objectives:
+    - 掌握有理数加法的符号和绝对值处理
+    - 理解减法可以转化为加上相反数
+    prerequisites:
+    - 绝对值和相反数
+    opening:
+    - 从收入支出或温度变化导入有理数加减
+    diagnosis_questions:
+    - (-3)+(+5) 的符号为什么是正？
+    - 减去 -2 可以转化成什么？
+    misconceptions:
+    - 异号相加时符号乱选
+    - 把减去负数仍写成减
+    correction_strategies:
+    - 先判断同号或异号，再处理绝对值
+    - 把减法统一改写成加法再计算
+    practice_sequence:
+    - 同号加法
+    - 异号加法
+    - 减法转化
+    - 混合加减
+    mastery_checks:
+    - 学生能说出每一步符号判断依据
+  evidence:
+  - source_ref: textbook-rj-math-grade7-vol1
+    note: 页码由 PDF outline inspection 补入
+    page_range:
+      start: 23
+      end: 34
+- id: skill-draft-kp-rational-multiply-divide
+  target_knowledge_point_ids:
+  - kp-rational-multiply-divide
+  source_refs:
+  - textbook-rj-math-grade7-vol1
+  - llm-draft-teaching-design
+  review_status: draft
+  inferred_fields:
+  - teaching_plan.opening
+  - teaching_plan.misconceptions
+  - teaching_plan.practice_sequence
+  teaching_plan:
+    learning_objectives:
+    - 掌握有理数乘除法的符号法则
+    - 能把除法转化为乘以倒数
+    prerequisites:
+    - 有理数加减、相反数和倒数
+    opening:
+    - 从正负因数个数与结果符号的关系导入
+    diagnosis_questions:
+    - 两个负数相乘为什么是正数？
+    - 除以 -3 可以改写成乘以什么？
+    misconceptions:
+    - 多个负因数时符号判断混乱
+    - 除法转乘法时忘记取倒数
+    correction_strategies:
+    - 先数负因数个数判断符号
+    - 先改写除法，再约分或计算
+    practice_sequence:
+    - 两数乘法
+    - 多因数乘法
+    - 除法转化
+    - 乘除混合
+    mastery_checks:
+    - 学生能在计算前先说明结果符号
+  evidence:
+  - source_ref: textbook-rj-math-grade7-vol1
+    note: 页码由 PDF outline inspection 补入
+    page_range:
+      start: 35
+      end: 47
+- id: skill-draft-kp-rational-powers
+  target_knowledge_point_ids:
+  - kp-rational-powers
+  source_refs:
+  - textbook-rj-math-grade7-vol1
+  - llm-draft-teaching-design
+  review_status: draft
+  inferred_fields:
+  - teaching_plan.opening
+  - teaching_plan.misconceptions
+  - teaching_plan.practice_sequence
+  teaching_plan:
+    learning_objectives:
+    - 理解乘方、底数、指数和幂
+    - 能判断负数乘方的符号
+    prerequisites:
+    - 有理数乘法
+    opening:
+    - 从重复乘法压缩写法导入乘方
+    diagnosis_questions:
+    - (-2)^3 表示几个 -2 相乘？
+    - -2^2 和 (-2)^2 有什么不同？
+    misconceptions:
+    - 混淆 -2^2 与 (-2)^2
+    - 只看指数奇偶，不先确认底数
+    correction_strategies:
+    - 先圈出底数，再展开成乘法
+    - 用负因数个数判断符号
+    practice_sequence:
+    - 识别底数和指数
+    - 展开乘方
+    - 计算负数乘方
+    mastery_checks:
+    - 学生能解释括号对底数的影响
+  evidence:
+  - source_ref: textbook-rj-math-grade7-vol1
+    note: 页码由 PDF outline inspection 补入
+    page_range:
+      start: 48
+      end: 50
+- id: skill-draft-kp-scientific-notation
+  target_knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  source_refs:
+  - textbook-rj-math-grade7-vol1
+  - llm-draft-teaching-design
+  review_status: draft
+  inferred_fields:
+  - teaching_plan.opening
+  - teaching_plan.misconceptions
+  - teaching_plan.practice_sequence
+  teaching_plan:
+    learning_objectives:
+    - 能用科学记数法表示较大的数
+    - 能按要求取近似数并说明精确位
+    prerequisites:
+    - 乘方和 10 的幂
+    opening:
+    - 从天文、人口等大数读写困难导入科学记数法
+    diagnosis_questions:
+    - 5600000 写成 a × 10^n 时，a 应该在什么范围？
+    - 3.14 精确到十分位是多少？
+    misconceptions:
+    - 科学记数法中 a 不满足 1≤a<10
+    - 近似数精确位说不清
+    correction_strategies:
+    - 先移动小数点得到 a，再数移动位数
+    - 用数位表检查精确到哪一位
+    practice_sequence:
+    - 大数改写
+    - 科学记数法还原
+    - 按位取近似数
+    mastery_checks:
+    - 学生能说明 a 和 n 各自代表什么
+  evidence:
+  - source_ref: textbook-rj-math-grade7-vol1
+    note: 页码由 PDF outline inspection 补入
+    page_range:
+      start: 51
+      end: 56
 rag_chunks:
-  - id: rag-ch1-kp-positive-negative-summary
-    source_ref: llm-draft-teaching-design
-    content_type: concept_summary
-    chapter_id: ch1
-    knowledge_point_ids:
-      - kp-positive-negative-numbers
-    page_range:
-      start: 6
-      end: 7
-    text: 正数和负数可用于表示相反意义的量。教学时应先让学生说出情境中的两个方向，再引入符号。
-    text_role: llm_inferred
-    review_status: draft
-    copyright_policy: authorized_use
-  - id: rag-ch1-kp-positive-negative-method
-    source_ref: llm-draft-teaching-design
-    content_type: teacher_method
-    chapter_id: ch1
-    knowledge_point_ids:
-      - kp-positive-negative-numbers
-    page_range:
-      start: 6
-      end: 7
-    text: 如果学生把负数理解为没有，应追问这个数在情境中表示方向、位置还是数量变化。
-    text_role: llm_inferred
-    review_status: draft
-    copyright_policy: authorized_use
+- id: rag-ch1-kp-positive-negative-summary
+  source_ref: llm-draft-teaching-design
+  content_type: concept_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 正数和负数可用于表示相反意义的量。教学时应先让学生说出情境中的两个方向，再引入符号。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-method
+  source_ref: llm-draft-teaching-design
+  content_type: teacher_method
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 如果学生把负数理解为没有，应追问这个数在情境中表示方向、位置还是数量变化。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-summary
+  source_ref: llm-draft-teaching-design
+  content_type: concept_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 数轴用原点、正方向和单位长度把有理数与直线上的点对应起来。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-method
+  source_ref: llm-draft-teaching-design
+  content_type: teacher_method
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 教数轴时先检查三要素，再让学生用“方向”和“单位长度”说明点的位置。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-summary
+  source_ref: llm-draft-teaching-design
+  content_type: concept_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 相反数可以从数轴上的关于原点对称来理解，0 的相反数仍是 0。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-method
+  source_ref: llm-draft-teaching-design
+  content_type: teacher_method
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 当学生说“相反数就是负数”时，应追问正数、负数和 0 各自的相反数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-summary
+  source_ref: llm-draft-teaching-design
+  content_type: concept_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 绝对值表示数轴上的点到原点的距离，因此绝对值总是非负数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-method
+  source_ref: llm-draft-teaching-design
+  content_type: teacher_method
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 不要只教“去负号”，应要求学生先说这个点离原点几个单位。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-summary
+  source_ref: llm-draft-teaching-design
+  content_type: concept_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 有理数加减的关键是先判断符号，再处理绝对值；减法可转化为加上相反数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-method
+  source_ref: llm-draft-teaching-design
+  content_type: teacher_method
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 学生算错时先追问“这是同号还是异号”，再让学生说明符号来源。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-summary
+  source_ref: llm-draft-teaching-design
+  content_type: concept_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 有理数乘除法先判断符号，再计算绝对值；除以一个数等于乘以这个数的倒数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-method
+  source_ref: llm-draft-teaching-design
+  content_type: teacher_method
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 对乘除混合题，要求学生先改写成乘法串，再判断负因数个数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-summary
+  source_ref: llm-draft-teaching-design
+  content_type: concept_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 乘方是相同因数连乘的简写，负数乘方必须先确认底数是否包含负号。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-method
+  source_ref: llm-draft-teaching-design
+  content_type: teacher_method
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 讲负数乘方时先让学生把式子展开，避免机械套奇偶规则。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-summary
+  source_ref: llm-draft-teaching-design
+  content_type: concept_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 科学记数法把大数写成 a × 10^n，其中 a 的范围通常是 1≤a<10。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-approximation-method
+  source_ref: llm-draft-teaching-design
+  content_type: teacher_method
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 教近似数时应要求学生说清“精确到哪一位”，而不只给四舍五入结果。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 eval_cases:
-  - id: eval-positive-negative-answer-seeking
-    knowledge_point_ids:
-      - kp-positive-negative-numbers
-    student_message: 老师，支出 6 元到底写什么，直接告诉我。
-    expected_behaviors:
-      - 拒绝只给可抄答案
-      - 引导学生先判断相反意义的方向
-      - 只推进一个小步骤
-    forbidden_behaviors:
-      - 只给最终符号不解释
-      - 羞辱学生
-    ideal_teacher_move: 先问“支出”和“收入”是不是相反意义的量，再让学生判断支出应放在哪个方向。
-    scoring_notes: 重点看教师是否围绕相反意义建立概念，而不是直接报答案。
+- id: eval-positive-negative-answer-seeking
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  student_message: 老师，支出 6 元到底写什么，直接告诉我。
+  expected_behaviors:
+  - 拒绝只给可抄答案
+  - 引导学生先判断相反意义的方向
+  - 只推进一个小步骤
+  forbidden_behaviors:
+  - 只给最终符号不解释
+  - 羞辱学生
+  ideal_teacher_move: 先问“支出”和“收入”是不是相反意义的量，再让学生判断支出应放在哪个方向。
+  scoring_notes: 重点看教师是否围绕相反意义建立概念，而不是直接报答案。
 review_record:
   status: draft
-  reviewer: ""
+  reviewer: ''
   notes:
-    - 已根据 PDF outline inspection 补入第一章页码候选，仍需人工审核。
+  - 第一版样例不含教材原文，页码待 PDF 解析后补齐。
   conflicts: []

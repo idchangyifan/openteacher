@@ -97,7 +97,52 @@ def apply_outline_to_pipeline_source(
         source_chapters.values(),
         key=lambda chapter: int(chapter.get("order") or 999),
     )
+    kp_page_ranges = _knowledge_point_page_ranges(merged["chapters"])
+    for design in merged.get("teaching_designs", []) or []:
+        if not isinstance(design, dict):
+            continue
+        target_ids = [str(item) for item in design.get("target_knowledge_point_ids", []) or []]
+        page_range = _first_known_page_range(target_ids, kp_page_ranges)
+        if page_range is None:
+            continue
+        for evidence in design.get("evidence", []) or []:
+            if isinstance(evidence, dict):
+                evidence.setdefault("page_range", deepcopy(page_range))
+                if evidence.get("page_range") in (None, {"start": None, "end": None}):
+                    evidence["page_range"] = deepcopy(page_range)
+        for chunk in design.get("rag_chunks", []) or []:
+            if isinstance(chunk, dict):
+                chunk.setdefault("page_range", deepcopy(page_range))
+                if chunk.get("page_range") in (None, {"start": None, "end": None}):
+                    chunk["page_range"] = deepcopy(page_range)
     return merged
+
+
+def _knowledge_point_page_ranges(chapters: list[Any]) -> dict[str, dict[str, int | None]]:
+    ranges: dict[str, dict[str, int | None]] = {}
+    for chapter in chapters:
+        if not isinstance(chapter, Mapping):
+            continue
+        for section in chapter.get("sections", []) or []:
+            if not isinstance(section, Mapping):
+                continue
+            page_range = _page_range(section.get("page_range"))
+            if page_range == {"start": None, "end": None}:
+                continue
+            for knowledge_point_id in section.get("knowledge_point_ids", []) or []:
+                ranges[str(knowledge_point_id)] = page_range
+    return ranges
+
+
+def _first_known_page_range(
+    knowledge_point_ids: list[str],
+    kp_page_ranges: dict[str, dict[str, int | None]],
+) -> dict[str, int | None] | None:
+    for knowledge_point_id in knowledge_point_ids:
+        page_range = kp_page_ranges.get(knowledge_point_id)
+        if page_range is not None:
+            return page_range
+    return None
 
 
 def _build_input_sources(

@@ -169,6 +169,41 @@ def rj_junior_math_grade7_vol1_chapter1_patterns() -> list[SectionPattern]:
             order=5,
             knowledge_point_ids=["kp-absolute-value"],
         ),
+        SectionPattern(
+            id="ch1-sec6",
+            title="有理数的加减法",
+            keywords=["有理数的加法"],
+            order=6,
+            knowledge_point_ids=["kp-rational-add-subtract"],
+        ),
+        SectionPattern(
+            id="ch1-sec7",
+            title="有理数的乘除法",
+            keywords=["有理数的乘法"],
+            order=7,
+            knowledge_point_ids=["kp-rational-multiply-divide"],
+        ),
+        SectionPattern(
+            id="ch1-sec8",
+            title="有理数的乘方",
+            keywords=["有理数的乘方"],
+            order=8,
+            knowledge_point_ids=["kp-rational-powers"],
+        ),
+        SectionPattern(
+            id="ch1-sec9",
+            title="科学记数法与近似数",
+            keywords=["科学记数法"],
+            order=9,
+            knowledge_point_ids=["kp-scientific-notation", "kp-approximation"],
+        ),
+        SectionPattern(
+            id="ch1-review",
+            title="小结与复习",
+            keywords=["小结"],
+            order=10,
+            knowledge_point_ids=[],
+        ),
     ]
 
 

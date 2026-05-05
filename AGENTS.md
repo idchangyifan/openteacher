@@ -688,6 +688,16 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 验证结果：`docker compose build backend` 成功；`docker compose up -d --force-recreate backend` 成功；`docker compose exec -T backend pytest` 通过 43 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`python3 -m py_compile scripts/inspect-textbook-pdf.py scripts/generate-textbook-skill.py` 通过；`git diff --check` 无输出。
 - 下一步建议：把第一章剩余小节（数轴、相反数、绝对值、有理数运算等）补进 `knowledge_point_graph` 和 `skill_drafts`，并让 PDF inspection 生成的 outline 覆盖更多小节；然后生成第一章多个知识点 skill 草稿，而不是只停留在“正数和负数”。
 
+2026-05-05，已把人教版七年级上册第一章扩展为多个知识点 skill 草稿：
+
+- 更新 `rj_junior_math_grade7_vol1_chapter1_patterns()`，PDF outline inspection 现在覆盖：正数和负数、有理数、数轴、相反数、绝对值、有理数的加减法、有理数的乘除法、有理数的乘方、科学记数法与近似数，并用“小结”作为章节结束候选。
+- 更新 `backend/tests/fixtures/textbook-to-skill-input.yaml`，第一章 `course_map` 和 `knowledge_point_graph` 新增：`kp-number-line`、`kp-opposite-numbers`、`kp-absolute-value`、`kp-rational-add-subtract`、`kp-rational-multiply-divide`、`kp-rational-powers`、`kp-scientific-notation`、`kp-approximation`。
+- 同一输入草稿新增 7 个 teaching designs；重新生成 `backend/tests/fixtures/textbook-to-skill-sample.yaml` 后，样例 artifact 现在包含 8 个 `skill_drafts` 和 16 个 `rag_chunks`。
+- `apply_outline_to_pipeline_source()` 现在会把 PDF outline 页码同步到对应 skill evidence 和 RAG chunks，不只覆盖 `course_map`。
+- 真实 PDF smoke 显示第一章页码候选：正数和负数 6-7，有理数 8-13，数轴 14-15，相反数 16-17，绝对值 18-22，有理数加减 23-34，乘除 35-47，乘方 48-50，科学记数法与近似数 51-56，小结 57 起。
+- 验证结果：`docker compose exec -T backend pytest` 通过 43 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`python3 -m py_compile scripts/inspect-textbook-pdf.py scripts/generate-textbook-skill.py` 通过；`git diff --check` 无输出。
+- 下一步建议：把样例 artifact 中的多个 `skill_drafts` 转换为正式 `skills/generated/*.yaml` 知识技能草稿，并让 `SkillRegistry` 能按知识点/课程位置选择这些 generated skills；随后再做教材原文/例题级 chunks。
+
 ## 开发风格
 
 - 保持项目使命和教师身份。

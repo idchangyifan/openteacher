@@ -228,10 +228,12 @@ Planner 不直接读 PDF。Planner 应使用：
 第一版成功标准：
 
 - 产出一章 `course_map`
-- 产出 1-3 个知识点 `skill_drafts`
+- 产出多个知识点 `skill_drafts`
 - 产出可本地检索的 `rag_chunks`
 - 产出主动授课评测样例
 - 不提交教材 PDF 或大段教材原文
+
+当前七年级上册第一章样例已经覆盖 8 个 skill 草稿和 16 个 RAG chunks，包括正数和负数、数轴、相反数、绝对值、有理数加减、乘除、乘方、科学记数法与近似数。PDF outline inspection 已给出第一章 6-56 页的页码候选。
 
 ## 离线生成脚本
 

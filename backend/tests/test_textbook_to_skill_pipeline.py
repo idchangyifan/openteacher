@@ -49,6 +49,8 @@ def test_textbook_to_skill_sample_marks_generated_assets_as_draft() -> None:
     data = load_yaml(FIXTURE_PATH)
 
     assert data["review_record"]["status"] == "draft"
+    assert len(data["skill_drafts"]) == 8
+    assert len(data["rag_chunks"]) == 16
     assert all(draft["review_status"] == "draft" for draft in data["skill_drafts"])
     assert all(chunk["review_status"] == "draft" for chunk in data["rag_chunks"])
 
@@ -96,9 +98,10 @@ def test_textbook_to_skill_builder_can_apply_pdf_outline_page_ranges() -> None:
 
     assert artifact["textbook_manifest"]["copyright_policy"] == "authorized_use"
     assert artifact["textbook_manifest"]["parse_status"] == "pdf_outline_candidate"
-    assert chapter["page_range"] == {"start": 6, "end": 17}
+    assert chapter["page_range"] == {"start": 6, "end": 56}
     assert sections["ch1-sec1"]["page_range"] == {"start": 6, "end": 7}
     assert sections["ch1-sec2"]["page_range"] == {"start": 8, "end": 13}
+    assert sections["ch1-sec9"]["page_range"] == {"start": 51, "end": 56}
 
 
 def test_textbook_to_skill_builder_rejects_unknown_chunk_knowledge_point() -> None:
