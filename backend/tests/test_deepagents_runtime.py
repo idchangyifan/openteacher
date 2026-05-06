@@ -6,6 +6,7 @@ from app.services.deepagents_runtime import DeepAgentsTeachingRuntime
 from app.services.lesson_store import InMemoryLessonRepository
 from app.services.llm_provider import TeacherPrompt
 from app.services.memory import MemoryService
+from app.services.rag import RagService
 
 
 def make_prompt() -> TeacherPrompt:
@@ -71,6 +72,60 @@ def test_deepagents_tools_can_read_memory_and_lesson_state() -> None:
     lesson_state = tools["load_lesson_state"]()
     assert "浮力入门" in lesson_state
     assert "理解浮力和重力的关系" in lesson_state
+
+
+def test_deepagents_tools_can_retrieve_textbook_chunks_with_graph_state() -> None:
+    captured = {}
+
+    class CapturingRagService(RagService):
+        def retrieve_for_turn(self, context):
+            captured["context"] = context
+            return "reranked textbook chunks"
+
+    repository = InMemoryLessonRepository()
+    session = repository.create_session(
+        request=LessonSessionCreate(
+            student_id="deepagents-rag-student",
+            subject="数学",
+            title="正数和负数",
+            lesson_goal="理解正负数表示相反意义的量",
+        )
+    )
+    repository.update_session_state(
+        session.id,
+        current_skill_id="opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers",
+        current_knowledge_point_id="kp-positive-negative-numbers",
+        current_section_id="ch1-sec1",
+        current_chapter_id="ch1",
+    )
+    repository.append_message(
+        session_id=session.id,
+        role="teacher",
+        content="如果收入10元记作+10，那支出6元应该怎么记？",
+    )
+    request = TeacherChatRequest(
+        message="*6",
+        context=StudentContext(
+            student_id="deepagents-rag-student",
+            grade="初一",
+            subject="数学",
+            session_id=session.id,
+        ),
+    )
+    runtime = DeepAgentsTeachingRuntime(
+        memory_service=MemoryService(),
+        lesson_repository=repository,
+        rag_service=CapturingRagService(),
+    )
+    graph_state = runtime._build_graph_state(request, make_prompt())
+    tools = {tool.__name__: tool for tool in runtime._build_tools(request, make_prompt(), graph_state)}
+
+    result = tools["retrieve_textbook_chunks"]("*6")
+
+    assert result == "reranked textbook chunks"
+    assert captured["context"].current_knowledge_point_id == "kp-positive-negative-numbers"
+    assert captured["context"].student_answer_status == "incorrect_symbol"
+    assert captured["context"].current_question == "如果收入10元记作+10，那支出6元应该怎么记？"
 
 
 def test_teaching_graph_state_uses_session_id_as_thread_and_keeps_lesson_state() -> None:

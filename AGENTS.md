@@ -222,10 +222,10 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 推荐下一步：
 
-1. 将 MongoDB `textbook_chunks` 检索从轻量关键词匹配升级为基于当前 `current_skill_id` / `current_knowledge_point_id` / `content_type` / `teaching_phase` 的优先召回，让课堂状态能决定拿诊断、纠错、讲解还是练习 chunk。
-2. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
-3. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
-4. 继续把 DeepAgents / LangGraph 从“可运行主路径”升级成完整教学图：把 `evaluate_student_answer`、`update_lesson_state`、`retrieve_textbook_chunks`、`create_memory_extraction_job` 做成明确 graph tools / nodes，而不是只靠 runtime prompt。
+1. 继续把 RAG 召回纳入 DeepAgents / LangGraph 正式教学图：把 `retrieve_textbook_chunks` 从当前工具函数升级为显式 graph node / tool contract，并让 planner、answer evaluation、lesson state update、RAG retrieval 的顺序更可观测。
+2. 为 MongoDB RAG 增加可审核的召回 trace：记录每轮候选 routes、rerank 分数、最终 chunks、使用的 lesson state / student_answer_status，方便回放“为什么拿了这几条 chunk”。
+3. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
+4. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
 5. 将 `current_question`、`student_answer_status`、`next_teaching_action` 等课堂运行态正式持久化到 MongoDB lesson state / checkpoint，并设计自动压缩后的短期记忆摘要字段。
 6. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
 
@@ -857,6 +857,18 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 已重新生成 `backend/tests/fixtures/textbook-to-skill-sample.yaml` 并重新导入 MongoDB。验证：112 条 chunk 都有 `teaching_phase`、`retrieval_tags` 和 `source_section_id`；16 条误区/易错类 chunk 有 `student_error_pattern_ids`。
 - 验证结果：`docker compose exec -T backend pytest tests/test_textbook_to_skill_pipeline.py tests/test_textbook_file_rag.py` 通过 17 项；`docker compose exec -T backend pytest` 通过 55 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 通过。
 - 顶部 `## 当前下一步` 已同步更新：下一阶段优先让当前课堂状态使用这些元数据做 MongoDB 召回加权，并把元数据字段写入正式规格文档。
+
+2026-05-06，已明确 RAG 召回时机并接入 DeepAgents 工具体系：
+
+- 用户指出“什么时候做 RAG 召回”需要想清楚，并要求召回使用 DeepAgents 框架能力。
+- 已查看当前安装的 `deepagents.create_deep_agent` 能力：支持 tools、subagents、skills、memory、backend、checkpointer、store、context_schema 等；本次选择先把教材召回接为 DeepAgents tool，并继续使用 MongoDB checkpointer。
+- 已固定课堂回合内 RAG 时机：`append student message -> load lesson state -> select skill/update lesson state -> evaluate current student answer -> planner decision -> structured RAG retrieval -> build prompt -> DeepAgents/LLM execution`。
+- `backend/app/services/rag.py` 新增 `RagTurnContext`、`RankedRagChunk` 和 `retrieve_for_turn()`；MongoDB RAG 现在按 knowledge point、section、chapter、teaching_phase、content_type、retrieval_tags、lexical_text、student_error_pattern 多路召回，再用确定性 rerank 合并排序。
+- `AgentHarness` 现在在 planner 之后构造 `RagTurnContext`，把当前 lesson state、最近课堂问题、`student_answer_status`、`teaching_mode`、`learner_state`、`next_teacher_goal` 一起传给 RAG；同时修复 skill 更新时不应把已有 `current_section_id` 覆盖为空。
+- `DeepAgentsTeachingRuntime` 新增 `retrieve_textbook_chunks` tool；DeepAgents 执行时可以基于 `TeachingGraphState` 主动调用教材召回，而不是只依赖 harness 预塞 context。
+- 运行时 MongoDB smoke：对 `*6` + 当前正负数诊断题，top chunks 是 `error_contrast`、`misconception`、`correction_strategy`，命中 knowledge_point、section、student_error_pattern、teaching_phase 等多路 routes。
+- 验证结果：`docker compose exec -T backend pytest tests/test_textbook_file_rag.py tests/test_deepagents_runtime.py` 通过 15 项。
+- 顶部 `## 当前下一步` 已同步更新：下一阶段优先把 `retrieve_textbook_chunks` 升级成更显式的 graph node / tool contract，并记录可审核 RAG trace。
 
 ## 开发风格
 

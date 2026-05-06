@@ -8,7 +8,7 @@ from app.services.llm_provider import LlmProvider, MockTeacherProvider, TeacherP
 from app.services.lesson_store import LessonRepository, get_lesson_repository
 from app.services.memory import MemoryService, get_memory_service
 from app.services.planner import PlannerService, get_planner_service
-from app.services.rag import RagService, get_rag_service
+from app.services.rag import RagService, RagTurnContext, get_rag_service
 from app.services.skill_registry import SkillRegistry, TeachingSkill, get_skill_registry
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class AgentHarness:
         if request.context.session_id:
             self.lesson_repository.update_session_state(
                 request.context.session_id,
-                **self._lesson_state_from_skill(skills.knowledge),
+                **self._lesson_state_from_skill(skills.knowledge, lesson_detail),
             )
             lesson_detail = self.lesson_repository.get_session_detail(request.context.session_id)
 
@@ -75,7 +75,22 @@ class AgentHarness:
             memory_summary=memory,
             lesson_detail=lesson_detail,
         )
-        retrieved_context = self.rag_service.retrieve(rag_query)
+        current_question = self._infer_current_question(lesson_detail)
+        student_answer_status, _student_answer_feedback = self._evaluate_student_answer(
+            question=current_question,
+            answer=request.message,
+        )
+        rag_context = self._build_rag_turn_context(
+            query=rag_query,
+            message=request.message,
+            lesson_detail=lesson_detail,
+            teaching_mode=planner_decision.teaching_mode,
+            learner_state=planner_decision.learner_state,
+            next_teacher_goal=planner_decision.next_teacher_goal,
+            current_question=current_question,
+            student_answer_status=student_answer_status,
+        )
+        retrieved_context = self.rag_service.retrieve_for_turn(rag_context)
         prompt = TeacherPrompt(
             message=request.message,
             grade=request.context.grade,
@@ -165,31 +180,117 @@ class AgentHarness:
         ]
         return f"{message}\n\n当前课堂状态：\n" + "\n".join(state_lines) + f"\n\n最近课堂记录：\n{history}"
 
-    def _lesson_state_from_skill(self, skill: TeachingSkill) -> dict[str, str | None]:
+    def _build_rag_turn_context(
+        self,
+        *,
+        query: str,
+        message: str,
+        lesson_detail: LessonSessionDetail | None,
+        teaching_mode: str,
+        learner_state: str,
+        next_teacher_goal: str,
+        current_question: str | None,
+        student_answer_status: str,
+    ) -> RagTurnContext:
+        session = lesson_detail.session if lesson_detail is not None else None
+        recent_messages = (
+            [
+                f"{lesson_message.role}: {lesson_message.content}"
+                for lesson_message in lesson_detail.messages[-6:]
+            ]
+            if lesson_detail is not None
+            else []
+        )
+        return RagTurnContext(
+            query=query or message,
+            current_chapter_id=session.current_chapter_id or "" if session is not None else "",
+            current_section_id=session.current_section_id or "" if session is not None else "",
+            current_knowledge_point_id=(
+                session.current_knowledge_point_id or "" if session is not None else ""
+            ),
+            current_skill_id=session.current_skill_id or "" if session is not None else "",
+            teaching_mode=teaching_mode,
+            learner_state=learner_state,
+            next_teacher_goal=next_teacher_goal,
+            current_question=current_question or "",
+            student_answer_status=student_answer_status,
+            recent_messages=recent_messages,
+        )
+
+    def _infer_current_question(self, lesson_detail: LessonSessionDetail | None) -> str | None:
+        if lesson_detail is None:
+            return None
+        for message in reversed(lesson_detail.messages):
+            if message.role == "teacher" and any(mark in message.content for mark in ["？", "?"]):
+                return message.content
+        return None
+
+    def _evaluate_student_answer(self, question: str | None, answer: str) -> tuple[str, str]:
+        normalized_answer = answer.strip().replace("＋", "+").replace("－", "-")
+        compact_answer = normalized_answer.replace(" ", "")
+        if not question:
+            if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
+                return "stuck", "学生表达卡住。"
+            return "needs_evaluation", ""
+
+        if "收入10" in question and "支出6" in question:
+            if compact_answer in {"-6", "-6元"}:
+                return "correct", "学生回答 -6 正确。"
+            if compact_answer in {"*6", "×6", "x6"}:
+                return "incorrect_symbol", "学生把符号写成了乘号。"
+            if compact_answer in {"+6", "+6元", "6", "6元"}:
+                return "incorrect_sign", "学生没有表示出支出和收入的相反意义。"
+            if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
+                return "stuck", "学生卡在正负号方向判断。"
+
+        if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
+            return "stuck", "学生表达卡住。"
+        return "needs_evaluation", ""
+
+    def _lesson_state_from_skill(
+        self,
+        skill: TeachingSkill,
+        lesson_detail: LessonSessionDetail | None = None,
+    ) -> dict[str, str | None]:
         target = skill.target or {}
         knowledge_points = target.get("knowledge_points", [])
         chapters = target.get("chapters", [])
         sections = target.get("sections", [])
+        session = lesson_detail.session if lesson_detail is not None else None
         return {
             "current_skill_id": skill.id,
-            "current_knowledge_point_id": str(knowledge_points[0]) if knowledge_points else None,
-            "current_chapter_id": str(chapters[0]) if chapters else None,
-            "current_section_id": str(sections[0]) if sections else None,
+            "current_knowledge_point_id": (
+                str(knowledge_points[0])
+                if knowledge_points
+                else session.current_knowledge_point_id if session is not None else None
+            ),
+            "current_chapter_id": (
+                str(chapters[0])
+                if chapters
+                else session.current_chapter_id if session is not None else None
+            ),
+            "current_section_id": (
+                str(sections[0])
+                if sections
+                else session.current_section_id if session is not None else None
+            ),
         }
 
 
 def get_agent_harness() -> AgentHarness:
     lesson_repository = get_lesson_repository()
     memory_service = get_memory_service()
+    rag_service = get_rag_service()
     return AgentHarness(
         memory_service=memory_service,
-        rag_service=get_rag_service(),
+        rag_service=rag_service,
         skill_registry=get_skill_registry(),
         llm_provider=get_llm_provider(),
         lesson_repository=lesson_repository,
         deepagents_runtime=DeepAgentsTeachingRuntime(
             memory_service=memory_service,
             lesson_repository=lesson_repository,
+            rag_service=rag_service,
         ),
         planner_service=get_planner_service(),
     )

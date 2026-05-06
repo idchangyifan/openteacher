@@ -27,6 +27,74 @@ class RagChunk:
     student_error_pattern_ids: list[str] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class RagTurnContext:
+    query: str
+    current_chapter_id: str = ""
+    current_section_id: str = ""
+    current_knowledge_point_id: str = ""
+    current_skill_id: str = ""
+    teaching_mode: str = ""
+    learner_state: str = ""
+    next_teacher_goal: str = ""
+    current_question: str = ""
+    student_answer_status: str = ""
+    recent_messages: list[str] = field(default_factory=list)
+
+    @property
+    def preferred_teaching_phases(self) -> list[str]:
+        if self.student_answer_status in {
+            "incorrect_symbol",
+            "incorrect_sign",
+            "stuck",
+        }:
+            return ["correction", "explanation", "diagnosis"]
+        if self.student_answer_status == "correct":
+            return ["practice", "assessment", "summary"]
+        if self.teaching_mode in {"active_lesson", "diagnostic_check"}:
+            return ["opening", "diagnosis", "planning"]
+        if self.teaching_mode == "adaptive_remediation":
+            return ["correction", "explanation"]
+        if self.teaching_mode == "guided_practice":
+            return ["practice", "explanation", "correction"]
+        if self.teaching_mode == "concept_instruction":
+            return ["explanation", "diagnosis"]
+        if self.teaching_mode == "lesson_summary":
+            return ["summary", "assessment"]
+        if self.teaching_mode == "review":
+            return ["assessment", "summary", "practice"]
+        return []
+
+    @property
+    def preferred_content_types(self) -> list[str]:
+        if self.student_answer_status in {"incorrect_symbol", "incorrect_sign"}:
+            return ["error_contrast", "correction_strategy", "misconception"]
+        if self.student_answer_status == "stuck":
+            return ["worked_example_step", "correction_strategy", "worked_example"]
+        if self.student_answer_status == "correct":
+            return ["variant_problem", "mastery_check", "lesson_summary"]
+        if self.teaching_mode in {"active_lesson", "diagnostic_check"}:
+            return ["lesson_opening", "diagnostic_question", "learning_objectives"]
+        if self.teaching_mode == "adaptive_remediation":
+            return ["error_contrast", "correction_strategy", "worked_example_step"]
+        if self.teaching_mode == "guided_practice":
+            return ["variant_problem", "practice_sequence", "worked_example_step"]
+        if self.teaching_mode == "concept_instruction":
+            return ["concept_summary", "worked_example", "diagnostic_question"]
+        if self.teaching_mode == "lesson_summary":
+            return ["lesson_summary", "mastery_check"]
+        if self.teaching_mode == "review":
+            return ["mastery_check", "lesson_summary", "variant_problem"]
+        return []
+
+
+@dataclass(frozen=True)
+class RankedRagChunk:
+    chunk: RagChunk
+    score: int
+    route_hits: list[str]
+
+
 class RagService:
     """Boundary for retrieval-augmented generation storage.
 
@@ -39,6 +107,9 @@ class RagService:
             "当前未启用真实教材 RAG；"
             "请优先依据已选择的 Teaching Skill 和课堂上下文授课。"
         )
+
+    def retrieve_for_turn(self, context: RagTurnContext) -> str:
+        return self.retrieve(context.query)
 
 
 class TextbookFileRagService:
@@ -54,12 +125,15 @@ class TextbookFileRagService:
         self.max_chunks = max_chunks
 
     def retrieve(self, query: str) -> str:
+        return self.retrieve_for_turn(RagTurnContext(query=query))
+
+    def retrieve_for_turn(self, context: RagTurnContext) -> str:
         chunks = self._load_chunks()
         if not chunks:
             return "教材 RAG 暂无可用 chunks。"
 
         scored = [
-            (self._score(query, chunk), index, chunk) for index, chunk in enumerate(chunks)
+            (self._score(context, chunk), index, chunk) for index, chunk in enumerate(chunks)
         ]
         matches = [
             chunk
@@ -121,7 +195,7 @@ class TextbookFileRagService:
             )
         return chunks
 
-    def _score(self, query: str, chunk: RagChunk) -> int:
+    def _score(self, context: RagTurnContext, chunk: RagChunk) -> int:
         haystack = (
             f"{chunk.id} {chunk.content_type} {chunk.chapter_id} "
             f"{chunk.source_section_id} {chunk.teaching_phase} {chunk.difficulty} "
@@ -129,8 +203,10 @@ class TextbookFileRagService:
             f"{' '.join(chunk.retrieval_tags)} "
             f"{' '.join(chunk.student_error_pattern_ids)} {chunk.text}"
         ).lower()
-        tokens = self._tokens(query)
-        return sum(1 for token in tokens if token in haystack)
+        tokens = self._tokens(context.query)
+        score = sum(2 for token in tokens if token in haystack)
+        score += _rerank_metadata_score(context, chunk)
+        return score
 
     def _tokens(self, query: str) -> list[str]:
         normalized = query.lower().strip()
@@ -176,17 +252,22 @@ class MongoTextbookRagService:
         self.max_chunks = max_chunks
 
     def retrieve(self, query: str) -> str:
-        chunks = self._find_chunks(query)
-        if not chunks:
+        return self.retrieve_for_turn(RagTurnContext(query=query))
+
+    def retrieve_for_turn(self, context: RagTurnContext) -> str:
+        ranked = self._find_ranked_chunks(context)
+        if not ranked:
             return "MongoDB 教材 RAG 暂无可用 chunks。"
 
-        lines = ["MongoDB 教材 RAG 检索结果："]
-        for chunk in chunks:
+        lines = ["MongoDB 教材 RAG 检索结果（多路召回 + rerank）："]
+        for item in ranked:
+            chunk = item.chunk
             knowledge_points = "、".join(chunk.knowledge_point_ids) or "未标注知识点"
+            routes = "、".join(item.route_hits) or "fallback"
             lines.append(
                 "- "
                 f"[{chunk.id}] {chunk.content_type} / {chunk.teaching_phase or 'unknown_phase'} "
-                f"/ {chunk.chapter_id} / {knowledge_points}："
+                f"/ {chunk.chapter_id} / {knowledge_points} / score={item.score} / routes={routes}："
                 f"{chunk.text}"
             )
         return "\n".join(lines)
@@ -195,12 +276,48 @@ class MongoTextbookRagService:
         client = MongoClient(settings.mongodb_uri)
         return client[settings.mongodb_database]["textbook_chunks"]
 
-    def _find_chunks(self, query: str) -> list[RagChunk]:
-        tokens = self._tokens(query)
-        clauses = self._query_clauses(tokens)
-        raw_docs = list(
+    def _find_ranked_chunks(self, context: RagTurnContext) -> list[RankedRagChunk]:
+        candidates: dict[str, tuple[dict[str, Any], set[str]]] = {}
+        for route in self._routes(context):
+            for doc in self._find_route_docs(route["filter"]):
+                chunk_id = str(doc.get("id") or "")
+                if not chunk_id:
+                    continue
+                existing = candidates.get(chunk_id)
+                if existing is None:
+                    candidates[chunk_id] = (doc, {route["name"]})
+                else:
+                    existing[1].add(route["name"])
+
+        if not candidates:
+            for doc in self._find_route_docs({}):
+                chunk_id = str(doc.get("id") or "")
+                if chunk_id:
+                    candidates[chunk_id] = (doc, {"fallback"})
+
+        ranked: list[RankedRagChunk] = []
+        for doc, route_hits in candidates.values():
+            chunk = self._chunk_from_doc(doc)
+            if chunk is None:
+                continue
+            score = self._score(context, chunk, route_hits)
+            if score <= 0:
+                continue
+            ranked.append(
+                RankedRagChunk(
+                    chunk=chunk,
+                    score=score,
+                    route_hits=sorted(route_hits),
+                )
+            )
+
+        ranked.sort(key=lambda item: (-item.score, item.chunk.id))
+        return ranked[: self.max_chunks]
+
+    def _find_route_docs(self, filter_doc: dict[str, Any]) -> list[dict[str, Any]]:
+        return list(
             self.collection.find(
-                {"$or": clauses} if clauses else {},
+                filter_doc,
                 {
                     "_id": 0,
                     "id": 1,
@@ -216,19 +333,88 @@ class MongoTextbookRagService:
                     "text": 1,
                     "review_status": 1,
                 },
-            ).limit(50)
+            ).limit(80)
         )
-        chunks = [chunk for chunk in (self._chunk_from_doc(doc) for doc in raw_docs) if chunk]
-        scored = [
-            (self._score(query, chunk), index, chunk) for index, chunk in enumerate(chunks)
-        ]
-        return [
-            chunk
-            for score, _index, chunk in sorted(scored, key=lambda item: (-item[0], item[1]))
-            if score > 0
-        ][: self.max_chunks]
 
-    def _query_clauses(self, tokens: list[str]) -> list[dict[str, Any]]:
+    def _routes(self, context: RagTurnContext) -> list[dict[str, Any]]:
+        tokens = self._tokens(context.query)
+        routes: list[dict[str, Any]] = []
+        if context.current_knowledge_point_id:
+            routes.append(
+                {
+                    "name": "knowledge_point",
+                    "filter": {"knowledge_point_ids": context.current_knowledge_point_id},
+                }
+            )
+        if context.current_section_id:
+            routes.append(
+                {
+                    "name": "section",
+                    "filter": {"source_section_id": context.current_section_id},
+                }
+            )
+        if context.current_chapter_id:
+            routes.append(
+                {
+                    "name": "chapter",
+                    "filter": {"chapter_id": context.current_chapter_id},
+                }
+            )
+        if context.preferred_teaching_phases:
+            routes.append(
+                {
+                    "name": "teaching_phase",
+                    "filter": {"teaching_phase": {"$in": context.preferred_teaching_phases}},
+                }
+            )
+        if context.preferred_content_types:
+            routes.append(
+                {
+                    "name": "content_type",
+                    "filter": {"content_type": {"$in": context.preferred_content_types}},
+                }
+            )
+        tag_values = [
+            *tokens,
+            context.current_knowledge_point_id,
+            context.current_section_id,
+            *context.preferred_teaching_phases,
+            *context.preferred_content_types,
+        ]
+        tag_values = [value for value in dict.fromkeys(tag_values) if value]
+        if tag_values:
+            routes.append(
+                {
+                    "name": "retrieval_tags",
+                    "filter": {"retrieval_tags": {"$in": tag_values}},
+                }
+            )
+        text_clauses = self._text_query_clauses(tokens)
+        if text_clauses:
+            routes.append({"name": "lexical_text", "filter": {"$or": text_clauses}})
+        if context.student_answer_status in {"incorrect_symbol", "incorrect_sign", "stuck"}:
+            routes.append(
+                {
+                    "name": "student_error_pattern",
+                    "filter": {
+                        "$or": [
+                            {"student_error_pattern_ids.0": {"$exists": True}},
+                            {
+                                "content_type": {
+                                    "$in": [
+                                        "error_contrast",
+                                        "misconception",
+                                        "correction_strategy",
+                                    ]
+                                }
+                            },
+                        ]
+                    },
+                }
+            )
+        return routes
+
+    def _text_query_clauses(self, tokens: list[str]) -> list[dict[str, Any]]:
         clauses: list[dict[str, Any]] = []
         for token in tokens:
             if not token:
@@ -239,10 +425,6 @@ class MongoTextbookRagService:
                     {"text": {"$regex": escaped, "$options": "i"}},
                     {"content_type": {"$regex": escaped, "$options": "i"}},
                     {"teaching_phase": {"$regex": escaped, "$options": "i"}},
-                    {"retrieval_tags": token},
-                    {"source_section_id": token},
-                    {"chapter_id": token},
-                    {"knowledge_point_ids": token},
                 ]
             )
         return clauses
@@ -270,8 +452,11 @@ class MongoTextbookRagService:
             ],
         )
 
-    def _score(self, query: str, chunk: RagChunk) -> int:
-        return TextbookFileRagService(Path())._score(query, chunk)
+    def _score(self, context: RagTurnContext, chunk: RagChunk, route_hits: set[str]) -> int:
+        score = TextbookFileRagService(Path())._score(context, chunk)
+        score += len(route_hits) * 4
+        score += _rerank_metadata_score(context, chunk)
+        return score
 
     def _tokens(self, query: str) -> list[str]:
         return TextbookFileRagService(Path())._tokens(query)
@@ -283,3 +468,33 @@ def get_rag_service() -> RagService:
     if settings.rag_backend == "mongodb":
         return MongoTextbookRagService()
     return RagService()
+
+
+def _rerank_metadata_score(context: RagTurnContext, chunk: RagChunk) -> int:
+    score = 0
+    if context.current_knowledge_point_id in chunk.knowledge_point_ids:
+        score += 30
+    if context.current_section_id and context.current_section_id == chunk.source_section_id:
+        score += 18
+    if context.current_chapter_id and context.current_chapter_id == chunk.chapter_id:
+        score += 8
+    if chunk.teaching_phase in context.preferred_teaching_phases:
+        score += 16
+    if chunk.content_type in context.preferred_content_types:
+        score += 20
+    if context.current_knowledge_point_id and context.current_knowledge_point_id in chunk.retrieval_tags:
+        score += 10
+    if context.current_section_id and context.current_section_id in chunk.retrieval_tags:
+        score += 6
+    if context.student_answer_status in {"incorrect_symbol", "incorrect_sign", "stuck"}:
+        if chunk.student_error_pattern_ids:
+            score += 15
+        if chunk.content_type in {"error_contrast", "correction_strategy", "misconception"}:
+            score += 12
+    if context.student_answer_status == "correct" and chunk.content_type in {
+        "variant_problem",
+        "mastery_check",
+        "lesson_summary",
+    }:
+        score += 15
+    return score

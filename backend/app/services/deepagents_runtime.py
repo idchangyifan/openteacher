@@ -12,6 +12,7 @@ from app.schemas.teacher import TeacherChatRequest
 from app.services.lesson_store import LessonRepository
 from app.services.llm_provider import TeacherPrompt
 from app.services.memory import MemoryService
+from app.services.rag import RagService, RagTurnContext
 
 
 @dataclass(frozen=True)
@@ -70,9 +71,11 @@ class DeepAgentsTeachingRuntime:
         self,
         memory_service: MemoryService,
         lesson_repository: LessonRepository,
+        rag_service: RagService | None = None,
     ) -> None:
         self.memory_service = memory_service
         self.lesson_repository = lesson_repository
+        self.rag_service = rag_service
         self._mongo_client: MongoClient | None = None
 
     def generate_reply(
@@ -84,7 +87,7 @@ class DeepAgentsTeachingRuntime:
         graph_state = self._build_graph_state(request, prompt)
         agent = create_deep_agent(
             model=self._build_model(),
-            tools=self._build_tools(request),
+            tools=self._build_tools(request, prompt, graph_state),
             system_prompt=self._build_system_prompt(prompt),
             checkpointer=self._build_checkpointer(),
         )
@@ -161,7 +164,12 @@ class DeepAgentsTeachingRuntime:
     def _checkpointer_diagnostic(self) -> str:
         return "mongodb" if settings.lesson_store_backend == "mongodb" else "none"
 
-    def _build_tools(self, request: TeacherChatRequest) -> list[Any]:
+    def _build_tools(
+        self,
+        request: TeacherChatRequest,
+        prompt: TeacherPrompt | None = None,
+        graph_state: TeachingGraphState | None = None,
+    ) -> list[Any]:
         def retrieve_student_memory(query: str) -> str:
             """Retrieve teaching memories for the current student and query."""
 
@@ -213,6 +221,35 @@ class DeepAgentsTeachingRuntime:
                 f" learner_state={learner_state}\n evidence={evidence}"
             )
 
+        def retrieve_textbook_chunks(query: str = "") -> str:
+            """Retrieve textbook chunks using current lesson state and teaching intent."""
+
+            if self.rag_service is None:
+                return "当前 DeepAgents runtime 未配置教材 RAG service。"
+            state = graph_state or self._build_graph_state(request, prompt or self._empty_prompt())
+            context = RagTurnContext(
+                query=query or request.message,
+                current_chapter_id=state.lesson_state.current_chapter_id or "",
+                current_section_id=state.lesson_state.current_section_id or "",
+                current_knowledge_point_id=state.lesson_state.current_knowledge_point_id or "",
+                current_skill_id=state.lesson_state.current_skill_id or "",
+                teaching_mode=self._extract_planner_field(
+                    state.planner_context,
+                    "teaching_mode",
+                ),
+                learner_state=self._extract_planner_field(
+                    state.planner_context,
+                    "learner_state",
+                ),
+                next_teacher_goal=state.next_teaching_action,
+                current_question=state.current_question or "",
+                student_answer_status=state.student_answer_status,
+                recent_messages=[
+                    f"{message['role']}: {message['content']}" for message in state.messages[-6:]
+                ],
+            )
+            return self.rag_service.retrieve_for_turn(context)
+
         def create_memory_extraction_hint(summary: str) -> str:
             """Record a candidate memory extraction hint for later structured memory extraction."""
 
@@ -225,8 +262,26 @@ class DeepAgentsTeachingRuntime:
             retrieve_student_memory,
             load_lesson_state,
             plan_next_teaching_move,
+            retrieve_textbook_chunks,
             create_memory_extraction_hint,
         ]
+
+    def _empty_prompt(self) -> TeacherPrompt:
+        return TeacherPrompt(
+            message="",
+            grade="",
+            subject="",
+            teacher_style="严格但温暖",
+            skill_name="",
+            skill_guidance="",
+            memory_summary="",
+            retrieved_context="",
+            core_skill_name="",
+            core_skill_guidance="",
+            knowledge_skill_name="",
+            knowledge_skill_guidance="",
+            planner_context="",
+        )
 
     def _build_graph_state(
         self,
@@ -378,6 +433,8 @@ class DeepAgentsTeachingRuntime:
             "review 或 lesson_summary。不要把所有输入都当成一元一次方程解题。"
             "你必须善用工具读取课堂状态和学生记忆，但记忆只能作为教学假设，"
             "当前学生回答永远优先。"
+            "你需要教材依据或下一步材料时，调用 retrieve_textbook_chunks；"
+            "该工具会基于当前 lesson state、学生回答状态和 planner 意图做多路召回与 rerank。"
             "如果学生已经答对或完成当前任务，先确认正确，不要机械要求从头写步骤；"
             "再要求一句理由、验算、总结或进入下一教学阶段。"
             "如果 TeachingGraphState 中 student_answer_status 是 incorrect_symbol、"
