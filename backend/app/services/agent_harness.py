@@ -10,6 +10,11 @@ from app.services.memory import MemoryService, get_memory_service
 from app.services.planner import PlannerService, get_planner_service
 from app.services.rag import RagService, RagTurnContext, get_rag_service
 from app.services.skill_registry import SkillRegistry, TeachingSkill, get_skill_registry
+from app.services.teaching_turn_context import (
+    evaluate_student_answer,
+    format_message_lines,
+    infer_current_question,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -75,11 +80,8 @@ class AgentHarness:
             memory_summary=memory,
             lesson_detail=lesson_detail,
         )
-        current_question = self._infer_current_question(lesson_detail)
-        student_answer_status, _student_answer_feedback = self._evaluate_student_answer(
-            question=current_question,
-            answer=request.message,
-        )
+        current_question = infer_current_question(lesson_detail.messages if lesson_detail else [])
+        answer_evaluation = evaluate_student_answer(current_question, request.message)
         rag_context = self._build_rag_turn_context(
             query=rag_query,
             message=request.message,
@@ -88,7 +90,7 @@ class AgentHarness:
             learner_state=planner_decision.learner_state,
             next_teacher_goal=planner_decision.next_teacher_goal,
             current_question=current_question,
-            student_answer_status=student_answer_status,
+            student_answer_status=answer_evaluation.status,
         )
         retrieved_context = self.rag_service.retrieve_for_turn(rag_context)
         prompt = TeacherPrompt(
@@ -164,21 +166,17 @@ class AgentHarness:
         if lesson_detail is None:
             return message
 
-        recent_messages = lesson_detail.messages[-6:]
-        if not recent_messages:
+        if not lesson_detail.messages:
             return message
 
-        history = "\n".join(
-            f"{lesson_message.role}: {lesson_message.content}"
-            for lesson_message in recent_messages
-        )
+        history = "\n".join(format_message_lines(lesson_detail.messages))
         state_lines = [
             f"current_chapter_id={lesson_detail.session.current_chapter_id or ''}",
             f"current_section_id={lesson_detail.session.current_section_id or ''}",
             f"current_knowledge_point_id={lesson_detail.session.current_knowledge_point_id or ''}",
             f"current_skill_id={lesson_detail.session.current_skill_id or ''}",
         ]
-        return f"{message}\n\n当前课堂状态：\n" + "\n".join(state_lines) + f"\n\n最近课堂记录：\n{history}"
+        return f"{message}\n\n当前课堂状态：\n" + "\n".join(state_lines) + f"\n\n完整课堂记录：\n{history}"
 
     def _build_rag_turn_context(
         self,
@@ -193,13 +191,8 @@ class AgentHarness:
         student_answer_status: str,
     ) -> RagTurnContext:
         session = lesson_detail.session if lesson_detail is not None else None
-        recent_messages = (
-            [
-                f"{lesson_message.role}: {lesson_message.content}"
-                for lesson_message in lesson_detail.messages[-6:]
-            ]
-            if lesson_detail is not None
-            else []
+        session_messages = (
+            format_message_lines(lesson_detail.messages) if lesson_detail is not None else []
         )
         return RagTurnContext(
             query=query or message,
@@ -214,54 +207,8 @@ class AgentHarness:
             next_teacher_goal=next_teacher_goal,
             current_question=current_question or "",
             student_answer_status=student_answer_status,
-            recent_messages=recent_messages,
+            recent_messages=session_messages,
         )
-
-    def _infer_current_question(self, lesson_detail: LessonSessionDetail | None) -> str | None:
-        if lesson_detail is None:
-            return None
-        for message in reversed(lesson_detail.messages):
-            if message.role == "teacher" and any(mark in message.content for mark in ["？", "?"]):
-                return message.content
-        return None
-
-    def _evaluate_student_answer(self, question: str | None, answer: str) -> tuple[str, str]:
-        compact_answer = self._normalize_answer(answer)
-        if not question:
-            if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
-                return "stuck", "学生表达卡住。"
-            return "needs_evaluation", ""
-
-        normalized_question = self._normalize_text(question)
-        if (
-            "收入10" in normalized_question
-            and "支出6" in normalized_question
-            or ("支出" in normalized_question and "收入" in normalized_question and "+还是-" in normalized_question)
-        ):
-            if compact_answer in {"-6", "-6元"}:
-                return "correct", "学生回答 -6 正确。"
-            if compact_answer in {"*6", "×6", "x6"}:
-                return "incorrect_symbol", "学生把符号写成了乘号。"
-            if compact_answer in {"&6", "与6", "和6"}:
-                return "invalid_symbol", "学生写了连接符，不是正负号。"
-            if compact_answer in {"+6", "+6元", "6", "6元"}:
-                return "incorrect_sign", "学生没有表示出支出和收入的相反意义。"
-            if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
-                return "stuck", "学生卡在正负号方向判断。"
-
-        if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
-            return "stuck", "学生表达卡住。"
-        return "needs_evaluation", ""
-
-    def _normalize_text(self, value: str) -> str:
-        return value.replace(" ", "").replace("＋", "+").replace("－", "-")
-
-    def _normalize_answer(self, value: str) -> str:
-        compact = self._normalize_text(value.strip().lower())
-        compact = compact.replace("啊", "").replace("呀", "").replace("呢", "")
-        compact = compact.replace("负六", "-6").replace("负6", "-6").replace("减6", "-6")
-        compact = compact.replace("乘6", "*6")
-        return compact
 
     def _lesson_state_from_skill(
         self,

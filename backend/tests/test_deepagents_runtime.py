@@ -56,6 +56,12 @@ def test_deepagents_tools_can_read_memory_and_lesson_state() -> None:
             lesson_goal="理解浮力和重力的关系",
         )
     )
+    for index in range(7):
+        repository.append_message(
+            session_id=session.id,
+            role="student" if index % 2 else "teacher",
+            content=f"前置课堂消息{index}",
+        )
     request = TeacherChatRequest(
         message="老师，我们继续上次的课",
         context=StudentContext(
@@ -72,6 +78,8 @@ def test_deepagents_tools_can_read_memory_and_lesson_state() -> None:
     lesson_state = tools["load_lesson_state"]()
     assert "浮力入门" in lesson_state
     assert "理解浮力和重力的关系" in lesson_state
+    assert "完整课堂消息" in lesson_state
+    assert "前置课堂消息0" in lesson_state
 
 
 def test_deepagents_tools_can_retrieve_textbook_chunks_with_graph_state() -> None:
@@ -98,6 +106,12 @@ def test_deepagents_tools_can_retrieve_textbook_chunks_with_graph_state() -> Non
         current_section_id="ch1-sec1",
         current_chapter_id="ch1",
     )
+    for index in range(7):
+        repository.append_message(
+            session_id=session.id,
+            role="student" if index % 2 else "teacher",
+            content=f"历史课堂消息{index}",
+        )
     repository.append_message(
         session_id=session.id,
         role="teacher",
@@ -126,6 +140,7 @@ def test_deepagents_tools_can_retrieve_textbook_chunks_with_graph_state() -> Non
     assert captured["context"].current_knowledge_point_id == "kp-positive-negative-numbers"
     assert captured["context"].student_answer_status == "incorrect_symbol"
     assert captured["context"].current_question == "如果收入10元记作+10，那支出6元应该怎么记？"
+    assert any("历史课堂消息0" in line for line in captured["context"].recent_messages)
 
 
 def test_teaching_graph_state_uses_session_id_as_thread_and_keeps_lesson_state() -> None:

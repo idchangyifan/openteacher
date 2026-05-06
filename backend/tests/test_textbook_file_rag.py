@@ -264,6 +264,12 @@ def test_agent_harness_retrieves_rag_after_lesson_state_and_planner() -> None:
         current_section_id="ch1-sec1",
         current_chapter_id="ch1",
     )
+    for index in range(7):
+        repository.append_message(
+            session_id=session.id,
+            role="student" if index % 2 else "teacher",
+            content=f"完整课堂历史{index}",
+        )
     repository.append_message(
         session_id=session.id,
         role="teacher",
@@ -299,5 +305,6 @@ def test_agent_harness_retrieves_rag_after_lesson_state_and_planner() -> None:
     assert rag_context.current_knowledge_point_id == "kp-positive-negative-numbers"
     assert rag_context.current_section_id == "ch1-sec1"
     assert rag_context.student_answer_status == "incorrect_symbol"
+    assert any("完整课堂历史0" in line for line in rag_context.recent_messages)
     assert rag_context.teaching_mode in {"adaptive_remediation", "active_lesson"}
     assert captured["retrieved_context"] == "captured textbook chunks"

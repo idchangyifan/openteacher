@@ -15,6 +15,11 @@ from app.services.lesson_store import LessonRepository
 from app.services.llm_provider import TeacherPrompt
 from app.services.memory import MemoryService
 from app.services.rag import RagService, RagTurnContext
+from app.services.teaching_turn_context import (
+    evaluate_student_answer,
+    format_message_lines,
+    infer_current_question,
+)
 
 
 @dataclass(frozen=True)
@@ -195,10 +200,9 @@ class DeepAgentsTeachingRuntime:
             if detail is None:
                 return f"未找到课堂 session：{session_id}"
 
-            recent_messages = detail.messages[-6:]
-            transcript = "\n".join(
-                f"{message.role}: {message.content}" for message in recent_messages
-            )
+            transcript = "\n".join(format_message_lines(detail.messages))
+            if not transcript:
+                transcript = "(当前 session 暂无历史消息)"
             return (
                 f"课堂标题：{detail.session.title}\n"
                 f"课堂目标：{detail.session.lesson_goal}\n"
@@ -209,7 +213,7 @@ class DeepAgentsTeachingRuntime:
                 f"当前知识点：{detail.session.current_knowledge_point_id or '未设置'}\n"
                 f"当前 skill：{detail.session.current_skill_id or '未设置'}\n"
                 f"课堂摘要：{detail.session.summary}\n"
-                f"最近消息：\n{transcript}"
+                f"完整课堂消息：\n{transcript}"
             )
 
         def plan_next_teaching_move(learner_state: str, evidence: str) -> str:
@@ -247,9 +251,7 @@ class DeepAgentsTeachingRuntime:
                 next_teacher_goal=state.next_teaching_action,
                 current_question=state.current_question or "",
                 student_answer_status=state.student_answer_status,
-                recent_messages=[
-                    f"{message['role']}: {message['content']}" for message in state.messages[-6:]
-                ],
+                recent_messages=format_message_lines(state.messages),
             )
             return self.rag_service.retrieve_for_turn(context)
 
@@ -286,9 +288,7 @@ class DeepAgentsTeachingRuntime:
         return [opent_teacher_short_term_context]
 
     def _format_short_term_context(self, graph_state: TeachingGraphState) -> str:
-        transcript = "\n".join(
-            f"{message['role']}: {message['content']}" for message in graph_state.messages
-        )
+        transcript = "\n".join(format_message_lines(graph_state.messages))
         if not transcript:
             transcript = "(当前 session 暂无历史消息)"
         return (
@@ -335,11 +335,8 @@ class DeepAgentsTeachingRuntime:
         lesson_detail = self._load_session_detail(request)
         lesson_state = self._build_lesson_state(request, lesson_detail)
         messages = self._build_state_messages(request, lesson_detail)
-        current_question = self._infer_current_question(messages)
-        answer_status, answer_feedback = self._evaluate_student_answer(
-            question=current_question,
-            answer=request.message,
-        )
+        current_question = infer_current_question(messages)
+        answer_evaluation = evaluate_student_answer(current_question, request.message)
         return TeachingGraphState(
             thread_id=self._thread_id(request),
             student_id=request.context.student_id,
@@ -353,9 +350,9 @@ class DeepAgentsTeachingRuntime:
                 "knowledge": prompt.effective_knowledge_skill_name,
             },
             current_question=current_question,
-            student_answer_status=answer_status,
-            student_answer_feedback=answer_feedback,
-            next_teaching_action=answer_feedback or self._extract_planner_field(
+            student_answer_status=answer_evaluation.status,
+            student_answer_feedback=answer_evaluation.feedback,
+            next_teaching_action=answer_evaluation.feedback or self._extract_planner_field(
                 prompt.planner_context,
                 "next_teacher_goal",
             ),
@@ -408,68 +405,6 @@ class DeepAgentsTeachingRuntime:
             {"role": message.role, "content": message.content}
             for message in lesson_detail.messages
         ]
-
-    def _infer_current_question(self, messages: list[dict[str, str]]) -> str | None:
-        for message in reversed(messages):
-            has_question_mark = any(mark in message["content"] for mark in ["？", "?"])
-            if message["role"] == "teacher" and has_question_mark:
-                return message["content"]
-        return None
-
-    def _evaluate_student_answer(self, question: str | None, answer: str) -> tuple[str, str]:
-        normalized_question = self._normalize_text(question or "")
-        compact_answer = self._normalize_answer(answer)
-        if not question:
-            return "needs_evaluation", ""
-
-        if (
-            "收入10" in normalized_question
-            and "支出6" in normalized_question
-            or ("支出" in normalized_question and "收入" in normalized_question and "+还是-" in normalized_question)
-        ):
-            if compact_answer in {"-6", "-6元"}:
-                return (
-                    "correct",
-                    "学生回答 -6 正确。先确认正确，再追问一句：为什么这里要用负号？不要切到下一题。",
-                )
-            if compact_answer in {"*6", "×6", "x6"}:
-                return (
-                    "incorrect_symbol",
-                    "学生把符号写成了乘号。指出 * 不是正负号；继续让学生判断支出应该用 + 还是 -，不要直接说出完整答案，也不要切到下一题。",
-                )
-            if compact_answer in {"&6", "与6", "和6"}:
-                return (
-                    "invalid_symbol",
-                    "学生写了“与/和”一类连接符，不是正负号。停留在当前题，只问：支出和收入方向相反时，应该用 + 还是 -？不要重启课堂。",
-                )
-            if compact_answer in {"+6", "+6元", "6", "6元"}:
-                return (
-                    "incorrect_sign",
-                    "学生没有表示出支出和收入的相反意义。只提示收入用 +，支出要用相反符号；不要切到下一题。",
-                )
-            if any(word in compact_answer for word in ["不知道", "不会", "不懂"]):
-                return (
-                    "stuck",
-                    "学生卡住了。用收入和支出是相反意义的量来提示，并让学生继续回答这同一道题。",
-                )
-
-        return "needs_evaluation", ""
-
-    def _normalize_text(self, value: str) -> str:
-        return (
-            value.replace(" ", "")
-            .replace("＋", "+")
-            .replace("－", "-")
-            .replace("，", ",")
-            .replace("？", "?")
-        )
-
-    def _normalize_answer(self, value: str) -> str:
-        compact = self._normalize_text(value.strip().lower())
-        compact = compact.replace("啊", "").replace("呀", "").replace("呢", "")
-        compact = compact.replace("负六", "-6").replace("负6", "-6").replace("减6", "-6")
-        compact = compact.replace("乘6", "*6")
-        return compact
 
     def _extract_planner_field(self, planner_context: str, field_name: str) -> str:
         prefix = f"{field_name}="
