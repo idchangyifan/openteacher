@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 import re
 from typing import Any
@@ -20,6 +20,11 @@ class RagChunk:
     knowledge_point_ids: list[str]
     text: str
     review_status: str
+    source_section_id: str = ""
+    teaching_phase: str = ""
+    retrieval_tags: list[str] = field(default_factory=list)
+    difficulty: str = ""
+    student_error_pattern_ids: list[str] = field(default_factory=list)
 
 
 class RagService:
@@ -69,7 +74,8 @@ class TextbookFileRagService:
             knowledge_points = "、".join(chunk.knowledge_point_ids) or "未标注知识点"
             lines.append(
                 "- "
-                f"[{chunk.id}] {chunk.content_type} / {chunk.chapter_id} / {knowledge_points}："
+                f"[{chunk.id}] {chunk.content_type} / {chunk.teaching_phase or 'unknown_phase'} "
+                f"/ {chunk.chapter_id} / {knowledge_points}："
                 f"{chunk.text}"
             )
         return "\n".join(lines)
@@ -101,6 +107,16 @@ class TextbookFileRagService:
                     ],
                     text=text.strip(),
                     review_status=str(item.get("review_status") or "draft"),
+                    source_section_id=str(item.get("source_section_id") or ""),
+                    teaching_phase=str(item.get("teaching_phase") or ""),
+                    retrieval_tags=[
+                        str(value) for value in item.get("retrieval_tags", []) or []
+                    ],
+                    difficulty=str(item.get("difficulty") or ""),
+                    student_error_pattern_ids=[
+                        str(value)
+                        for value in item.get("student_error_pattern_ids", []) or []
+                    ],
                 )
             )
         return chunks
@@ -108,7 +124,10 @@ class TextbookFileRagService:
     def _score(self, query: str, chunk: RagChunk) -> int:
         haystack = (
             f"{chunk.id} {chunk.content_type} {chunk.chapter_id} "
-            f"{' '.join(chunk.knowledge_point_ids)} {chunk.text}"
+            f"{chunk.source_section_id} {chunk.teaching_phase} {chunk.difficulty} "
+            f"{' '.join(chunk.knowledge_point_ids)} "
+            f"{' '.join(chunk.retrieval_tags)} "
+            f"{' '.join(chunk.student_error_pattern_ids)} {chunk.text}"
         ).lower()
         tokens = self._tokens(query)
         return sum(1 for token in tokens if token in haystack)
@@ -130,6 +149,14 @@ class TextbookFileRagService:
             "0",
             "概念",
             "情境",
+            "数轴",
+            "原点",
+            "负号",
+            "括号",
+            "例题",
+            "变式",
+            "易错",
+            "小结",
         ]:
             if keyword in query:
                 tokens.append(keyword.lower())
@@ -158,7 +185,8 @@ class MongoTextbookRagService:
             knowledge_points = "、".join(chunk.knowledge_point_ids) or "未标注知识点"
             lines.append(
                 "- "
-                f"[{chunk.id}] {chunk.content_type} / {chunk.chapter_id} / {knowledge_points}："
+                f"[{chunk.id}] {chunk.content_type} / {chunk.teaching_phase or 'unknown_phase'} "
+                f"/ {chunk.chapter_id} / {knowledge_points}："
                 f"{chunk.text}"
             )
         return "\n".join(lines)
@@ -180,6 +208,11 @@ class MongoTextbookRagService:
                     "content_type": 1,
                     "chapter_id": 1,
                     "knowledge_point_ids": 1,
+                    "source_section_id": 1,
+                    "teaching_phase": 1,
+                    "retrieval_tags": 1,
+                    "difficulty": 1,
+                    "student_error_pattern_ids": 1,
                     "text": 1,
                     "review_status": 1,
                 },
@@ -205,6 +238,9 @@ class MongoTextbookRagService:
                 [
                     {"text": {"$regex": escaped, "$options": "i"}},
                     {"content_type": {"$regex": escaped, "$options": "i"}},
+                    {"teaching_phase": {"$regex": escaped, "$options": "i"}},
+                    {"retrieval_tags": token},
+                    {"source_section_id": token},
                     {"chapter_id": token},
                     {"knowledge_point_ids": token},
                 ]
@@ -225,6 +261,13 @@ class MongoTextbookRagService:
             ],
             text=text.strip(),
             review_status=str(doc.get("review_status") or "draft"),
+            source_section_id=str(doc.get("source_section_id") or ""),
+            teaching_phase=str(doc.get("teaching_phase") or ""),
+            retrieval_tags=[str(value) for value in doc.get("retrieval_tags", []) or []],
+            difficulty=str(doc.get("difficulty") or ""),
+            student_error_pattern_ids=[
+                str(value) for value in doc.get("student_error_pattern_ids", []) or []
+            ],
         )
 
     def _score(self, query: str, chunk: RagChunk) -> int:

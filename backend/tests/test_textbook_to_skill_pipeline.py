@@ -64,6 +64,10 @@ def test_textbook_to_skill_sample_rag_chunks_are_traceable() -> None:
         assert chunk["source_ref"]
         assert chunk["chapter_id"]
         assert chunk["text"]
+        assert chunk["source_section_id"]
+        assert chunk["teaching_phase"]
+        assert chunk["retrieval_tags"]
+        assert chunk["difficulty"]
         assert chunk["copyright_policy"] in {
             "generated_review_required",
             "local_research_only",
@@ -104,6 +108,25 @@ def test_textbook_to_skill_sample_has_rich_teaching_chunks_with_page_ranges() ->
     assert example["page_range"] == {"start": 6, "end": 7}
     assert "底数不是 -2" in error["text"]
     assert "原点左侧 4 个单位" in variants["text"]
+
+
+def test_textbook_to_skill_sample_has_retrieval_metadata() -> None:
+    data = load_yaml(FIXTURE_PATH)
+    chunks = {chunk["id"]: chunk for chunk in data["rag_chunks"]}
+
+    opening = chunks["rag-ch1-kp-positive-negative-numbers-opening"]
+    error = chunks["rag-ch1-kp-positive-negative-numbers-error-contrast-1"]
+    practice = chunks["rag-ch1-kp-number-line-variants"]
+
+    assert opening["source_section_id"] == "ch1-sec1"
+    assert opening["teaching_phase"] == "opening"
+    assert opening["difficulty"] == "introductory"
+    assert "kp-positive-negative-numbers" in opening["retrieval_tags"]
+    assert "相反意义" in error["retrieval_tags"]
+    assert error["student_error_pattern_ids"] == [
+        "error-pattern:ch1-kp-positive-negative-numbers-error-contrast-1"
+    ]
+    assert practice["teaching_phase"] == "practice"
 
 
 def test_textbook_to_skill_builder_generates_expected_artifact_shape() -> None:

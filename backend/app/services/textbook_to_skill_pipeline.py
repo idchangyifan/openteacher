@@ -22,6 +22,8 @@ def build_textbook_to_skill_artifact(source: Mapping[str, Any]) -> dict[str, Any
 
     textbook_source_id = _required_str(textbook, "source_id")
     llm_source_id = str(source.get("llm_source_id") or "llm-draft-teaching-design")
+    source_section_ids = _knowledge_point_section_ids(chapters)
+    knowledge_point_difficulties = _knowledge_point_difficulties(knowledge_points)
 
     artifact = {
         "pipeline_id": _required_str(source, "pipeline_id"),
@@ -33,7 +35,12 @@ def build_textbook_to_skill_artifact(source: Mapping[str, Any]) -> dict[str, Any
         "skill_drafts": [
             _build_skill_draft(item, textbook_source_id, llm_source_id) for item in teaching_designs
         ],
-        "rag_chunks": _build_rag_chunks(teaching_designs, llm_source_id),
+        "rag_chunks": _build_rag_chunks(
+            teaching_designs,
+            llm_source_id,
+            source_section_ids=source_section_ids,
+            knowledge_point_difficulties=knowledge_point_difficulties,
+        ),
         "eval_cases": _build_eval_cases(source, teaching_designs),
         "review_record": _build_review_record(source),
     }
@@ -132,6 +139,33 @@ def _knowledge_point_page_ranges(chapters: list[Any]) -> dict[str, dict[str, int
             for knowledge_point_id in section.get("knowledge_point_ids", []) or []:
                 ranges[str(knowledge_point_id)] = page_range
     return ranges
+
+
+def _knowledge_point_section_ids(chapters: list[Any]) -> dict[str, str]:
+    section_ids: dict[str, str] = {}
+    for chapter in chapters:
+        if not isinstance(chapter, Mapping):
+            continue
+        for section in chapter.get("sections", []) or []:
+            if not isinstance(section, Mapping):
+                continue
+            section_id = section.get("id")
+            if not isinstance(section_id, str):
+                continue
+            for knowledge_point_id in section.get("knowledge_point_ids", []) or []:
+                section_ids[str(knowledge_point_id)] = section_id
+    return section_ids
+
+
+def _knowledge_point_difficulties(knowledge_points: list[Any]) -> dict[str, str]:
+    difficulties: dict[str, str] = {}
+    for item in knowledge_points:
+        if not isinstance(item, Mapping):
+            continue
+        knowledge_point_id = item.get("id")
+        if isinstance(knowledge_point_id, str):
+            difficulties[knowledge_point_id] = str(item.get("difficulty") or "unknown")
+    return difficulties
 
 
 def _first_known_page_range(
@@ -272,7 +306,13 @@ def _build_skill_draft(
     }
 
 
-def _build_rag_chunks(teaching_designs: list[Any], llm_source_id: str) -> list[dict[str, Any]]:
+def _build_rag_chunks(
+    teaching_designs: list[Any],
+    llm_source_id: str,
+    *,
+    source_section_ids: dict[str, str] | None = None,
+    knowledge_point_difficulties: dict[str, str] | None = None,
+) -> list[dict[str, Any]]:
     chunks: list[dict[str, Any]] = []
     for design in teaching_designs:
         if not isinstance(design, Mapping):
@@ -286,15 +326,47 @@ def _build_rag_chunks(teaching_designs: list[Any], llm_source_id: str) -> list[d
         ]:
             if not isinstance(chunk, Mapping):
                 raise PipelineInputError("rag_chunks items must be objects")
+            content_type = str(chunk.get("content_type") or "concept_summary")
+            chunk_knowledge_point_ids = list(chunk.get("knowledge_point_ids") or knowledge_point_ids)
+            text = _required_str(chunk, "text")
+            source_section_id = _source_section_id(
+                chunk,
+                design,
+                chunk_knowledge_point_ids,
+                source_section_ids or {},
+            )
+            teaching_phase = _teaching_phase(chunk, content_type)
+            difficulty = _difficulty(
+                chunk,
+                design,
+                chunk_knowledge_point_ids,
+                knowledge_point_difficulties or {},
+            )
             chunks.append(
                 {
                     "id": _required_str(chunk, "id"),
                     "source_ref": str(chunk.get("source_ref") or llm_source_id),
-                    "content_type": str(chunk.get("content_type") or "concept_summary"),
+                    "content_type": content_type,
                     "chapter_id": str(chunk.get("chapter_id") or chapter_id),
-                    "knowledge_point_ids": list(chunk.get("knowledge_point_ids") or knowledge_point_ids),
+                    "knowledge_point_ids": chunk_knowledge_point_ids,
+                    "source_section_id": source_section_id,
+                    "teaching_phase": teaching_phase,
+                    "retrieval_tags": _retrieval_tags(
+                        chunk,
+                        content_type=content_type,
+                        teaching_phase=teaching_phase,
+                        chapter_id=chapter_id,
+                        knowledge_point_ids=chunk_knowledge_point_ids,
+                        source_section_id=source_section_id,
+                        text=text,
+                    ),
+                    "difficulty": difficulty,
+                    "student_error_pattern_ids": _student_error_pattern_ids(
+                        chunk,
+                        content_type=content_type,
+                    ),
                     "page_range": _page_range(chunk.get("page_range") or design_page_range),
-                    "text": _required_str(chunk, "text"),
+                    "text": text,
                     "text_role": str(chunk.get("text_role") or "llm_inferred"),
                     "review_status": str(chunk.get("review_status") or "draft"),
                     "copyright_policy": str(
@@ -313,6 +385,125 @@ def _first_evidence_page_range(evidence_items: list[Any]) -> dict[str, int | Non
         if page_range != {"start": None, "end": None}:
             return page_range
     return None
+
+
+def _source_section_id(
+    chunk: Mapping[str, Any],
+    design: Mapping[str, Any],
+    knowledge_point_ids: list[str],
+    source_section_ids: dict[str, str],
+) -> str:
+    explicit = chunk.get("source_section_id") or design.get("source_section_id")
+    if isinstance(explicit, str) and explicit.strip():
+        return explicit.strip()
+    for knowledge_point_id in knowledge_point_ids:
+        section_id = source_section_ids.get(str(knowledge_point_id))
+        if section_id:
+            return section_id
+    return ""
+
+
+def _difficulty(
+    chunk: Mapping[str, Any],
+    design: Mapping[str, Any],
+    knowledge_point_ids: list[str],
+    knowledge_point_difficulties: dict[str, str],
+) -> str:
+    explicit = chunk.get("difficulty") or design.get("difficulty")
+    if isinstance(explicit, str) and explicit.strip():
+        return explicit.strip()
+    for knowledge_point_id in knowledge_point_ids:
+        difficulty = knowledge_point_difficulties.get(str(knowledge_point_id))
+        if difficulty:
+            return difficulty
+    return "unknown"
+
+
+def _teaching_phase(chunk: Mapping[str, Any], content_type: str) -> str:
+    explicit = chunk.get("teaching_phase")
+    if isinstance(explicit, str) and explicit.strip():
+        return explicit.strip()
+    return {
+        "learning_objectives": "planning",
+        "lesson_opening": "opening",
+        "diagnostic_question": "diagnosis",
+        "misconception": "diagnosis",
+        "correction_strategy": "correction",
+        "practice_sequence": "practice",
+        "mastery_check": "assessment",
+        "worked_example": "explanation",
+        "worked_example_step": "explanation",
+        "variant_problem": "practice",
+        "error_contrast": "correction",
+        "lesson_summary": "summary",
+        "concept_summary": "explanation",
+        "teacher_method": "instruction",
+    }.get(content_type, "reference")
+
+
+def _retrieval_tags(
+    chunk: Mapping[str, Any],
+    *,
+    content_type: str,
+    teaching_phase: str,
+    chapter_id: str,
+    knowledge_point_ids: list[str],
+    source_section_id: str,
+    text: str,
+) -> list[str]:
+    tags = [
+        content_type,
+        teaching_phase,
+        chapter_id,
+        source_section_id,
+        *[str(value) for value in knowledge_point_ids],
+        *_string_items(chunk.get("retrieval_tags", [])),
+        *_keyword_tags(text),
+    ]
+    return [tag for tag in dict.fromkeys(tag.strip() for tag in tags) if tag]
+
+
+def _keyword_tags(text: str) -> list[str]:
+    keywords = [
+        "正数",
+        "负数",
+        "有理数",
+        "相反意义",
+        "收入",
+        "支出",
+        "0",
+        "数轴",
+        "原点",
+        "正方向",
+        "单位长度",
+        "相反数",
+        "绝对值",
+        "距离",
+        "同号",
+        "异号",
+        "减法",
+        "倒数",
+        "负因数",
+        "乘方",
+        "底数",
+        "指数",
+        "科学记数法",
+        "近似数",
+        "精确",
+        "负号",
+        "括号",
+    ]
+    return [keyword for keyword in keywords if keyword in text]
+
+
+def _student_error_pattern_ids(chunk: Mapping[str, Any], *, content_type: str) -> list[str]:
+    explicit = _string_items(chunk.get("student_error_pattern_ids", []))
+    if explicit:
+        return explicit
+    if content_type not in {"misconception", "error_contrast"}:
+        return []
+    chunk_id = _required_str(chunk, "id")
+    return [f"error-pattern:{chunk_id.removeprefix('rag-')}"]
 
 
 def _generated_rag_chunks(design: Mapping[str, Any]) -> list[dict[str, Any]]:

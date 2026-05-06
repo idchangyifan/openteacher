@@ -65,6 +65,15 @@ def _document_from_chunk(chunk: dict[str, Any], artifact: dict[str, Any]) -> dic
         "knowledge_point_ids": [
             str(value) for value in chunk.get("knowledge_point_ids", []) or []
         ],
+        "source_section_id": str(chunk.get("source_section_id") or ""),
+        "teaching_phase": str(chunk.get("teaching_phase") or ""),
+        "retrieval_tags": [
+            str(value) for value in chunk.get("retrieval_tags", []) or []
+        ],
+        "difficulty": str(chunk.get("difficulty") or ""),
+        "student_error_pattern_ids": [
+            str(value) for value in chunk.get("student_error_pattern_ids", []) or []
+        ],
         "page_range": {
             "start": page_range.get("start"),
             "end": page_range.get("end"),
@@ -87,7 +96,12 @@ def _ensure_indexes(collection: Any) -> None:
     collection.create_index("textbook_id")
     collection.create_index("chapter_id")
     collection.create_index("knowledge_point_ids")
+    collection.create_index("source_section_id")
     collection.create_index("content_type")
+    collection.create_index("teaching_phase")
+    collection.create_index("retrieval_tags")
+    collection.create_index("difficulty")
+    collection.create_index("student_error_pattern_ids")
     collection.create_index("review_status")
     collection.create_index([("text", "text")], default_language="none")
 

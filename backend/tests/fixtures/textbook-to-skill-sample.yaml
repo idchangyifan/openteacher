@@ -690,6 +690,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: explanation
+  retrieval_tags:
+  - concept_summary
+  - explanation
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 正数
+  - 负数
+  - 相反意义
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -703,6 +716,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: instruction
+  retrieval_tags:
+  - teacher_method
+  - instruction
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 负数
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -716,6 +740,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: planning
+  retrieval_tags:
+  - learning_objectives
+  - planning
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 负数
+  - 相反意义
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -729,6 +765,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: opening
+  retrieval_tags:
+  - lesson_opening
+  - opening
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 相反意义
+  - 收入
+  - 支出
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -742,6 +791,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - diagnostic_question
+  - diagnosis
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 收入
+  - 支出
+  - '0'
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -755,6 +817,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - misconception
+  - diagnosis
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 正数
+  - 负数
+  - '0'
+  difficulty: introductory
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-positive-negative-numbers-misconceptions
   page_range:
     start: 6
     end: 7
@@ -768,6 +844,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: correction
+  retrieval_tags:
+  - correction_strategy
+  - correction
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -781,6 +867,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: practice
+  retrieval_tags:
+  - practice_sequence
+  - practice
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -794,6 +890,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: assessment
+  retrieval_tags:
+  - mastery_check
+  - assessment
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 相反意义
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -807,6 +914,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example
+  - explanation
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 相反意义
+  - 收入
+  - 支出
+  - '0'
+  - 负号
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -821,6 +943,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example_step
+  - explanation
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 相反意义
+  - 收入
+  - 支出
+  - '0'
+  - 负号
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -835,6 +972,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: practice
+  retrieval_tags:
+  - variant_problem
+  - practice
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - '0'
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -848,6 +996,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: correction
+  retrieval_tags:
+  - error_contrast
+  - correction
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - 正数
+  - 相反意义
+  - 收入
+  - 支出
+  difficulty: introductory
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-positive-negative-numbers-error-contrast-1
   page_range:
     start: 6
     end: 7
@@ -862,6 +1025,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-positive-negative-numbers
+  source_section_id: ch1-sec1
+  teaching_phase: summary
+  retrieval_tags:
+  - lesson_summary
+  - summary
+  - ch1
+  - ch1-sec1
+  - kp-positive-negative-numbers
+  - '0'
+  - 负号
+  difficulty: introductory
+  student_error_pattern_ids: []
   page_range:
     start: 6
     end: 7
@@ -875,6 +1050,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: explanation
+  retrieval_tags:
+  - concept_summary
+  - explanation
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 有理数
+  - 数轴
+  - 原点
+  - 正方向
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -888,6 +1078,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: instruction
+  retrieval_tags:
+  - teacher_method
+  - instruction
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 数轴
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -901,6 +1103,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: planning
+  retrieval_tags:
+  - learning_objectives
+  - planning
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 有理数
+  - 数轴
+  - 原点
+  - 正方向
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -914,6 +1131,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: opening
+  retrieval_tags:
+  - lesson_opening
+  - opening
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -927,6 +1154,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - diagnostic_question
+  - diagnosis
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - '0'
+  - 原点
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -940,6 +1180,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - misconception
+  - diagnosis
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 负数
+  - 原点
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-number-line-misconceptions
   page_range:
     start: 14
     end: 15
@@ -953,6 +1207,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: correction
+  retrieval_tags:
+  - correction_strategy
+  - correction
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 原点
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -966,6 +1231,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: practice
+  retrieval_tags:
+  - practice_sequence
+  - practice
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 数轴
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -979,6 +1255,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: assessment
+  retrieval_tags:
+  - mastery_check
+  - assessment
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 有理数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -992,6 +1279,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example
+  - explanation
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 数轴
+  - 原点
+  - 正方向
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -1005,6 +1306,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example_step
+  - explanation
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 数轴
+  - 原点
+  - 正方向
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -1018,6 +1333,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: practice
+  retrieval_tags:
+  - variant_problem
+  - practice
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - '0'
+  - 数轴
+  - 原点
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -1031,6 +1359,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: correction
+  retrieval_tags:
+  - error_contrast
+  - correction
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 原点
+  - 正方向
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-number-line-error-contrast-1
   page_range:
     start: 14
     end: 15
@@ -1044,6 +1386,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-number-line
+  source_section_id: ch1-sec3
+  teaching_phase: summary
+  retrieval_tags:
+  - lesson_summary
+  - summary
+  - ch1
+  - ch1-sec3
+  - kp-number-line
+  - 数轴
+  - 原点
+  - 正方向
+  - 单位长度
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 14
     end: 15
@@ -1057,6 +1413,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: explanation
+  retrieval_tags:
+  - concept_summary
+  - explanation
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - '0'
+  - 数轴
+  - 原点
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1070,6 +1440,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: instruction
+  retrieval_tags:
+  - teacher_method
+  - instruction
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 正数
+  - 负数
+  - '0'
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1083,6 +1467,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: planning
+  retrieval_tags:
+  - learning_objectives
+  - planning
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 数轴
+  - 原点
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1096,6 +1493,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: opening
+  retrieval_tags:
+  - lesson_opening
+  - opening
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 数轴
+  - 原点
+  - 距离
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1109,6 +1519,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - diagnostic_question
+  - diagnosis
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - '0'
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1122,6 +1544,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - misconception
+  - diagnosis
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 负数
+  - '0'
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-opposite-numbers-misconceptions
   page_range:
     start: 16
     end: 17
@@ -1135,6 +1571,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: correction
+  retrieval_tags:
+  - correction_strategy
+  - correction
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 负数
+  - '0'
+  - 数轴
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1148,6 +1597,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: practice
+  retrieval_tags:
+  - practice_sequence
+  - practice
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 数轴
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1161,6 +1622,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: assessment
+  retrieval_tags:
+  - mastery_check
+  - assessment
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 原点
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1174,6 +1647,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example
+  - explanation
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 负数
+  - '0'
+  - 原点
+  - 相反数
+  - 距离
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1187,6 +1675,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example_step
+  - explanation
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - '0'
+  - 原点
+  - 相反数
+  - 距离
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1201,6 +1703,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: practice
+  retrieval_tags:
+  - variant_problem
+  - practice
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 数轴
+  - 原点
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1214,6 +1729,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: correction
+  retrieval_tags:
+  - error_contrast
+  - correction
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 负数
+  - '0'
+  - 原点
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-opposite-numbers-error-contrast-1
   page_range:
     start: 16
     end: 17
@@ -1228,6 +1758,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-opposite-numbers
+  source_section_id: ch1-sec4
+  teaching_phase: summary
+  retrieval_tags:
+  - lesson_summary
+  - summary
+  - ch1
+  - ch1-sec4
+  - kp-opposite-numbers
+  - 数轴
+  - 原点
+  - 相反数
+  difficulty: foundational
+  student_error_pattern_ids: []
   page_range:
     start: 16
     end: 17
@@ -1241,6 +1784,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: explanation
+  retrieval_tags:
+  - concept_summary
+  - explanation
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 负数
+  - 数轴
+  - 原点
+  - 绝对值
+  - 距离
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1254,6 +1812,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: instruction
+  retrieval_tags:
+  - teacher_method
+  - instruction
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 原点
+  - 负号
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1267,6 +1837,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: planning
+  retrieval_tags:
+  - learning_objectives
+  - planning
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 有理数
+  - 数轴
+  - 原点
+  - 绝对值
+  - 距离
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1280,6 +1865,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: opening
+  retrieval_tags:
+  - lesson_opening
+  - opening
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 原点
+  - 距离
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1293,6 +1890,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - diagnostic_question
+  - diagnosis
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 数轴
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1306,6 +1914,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - misconception
+  - diagnosis
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 负数
+  - 绝对值
+  - 负号
+  difficulty: core
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-absolute-value-misconceptions
   page_range:
     start: 18
     end: 22
@@ -1319,6 +1941,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: correction
+  retrieval_tags:
+  - correction_strategy
+  - correction
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 数轴
+  - 距离
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1332,6 +1966,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: practice
+  retrieval_tags:
+  - practice_sequence
+  - practice
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 负数
+  - 绝对值
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1345,6 +1991,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: assessment
+  retrieval_tags:
+  - mastery_check
+  - assessment
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 绝对值
+  - 距离
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1358,6 +2016,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example
+  - explanation
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 数轴
+  - 原点
+  - 距离
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1372,6 +2043,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example_step
+  - explanation
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 数轴
+  - 原点
+  - 距离
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1386,6 +2070,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: practice
+  retrieval_tags:
+  - variant_problem
+  - practice
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - '0'
+  - 数轴
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1399,6 +2095,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: correction
+  retrieval_tags:
+  - error_contrast
+  - correction
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 负数
+  - 数轴
+  - 绝对值
+  difficulty: core
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-absolute-value-error-contrast-1
   page_range:
     start: 18
     end: 22
@@ -1413,6 +2123,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-absolute-value
+  source_section_id: ch1-sec5
+  teaching_phase: summary
+  retrieval_tags:
+  - lesson_summary
+  - summary
+  - ch1
+  - ch1-sec5
+  - kp-absolute-value
+  - 负数
+  - 数轴
+  - 原点
+  - 绝对值
+  - 距离
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 18
     end: 22
@@ -1426,6 +2151,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: explanation
+  retrieval_tags:
+  - concept_summary
+  - explanation
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 有理数
+  - 相反数
+  - 绝对值
+  - 减法
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1439,6 +2178,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: instruction
+  retrieval_tags:
+  - teacher_method
+  - instruction
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 同号
+  - 异号
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1452,6 +2203,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: planning
+  retrieval_tags:
+  - learning_objectives
+  - planning
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 有理数
+  - 相反数
+  - 绝对值
+  - 减法
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1465,6 +2230,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: opening
+  retrieval_tags:
+  - lesson_opening
+  - opening
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 有理数
+  - 收入
+  - 支出
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1478,6 +2256,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - diagnostic_question
+  - diagnosis
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1491,6 +2279,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - misconception
+  - diagnosis
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 负数
+  - 异号
+  difficulty: core
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-rational-add-subtract-misconceptions
   page_range:
     start: 23
     end: 34
@@ -1504,6 +2305,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: correction
+  retrieval_tags:
+  - correction_strategy
+  - correction
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 绝对值
+  - 同号
+  - 异号
+  - 减法
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1517,6 +2332,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: practice
+  retrieval_tags:
+  - practice_sequence
+  - practice
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 同号
+  - 异号
+  - 减法
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1530,6 +2358,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: assessment
+  retrieval_tags:
+  - mastery_check
+  - assessment
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1543,6 +2381,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example
+  - explanation
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 绝对值
+  - 异号
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1557,6 +2407,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example_step
+  - explanation
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 绝对值
+  - 异号
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1571,6 +2433,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: practice
+  retrieval_tags:
+  - variant_problem
+  - practice
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1584,6 +2456,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: correction
+  retrieval_tags:
+  - error_contrast
+  - correction
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 负数
+  - 相反数
+  difficulty: core
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-rational-add-subtract-error-contrast-1
   page_range:
     start: 23
     end: 34
@@ -1597,6 +2482,22 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-add-subtract
+  source_section_id: ch1-sec6
+  teaching_phase: summary
+  retrieval_tags:
+  - lesson_summary
+  - summary
+  - ch1
+  - ch1-sec6
+  - kp-rational-add-subtract
+  - 有理数
+  - 相反数
+  - 绝对值
+  - 同号
+  - 异号
+  - 减法
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 23
     end: 34
@@ -1610,6 +2511,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: explanation
+  retrieval_tags:
+  - concept_summary
+  - explanation
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 有理数
+  - 绝对值
+  - 倒数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1623,6 +2537,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: instruction
+  retrieval_tags:
+  - teacher_method
+  - instruction
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 负因数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1636,6 +2561,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: planning
+  retrieval_tags:
+  - learning_objectives
+  - planning
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 有理数
+  - 倒数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1649,6 +2586,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: opening
+  retrieval_tags:
+  - lesson_opening
+  - opening
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 负因数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1662,6 +2610,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - diagnostic_question
+  - diagnosis
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 正数
+  - 负数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1675,6 +2635,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - misconception
+  - diagnosis
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 倒数
+  - 负因数
+  difficulty: core
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-rational-multiply-divide-misconceptions
   page_range:
     start: 35
     end: 47
@@ -1688,6 +2661,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: correction
+  retrieval_tags:
+  - correction_strategy
+  - correction
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 负因数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1701,6 +2685,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: practice
+  retrieval_tags:
+  - practice_sequence
+  - practice
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1714,6 +2708,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: assessment
+  retrieval_tags:
+  - mastery_check
+  - assessment
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1727,6 +2731,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example
+  - explanation
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 绝对值
+  - 负因数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1741,6 +2757,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example_step
+  - explanation
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 绝对值
+  - 负因数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1755,6 +2783,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: practice
+  retrieval_tags:
+  - variant_problem
+  - practice
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1768,6 +2806,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: correction
+  retrieval_tags:
+  - error_contrast
+  - correction
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 倒数
+  difficulty: core
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-rational-multiply-divide-error-contrast-1
   page_range:
     start: 35
     end: 47
@@ -1781,6 +2831,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-multiply-divide
+  source_section_id: ch1-sec7
+  teaching_phase: summary
+  retrieval_tags:
+  - lesson_summary
+  - summary
+  - ch1
+  - ch1-sec7
+  - kp-rational-multiply-divide
+  - 绝对值
+  - 倒数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 35
     end: 47
@@ -1794,6 +2856,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: explanation
+  retrieval_tags:
+  - concept_summary
+  - explanation
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 负数
+  - 乘方
+  - 底数
+  - 负号
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1807,6 +2883,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: instruction
+  retrieval_tags:
+  - teacher_method
+  - instruction
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 负数
+  - 乘方
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1820,6 +2908,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: planning
+  retrieval_tags:
+  - learning_objectives
+  - planning
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 负数
+  - 乘方
+  - 底数
+  - 指数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1833,6 +2935,17 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: opening
+  retrieval_tags:
+  - lesson_opening
+  - opening
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 乘方
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1846,6 +2959,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - diagnostic_question
+  - diagnosis
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1859,6 +2982,19 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - misconception
+  - diagnosis
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 底数
+  - 指数
+  difficulty: core
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-rational-powers-misconceptions
   page_range:
     start: 48
     end: 50
@@ -1872,6 +3008,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: correction
+  retrieval_tags:
+  - correction_strategy
+  - correction
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 负因数
+  - 底数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1885,6 +3033,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: practice
+  retrieval_tags:
+  - practice_sequence
+  - practice
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 负数
+  - 乘方
+  - 底数
+  - 指数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1898,6 +3060,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: assessment
+  retrieval_tags:
+  - mastery_check
+  - assessment
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 底数
+  - 括号
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1911,6 +3085,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example
+  - explanation
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 相反数
+  - 底数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1925,6 +3111,18 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example_step
+  - explanation
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 相反数
+  - 底数
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1939,6 +3137,16 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: practice
+  retrieval_tags:
+  - variant_problem
+  - practice
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1952,6 +3160,21 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: correction
+  retrieval_tags:
+  - error_contrast
+  - correction
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 正数
+  - 负数
+  - 底数
+  - 括号
+  difficulty: core
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-rational-powers-error-contrast-1
   page_range:
     start: 48
     end: 50
@@ -1966,6 +3189,20 @@ rag_chunks:
   chapter_id: ch1
   knowledge_point_ids:
   - kp-rational-powers
+  source_section_id: ch1-sec8
+  teaching_phase: summary
+  retrieval_tags:
+  - lesson_summary
+  - summary
+  - ch1
+  - ch1-sec8
+  - kp-rational-powers
+  - 负数
+  - 乘方
+  - 底数
+  - 负号
+  difficulty: core
+  student_error_pattern_ids: []
   page_range:
     start: 48
     end: 50
@@ -1980,6 +3217,19 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: explanation
+  retrieval_tags:
+  - concept_summary
+  - explanation
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - '0'
+  - 科学记数法
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -1994,6 +3244,19 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: instruction
+  retrieval_tags:
+  - teacher_method
+  - instruction
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - 近似数
+  - 精确
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2008,6 +3271,20 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: planning
+  retrieval_tags:
+  - learning_objectives
+  - planning
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - 科学记数法
+  - 近似数
+  - 精确
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2022,6 +3299,18 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: opening
+  retrieval_tags:
+  - lesson_opening
+  - opening
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - 科学记数法
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2036,6 +3325,19 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - diagnostic_question
+  - diagnosis
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - '0'
+  - 精确
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2050,6 +3352,22 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: diagnosis
+  retrieval_tags:
+  - misconception
+  - diagnosis
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - '0'
+  - 科学记数法
+  - 近似数
+  - 精确
+  difficulty: application
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-scientific-notation-misconceptions
   page_range:
     start: 51
     end: 56
@@ -2064,6 +3382,18 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: correction
+  retrieval_tags:
+  - correction_strategy
+  - correction
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - 精确
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2078,6 +3408,19 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: practice
+  retrieval_tags:
+  - practice_sequence
+  - practice
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - 科学记数法
+  - 近似数
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2092,6 +3435,17 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: assessment
+  retrieval_tags:
+  - mastery_check
+  - assessment
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2106,6 +3460,20 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example
+  - explanation
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - '0'
+  - 科学记数法
+  - 精确
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2121,6 +3489,20 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: explanation
+  retrieval_tags:
+  - worked_example_step
+  - explanation
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - '0'
+  - 科学记数法
+  - 精确
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2136,6 +3518,20 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: practice
+  retrieval_tags:
+  - variant_problem
+  - practice
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - '0'
+  - 科学记数法
+  - 精确
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
@@ -2150,6 +3546,20 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: correction
+  retrieval_tags:
+  - error_contrast
+  - correction
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - '0'
+  - 科学记数法
+  difficulty: application
+  student_error_pattern_ids:
+  - error-pattern:ch1-kp-scientific-notation-error-contrast-1
   page_range:
     start: 51
     end: 56
@@ -2164,6 +3574,21 @@ rag_chunks:
   knowledge_point_ids:
   - kp-scientific-notation
   - kp-approximation
+  source_section_id: ch1-sec9
+  teaching_phase: summary
+  retrieval_tags:
+  - lesson_summary
+  - summary
+  - ch1
+  - ch1-sec9
+  - kp-scientific-notation
+  - kp-approximation
+  - '0'
+  - 科学记数法
+  - 近似数
+  - 精确
+  difficulty: application
+  student_error_pattern_ids: []
   page_range:
     start: 51
     end: 56
