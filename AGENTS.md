@@ -222,11 +222,11 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 推荐下一步：
 
-1. 继续把 RAG 召回纳入 DeepAgents / LangGraph 正式教学图：把 `retrieve_textbook_chunks` 从当前工具函数升级为显式 graph node / tool contract，并让 planner、answer evaluation、lesson state update、RAG retrieval 的顺序更可观测。
+1. 继续把短期记忆做成 DeepAgents / LangGraph 的正式横切层：把当前 middleware 注入的完整 session context 与 DeepAgents summarization/checkpoint/store 结合，超过阈值后自动压缩，并保留当前未完成问题。
 2. 为 MongoDB RAG 增加可审核的召回 trace：记录每轮候选 routes、rerank 分数、最终 chunks、使用的 lesson state / student_answer_status，方便回放“为什么拿了这几条 chunk”。
-3. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
-4. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
-5. 将 `current_question`、`student_answer_status`、`next_teaching_action` 等课堂运行态正式持久化到 MongoDB lesson state / checkpoint，并设计自动压缩后的短期记忆摘要字段。
+3. 继续把 RAG 召回纳入 DeepAgents / LangGraph 正式教学图：把 `retrieve_textbook_chunks` 从当前工具函数升级为显式 graph node / tool contract，并让 planner、answer evaluation、lesson state update、RAG retrieval 的顺序更可观测。
+4. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
+5. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
 6. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
 
 ## 最新验证状态
@@ -869,6 +869,18 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 运行时 MongoDB smoke：对 `*6` + 当前正负数诊断题，top chunks 是 `error_contrast`、`misconception`、`correction_strategy`，命中 knowledge_point、section、student_error_pattern、teaching_phase 等多路 routes。
 - 验证结果：`docker compose exec -T backend pytest tests/test_textbook_file_rag.py tests/test_deepagents_runtime.py` 通过 15 项。
 - 顶部 `## 当前下一步` 已同步更新：下一阶段优先把 `retrieve_textbook_chunks` 升级成更显式的 graph node / tool contract，并记录可审核 RAG trace。
+
+2026-05-06，修复短期记忆使用方式，改为 DeepAgents middleware 注入课堂上下文：
+
+- 用户指出当前问题不应先上复杂教学状态机，而是短期记忆/会话上下文没有正确给到模型；并要求使用 DeepAgents 框架的横切能力，而不是手写散落逻辑。
+- 已查看 deepagents 框架能力：`deepagents.middleware.memory`、`deepagents.middleware.summarization`、LangChain agent middleware 的 `dynamic_prompt`、`before_model`、`wrap_tool_call` 等都可作为类似 AOP 的横切入口。
+- `DeepAgentsTeachingRuntime` 现在通过 `dynamic_prompt` middleware 在每次模型调用前注入 `<open_teacher_short_term_memory>`：完整当前 session transcript、`current_question`、`student_answer_status`、`next_teaching_action`、当前 skill / knowledge point，并明确要求把最新输入理解为课堂延续。
+- middleware 注入中新增硬约束：如果当前问题未完成且回答状态不是 `correct`，禁止重新宣布学习目标或重启 `lesson_start`，只能反馈当前回答并推进一个最小追问；同时禁止输出 `### 学习目标` / `### 诊断问题` 等 Markdown 标题。
+- 学生回答归一化增强：`&6`、`与6`、`与 6啊`、`和6` 被识别为 `invalid_symbol`，仍归入当前诊断题的回答尝试；`负6`、`负六`、`减6` 归一化为 `-6`。
+- RAG 的 `RagTurnContext` 也支持 `invalid_symbol`，会优先召回纠错、误区和错误对照类 chunks。
+- 新增回归测试：完整 session 中老师先问“收入 +10，支出 6 怎么记”，学生回答 `&6` 后又说 `与 6啊`，DeepAgents middleware 注入完整课堂记录且 `student_answer_status=invalid_symbol`。
+- 验证结果：`docker compose exec -T backend pytest tests/test_deepagents_runtime.py tests/test_textbook_file_rag.py tests/test_teacher_chat.py` 通过 25 项；`docker compose exec -T backend pytest` 通过 59 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 通过。
+- 顶部 `## 当前下一步` 已同步更新：下一阶段优先把当前 middleware 短期记忆与 DeepAgents summarization/checkpoint/store 结合，做自动压缩且保留当前未完成问题。
 
 ## 开发风格
 

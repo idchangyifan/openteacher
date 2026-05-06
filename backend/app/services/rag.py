@@ -45,6 +45,7 @@ class RagTurnContext:
     def preferred_teaching_phases(self) -> list[str]:
         if self.student_answer_status in {
             "incorrect_symbol",
+            "invalid_symbol",
             "incorrect_sign",
             "stuck",
         }:
@@ -67,7 +68,7 @@ class RagTurnContext:
 
     @property
     def preferred_content_types(self) -> list[str]:
-        if self.student_answer_status in {"incorrect_symbol", "incorrect_sign"}:
+        if self.student_answer_status in {"incorrect_symbol", "invalid_symbol", "incorrect_sign"}:
             return ["error_contrast", "correction_strategy", "misconception"]
         if self.student_answer_status == "stuck":
             return ["worked_example_step", "correction_strategy", "worked_example"]
@@ -392,7 +393,7 @@ class MongoTextbookRagService:
         text_clauses = self._text_query_clauses(tokens)
         if text_clauses:
             routes.append({"name": "lexical_text", "filter": {"$or": text_clauses}})
-        if context.student_answer_status in {"incorrect_symbol", "incorrect_sign", "stuck"}:
+        if context.student_answer_status in {"incorrect_symbol", "invalid_symbol", "incorrect_sign", "stuck"}:
             routes.append(
                 {
                     "name": "student_error_pattern",
@@ -486,7 +487,7 @@ def _rerank_metadata_score(context: RagTurnContext, chunk: RagChunk) -> int:
         score += 10
     if context.current_section_id and context.current_section_id in chunk.retrieval_tags:
         score += 6
-    if context.student_answer_status in {"incorrect_symbol", "incorrect_sign", "stuck"}:
+    if context.student_answer_status in {"incorrect_symbol", "invalid_symbol", "incorrect_sign", "stuck"}:
         if chunk.student_error_pattern_ids:
             score += 15
         if chunk.content_type in {"error_contrast", "correction_strategy", "misconception"}:

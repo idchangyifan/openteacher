@@ -176,6 +176,45 @@ def test_teaching_graph_state_uses_session_id_as_thread_and_keeps_lesson_state()
     assert payload["messages"][-1] == {"role": "student", "content": "*6"}
 
 
+def test_deepagents_short_term_memory_middleware_includes_full_session_context() -> None:
+    repository = InMemoryLessonRepository()
+    session = repository.create_session(
+        request=LessonSessionCreate(
+            student_id="short-term-mw-student",
+            subject="数学",
+            title="正数和负数",
+            lesson_goal="理解正负数表示相反意义的量",
+        )
+    )
+    for role, content in [
+        ("teacher", "如果收入 10 元记作 +10，那么支出 6 元应该怎么记？"),
+        ("student", "&6"),
+        ("teacher", "你写的 & 不是正负号。支出和收入方向相反，应该用 + 还是 -？"),
+        ("student", "与 6啊"),
+    ]:
+        repository.append_message(session_id=session.id, role=role, content=content)
+    request = TeacherChatRequest(
+        message="与 6啊",
+        context=StudentContext(
+            student_id="short-term-mw-student",
+            grade="初一",
+            subject="数学",
+            session_id=session.id,
+        ),
+    )
+    runtime = DeepAgentsTeachingRuntime(memory_service=MemoryService(), lesson_repository=repository)
+
+    graph_state = runtime._build_graph_state(request, make_prompt())
+    context = runtime._format_short_term_context(graph_state)
+
+    assert "DeepAgents middleware" in context
+    assert "完整课堂记录" in context
+    assert "&6" in context
+    assert "与 6啊" in context
+    assert "禁止重新宣布学习目标或重启 lesson_start" in context
+    assert graph_state.student_answer_status == "invalid_symbol"
+
+
 def test_deepagents_invocation_passes_mongodb_checkpointer_and_thread_config() -> None:
     captured: dict[str, Any] = {}
 

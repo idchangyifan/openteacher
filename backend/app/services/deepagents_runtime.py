@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from langchain.agents.middleware import dynamic_prompt
+from langchain.agents.middleware.types import AgentMiddleware
 from langchain_openai import ChatOpenAI
 from pymongo import MongoClient
 
@@ -89,6 +91,7 @@ class DeepAgentsTeachingRuntime:
             model=self._build_model(),
             tools=self._build_tools(request, prompt, graph_state),
             system_prompt=self._build_system_prompt(prompt),
+            middleware=self._build_middleware(prompt, graph_state),
             checkpointer=self._build_checkpointer(),
         )
         result = agent.invoke(
@@ -266,6 +269,47 @@ class DeepAgentsTeachingRuntime:
             create_memory_extraction_hint,
         ]
 
+    def _build_middleware(
+        self,
+        prompt: TeacherPrompt,
+        graph_state: TeachingGraphState,
+    ) -> list[AgentMiddleware]:
+        @dynamic_prompt
+        def opent_teacher_short_term_context(_request: Any) -> str:
+            return "\n\n".join(
+                [
+                    self._build_system_prompt(prompt),
+                    self._format_short_term_context(graph_state),
+                ]
+            )
+
+        return [opent_teacher_short_term_context]
+
+    def _format_short_term_context(self, graph_state: TeachingGraphState) -> str:
+        transcript = "\n".join(
+            f"{message['role']}: {message['content']}" for message in graph_state.messages
+        )
+        if not transcript:
+            transcript = "(当前 session 暂无历史消息)"
+        return (
+            "<open_teacher_short_term_memory>\n"
+            "这是当前课堂 thread 的短期记忆，由 DeepAgents middleware 在模型调用前注入。\n"
+            "你必须把学生最新输入理解为这段课堂的延续，而不是默认重启课程。\n"
+            f"thread_id: {graph_state.thread_id}\n"
+            f"current_skill_id: {graph_state.lesson_state.current_skill_id or 'none'}\n"
+            f"current_knowledge_point_id: {graph_state.lesson_state.current_knowledge_point_id or 'none'}\n"
+            f"current_question: {graph_state.current_question or 'none'}\n"
+            f"student_answer_status: {graph_state.student_answer_status}\n"
+            f"student_answer_feedback: {graph_state.student_answer_feedback or 'none'}\n"
+            f"next_teaching_action: {graph_state.next_teaching_action or 'none'}\n"
+            "如果 current_question 不是 none 且 student_answer_status 不是 correct，"
+            "禁止重新宣布学习目标或重启 lesson_start；只能反馈当前回答并推进一个最小追问。\n"
+            "不要使用 Markdown 标题，不要输出 ### 学习目标 / ### 诊断问题 这类结构标题。\n"
+            "完整课堂记录：\n"
+            f"{transcript}\n"
+            "</open_teacher_short_term_memory>"
+        )
+
     def _empty_prompt(self) -> TeacherPrompt:
         return TeacherPrompt(
             message="",
@@ -373,12 +417,16 @@ class DeepAgentsTeachingRuntime:
         return None
 
     def _evaluate_student_answer(self, question: str | None, answer: str) -> tuple[str, str]:
-        normalized_answer = answer.strip().replace("＋", "+").replace("－", "-")
-        compact_answer = normalized_answer.replace(" ", "")
+        normalized_question = self._normalize_text(question or "")
+        compact_answer = self._normalize_answer(answer)
         if not question:
             return "needs_evaluation", ""
 
-        if "收入10" in question and "支出6" in question:
+        if (
+            "收入10" in normalized_question
+            and "支出6" in normalized_question
+            or ("支出" in normalized_question and "收入" in normalized_question and "+还是-" in normalized_question)
+        ):
             if compact_answer in {"-6", "-6元"}:
                 return (
                     "correct",
@@ -388,6 +436,11 @@ class DeepAgentsTeachingRuntime:
                 return (
                     "incorrect_symbol",
                     "学生把符号写成了乘号。指出 * 不是正负号；继续让学生判断支出应该用 + 还是 -，不要直接说出完整答案，也不要切到下一题。",
+                )
+            if compact_answer in {"&6", "与6", "和6"}:
+                return (
+                    "invalid_symbol",
+                    "学生写了“与/和”一类连接符，不是正负号。停留在当前题，只问：支出和收入方向相反时，应该用 + 还是 -？不要重启课堂。",
                 )
             if compact_answer in {"+6", "+6元", "6", "6元"}:
                 return (
@@ -401,6 +454,22 @@ class DeepAgentsTeachingRuntime:
                 )
 
         return "needs_evaluation", ""
+
+    def _normalize_text(self, value: str) -> str:
+        return (
+            value.replace(" ", "")
+            .replace("＋", "+")
+            .replace("－", "-")
+            .replace("，", ",")
+            .replace("？", "?")
+        )
+
+    def _normalize_answer(self, value: str) -> str:
+        compact = self._normalize_text(value.strip().lower())
+        compact = compact.replace("啊", "").replace("呀", "").replace("呢", "")
+        compact = compact.replace("负六", "-6").replace("负6", "-6").replace("减6", "-6")
+        compact = compact.replace("乘6", "*6")
+        return compact
 
     def _extract_planner_field(self, planner_context: str, field_name: str) -> str:
         prefix = f"{field_name}="
@@ -438,9 +507,10 @@ class DeepAgentsTeachingRuntime:
             "如果学生已经答对或完成当前任务，先确认正确，不要机械要求从头写步骤；"
             "再要求一句理由、验算、总结或进入下一教学阶段。"
             "如果 TeachingGraphState 中 student_answer_status 是 incorrect_symbol、"
-            "incorrect_sign 或 stuck，必须停留在当前问题，不要直接泄露完整答案，"
+            "invalid_symbol、incorrect_sign 或 stuck，必须停留在当前问题，不要直接泄露完整答案，"
             "也不要切换到下一题。"
             "如果 student_answer_status 是 correct，先确认正确，再追问理由或做小结。"
+            "不要使用 Markdown 标题，不要输出 ### 学习目标 / ### 诊断问题 这类结构标题。"
             "如果学生想抄答案，坚定拒绝，但仍给出可学习的下一步。"
             "如果信息不足，要求最小必要信息。"
             "回复必须中文、短而清楚，体现完整老师的课程推进能力。\n"

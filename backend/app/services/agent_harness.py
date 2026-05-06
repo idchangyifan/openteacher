@@ -226,18 +226,24 @@ class AgentHarness:
         return None
 
     def _evaluate_student_answer(self, question: str | None, answer: str) -> tuple[str, str]:
-        normalized_answer = answer.strip().replace("＋", "+").replace("－", "-")
-        compact_answer = normalized_answer.replace(" ", "")
+        compact_answer = self._normalize_answer(answer)
         if not question:
             if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
                 return "stuck", "学生表达卡住。"
             return "needs_evaluation", ""
 
-        if "收入10" in question and "支出6" in question:
+        normalized_question = self._normalize_text(question)
+        if (
+            "收入10" in normalized_question
+            and "支出6" in normalized_question
+            or ("支出" in normalized_question and "收入" in normalized_question and "+还是-" in normalized_question)
+        ):
             if compact_answer in {"-6", "-6元"}:
                 return "correct", "学生回答 -6 正确。"
             if compact_answer in {"*6", "×6", "x6"}:
                 return "incorrect_symbol", "学生把符号写成了乘号。"
+            if compact_answer in {"&6", "与6", "和6"}:
+                return "invalid_symbol", "学生写了连接符，不是正负号。"
             if compact_answer in {"+6", "+6元", "6", "6元"}:
                 return "incorrect_sign", "学生没有表示出支出和收入的相反意义。"
             if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
@@ -246,6 +252,16 @@ class AgentHarness:
         if any(word in compact_answer for word in ["不知道", "不会", "不懂", "卡住"]):
             return "stuck", "学生表达卡住。"
         return "needs_evaluation", ""
+
+    def _normalize_text(self, value: str) -> str:
+        return value.replace(" ", "").replace("＋", "+").replace("－", "-")
+
+    def _normalize_answer(self, value: str) -> str:
+        compact = self._normalize_text(value.strip().lower())
+        compact = compact.replace("啊", "").replace("呀", "").replace("呢", "")
+        compact = compact.replace("负六", "-6").replace("负6", "-6").replace("减6", "-6")
+        compact = compact.replace("乘6", "*6")
+        return compact
 
     def _lesson_state_from_skill(
         self,
