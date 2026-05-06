@@ -57,6 +57,11 @@ rag_chunk_refs:
 - rag-ch1-kp-absolute-value-correction
 - rag-ch1-kp-absolute-value-practice
 - rag-ch1-kp-absolute-value-mastery
+- rag-ch1-kp-absolute-value-worked-example-1
+- rag-ch1-kp-absolute-value-worked-example-1-steps
+- rag-ch1-kp-absolute-value-variants
+- rag-ch1-kp-absolute-value-error-contrast-1
+- rag-ch1-kp-absolute-value-lesson-summary
 teaching_principles:
 - 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
 - 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
@@ -128,3 +133,20 @@ teaching_plan:
   - 解释绝对值相等的两个数
   mastery_checks:
   - 学生能用距离语言解释绝对值
+  worked_examples:
+  - prompt: 计算 |-5|，并比较 -5 和 -2 的大小。
+    steps:
+    - '|-5| 表示 -5 到原点的距离'
+    - 距离是 5，所以 |-5| = 5
+    - 在数轴上 -5 在 -2 左边，因此 -5 < -2
+    teacher_note: 先用距离语言解释，再进入符号计算和大小比较。
+  variant_problems:
+  - 计算 |3|、|-3|，并说明为什么结果相同
+  - 比较 -0.5 和 -2 的大小，并用数轴说明
+  error_contrasts:
+  - wrong: -5 比 -2 大，因为 5 比 2 大。
+    why_wrong: 比较负数大小要看数轴位置，不能只比绝对值大小。
+    correct: -5 在 -2 左边，所以 -5 < -2。
+  lesson_summary:
+  - 绝对值表示到原点的距离，因此结果不为负
+  - 比较负数大小时，数轴上越靠右的数越大

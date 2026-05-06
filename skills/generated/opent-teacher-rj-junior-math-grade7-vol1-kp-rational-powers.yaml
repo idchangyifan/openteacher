@@ -56,6 +56,11 @@ rag_chunk_refs:
 - rag-ch1-kp-rational-powers-correction
 - rag-ch1-kp-rational-powers-practice
 - rag-ch1-kp-rational-powers-mastery
+- rag-ch1-kp-rational-powers-worked-example-1
+- rag-ch1-kp-rational-powers-worked-example-1-steps
+- rag-ch1-kp-rational-powers-variants
+- rag-ch1-kp-rational-powers-error-contrast-1
+- rag-ch1-kp-rational-powers-lesson-summary
 teaching_principles:
 - 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
 - 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
@@ -127,3 +132,20 @@ teaching_plan:
   - 计算负数乘方
   mastery_checks:
   - 学生能解释括号对底数的影响
+  worked_examples:
+  - prompt: 比较 -2^2 和 (-2)^2。
+    steps:
+    - -2^2 的底数是 2，先算 2^2，再取相反数
+    - (-2)^2 的底数是 -2，表示两个 -2 相乘
+    - 所以 -2^2=-4，而 (-2)^2=4
+    teacher_note: 先圈底数，再展开乘法，避免只背奇偶规则。
+  variant_problems:
+  - 展开并计算 (-3)^2
+  - 判断 -1^4 和 (-1)^4 是否相等
+  error_contrasts:
+  - wrong: -2^2=4，因为负数的偶次方是正数。
+    why_wrong: 这里没有括号，底数不是 -2。
+    correct: -2^2 表示 -(2^2)，结果是 -4；(-2)^2 才是 4。
+  lesson_summary:
+  - 乘方是相同因数连乘的简写
+  - 处理负数乘方时必须先确认底数是否包含负号

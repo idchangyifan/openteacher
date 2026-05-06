@@ -387,6 +387,36 @@ def _generated_rag_chunks(design: Mapping[str, Any]) -> list[dict[str, Any]]:
             lead="掌握检查：",
         )
     )
+    generated.extend(
+        _worked_example_chunks(
+            prefix=prefix,
+            values=teaching_plan.get("worked_examples", []),
+        )
+    )
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="variants",
+            content_type="variant_problem",
+            values=teaching_plan.get("variant_problems", []),
+            lead="可用于迁移练习的变式题：",
+        )
+    )
+    generated.extend(
+        _error_contrast_chunks(
+            prefix=prefix,
+            values=teaching_plan.get("error_contrasts", []),
+        )
+    )
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="lesson-summary",
+            content_type="lesson_summary",
+            values=teaching_plan.get("lesson_summary", []),
+            lead="本课小结：",
+        )
+    )
     return generated
 
 
@@ -398,9 +428,7 @@ def _chunk_group(
     values: Any,
     lead: str,
 ) -> list[dict[str, Any]]:
-    if not values:
-        return []
-    items = [_strip_terminal_punctuation(str(value).strip()) for value in list(values)]
+    items = _string_items(values)
     items = [item for item in items if item]
     if not items:
         return []
@@ -414,6 +442,103 @@ def _chunk_group(
             "copyright_policy": "generated_review_required",
         }
     ]
+
+
+def _worked_example_chunks(*, prefix: str, values: Any) -> list[dict[str, Any]]:
+    generated: list[dict[str, Any]] = []
+    for index, example in enumerate(_mapping_items(values), start=1):
+        prompt = _required_text_value(example, "prompt")
+        if not prompt:
+            continue
+        steps = _string_items(example.get("steps", []))
+        teacher_note = _required_text_value(example, "teacher_note") or _required_text_value(
+            example, "teacher_notes"
+        )
+        parts = [f"例题：{_strip_terminal_punctuation(prompt)}。"]
+        if steps:
+            parts.append(f"解法步骤：{'；'.join(steps)}。")
+        if teacher_note:
+            parts.append(f"教师提示：{_strip_terminal_punctuation(teacher_note)}。")
+        generated.append(
+            {
+                "id": f"{prefix}-worked-example-{index}",
+                "content_type": "worked_example",
+                "text": "".join(parts),
+                "text_role": "llm_inferred",
+                "review_status": "draft",
+                "copyright_policy": "generated_review_required",
+            }
+        )
+        if steps:
+            generated.append(
+                {
+                    "id": f"{prefix}-worked-example-{index}-steps",
+                    "content_type": "worked_example_step",
+                    "text": f"例题“{_strip_terminal_punctuation(prompt)}”的分步讲解：{'；'.join(steps)}。",
+                    "text_role": "llm_inferred",
+                    "review_status": "draft",
+                    "copyright_policy": "generated_review_required",
+                }
+            )
+    return generated
+
+
+def _error_contrast_chunks(*, prefix: str, values: Any) -> list[dict[str, Any]]:
+    generated: list[dict[str, Any]] = []
+    for index, contrast in enumerate(_mapping_items(values), start=1):
+        wrong = _required_text_value(contrast, "wrong")
+        why_wrong = _required_text_value(contrast, "why_wrong")
+        correct = _required_text_value(contrast, "correct")
+        if not (wrong or why_wrong or correct):
+            continue
+        parts = []
+        if wrong:
+            parts.append(f"错误示例：{_strip_terminal_punctuation(wrong)}")
+        if why_wrong:
+            parts.append(f"错误原因：{_strip_terminal_punctuation(why_wrong)}")
+        if correct:
+            parts.append(f"正确做法：{_strip_terminal_punctuation(correct)}")
+        generated.append(
+            {
+                "id": f"{prefix}-error-contrast-{index}",
+                "content_type": "error_contrast",
+                "text": f"{'；'.join(parts)}。",
+                "text_role": "llm_inferred",
+                "review_status": "draft",
+                "copyright_policy": "generated_review_required",
+            }
+        )
+    return generated
+
+
+def _string_items(values: Any) -> list[str]:
+    if values is None:
+        return []
+    if isinstance(values, str):
+        values = [values]
+    if not isinstance(values, list):
+        return []
+    items: list[str] = []
+    for value in values:
+        if isinstance(value, Mapping):
+            text = _required_text_value(value, "text")
+        else:
+            text = str(value).strip()
+        text = _strip_terminal_punctuation(text)
+        if text:
+            items.append(text)
+    return items
+
+
+def _mapping_items(values: Any) -> list[Mapping[str, Any]]:
+    if not isinstance(values, list):
+        return []
+    return [value for value in values if isinstance(value, Mapping)]
+
+
+def _required_text_value(source: Mapping[str, Any], key: str) -> str:
+    value = source.get(key)
+    return str(value).strip() if value is not None else ""
 
 
 def _strip_terminal_punctuation(text: str) -> str:

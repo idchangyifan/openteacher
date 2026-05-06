@@ -58,6 +58,11 @@ rag_chunk_refs:
 - rag-ch1-kp-positive-negative-numbers-correction
 - rag-ch1-kp-positive-negative-numbers-practice
 - rag-ch1-kp-positive-negative-numbers-mastery
+- rag-ch1-kp-positive-negative-numbers-worked-example-1
+- rag-ch1-kp-positive-negative-numbers-worked-example-1-steps
+- rag-ch1-kp-positive-negative-numbers-variants
+- rag-ch1-kp-positive-negative-numbers-error-contrast-1
+- rag-ch1-kp-positive-negative-numbers-lesson-summary
 teaching_principles:
 - 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
 - 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
@@ -129,3 +134,20 @@ teaching_plan:
   - 反向解释
   mastery_checks:
   - 学生能自己说出符号背后的相反意义
+  worked_examples:
+  - prompt: 收入 10 元记作 +10，支出 6 元怎样记？
+    steps:
+    - 先判断收入和支出是一组相反意义的量
+    - 已经规定收入用正号表示
+    - 支出就用相反的负号表示为 -6
+    teacher_note: 不急着报答案，先让学生说出“相反意义”再写符号。
+  variant_problems:
+  - 海平面以上 30 米记作 +30 米，海平面以下 12 米怎样记？
+  - 气温升高 4 摄氏度记作 +4 摄氏度，下降 7 摄氏度怎样记？
+  error_contrasts:
+  - wrong: 支出 6 元写作 +6，因为 6 是正数。
+    why_wrong: 这里的符号表示方向，不是只看数字 6 本身。
+    correct: 收入规定为正时，支出作为相反意义的量应写作 -6。
+  lesson_summary:
+  - 正负号先表示相反方向，再和数量大小组合成带符号的数
+  - 0 在不同情境中可能表示基准、分界或没有变化

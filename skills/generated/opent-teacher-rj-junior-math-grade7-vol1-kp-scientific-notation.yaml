@@ -61,6 +61,11 @@ rag_chunk_refs:
 - rag-ch1-kp-scientific-notation-correction
 - rag-ch1-kp-scientific-notation-practice
 - rag-ch1-kp-scientific-notation-mastery
+- rag-ch1-kp-scientific-notation-worked-example-1
+- rag-ch1-kp-scientific-notation-worked-example-1-steps
+- rag-ch1-kp-scientific-notation-variants
+- rag-ch1-kp-scientific-notation-error-contrast-1
+- rag-ch1-kp-scientific-notation-lesson-summary
 - rag-ch1-kp-scientific-notation-summary
 - rag-ch1-kp-approximation-method
 - rag-ch1-kp-scientific-notation-objectives
@@ -70,6 +75,11 @@ rag_chunk_refs:
 - rag-ch1-kp-scientific-notation-correction
 - rag-ch1-kp-scientific-notation-practice
 - rag-ch1-kp-scientific-notation-mastery
+- rag-ch1-kp-scientific-notation-worked-example-1
+- rag-ch1-kp-scientific-notation-worked-example-1-steps
+- rag-ch1-kp-scientific-notation-variants
+- rag-ch1-kp-scientific-notation-error-contrast-1
+- rag-ch1-kp-scientific-notation-lesson-summary
 teaching_principles:
 - 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
 - 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
@@ -141,3 +151,20 @@ teaching_plan:
   - 按位取近似数
   mastery_checks:
   - 学生能说明 a 和 n 各自代表什么
+  worked_examples:
+  - prompt: 把 5600000 写成科学记数法，并把 3.14 精确到十分位。
+    steps:
+    - 5600000 的小数点向左移动 6 位得到 5.6
+    - 所以 5600000=5.6×10^6，其中 1≤5.6<10
+    - 3.14 精确到十分位看百分位上的 4，舍去后为 3.1
+    teacher_note: 科学记数法要同时检查 a 的范围和小数点移动位数。
+  variant_problems:
+  - 把 720000 写成科学记数法
+  - 把 0.987 精确到百分位
+  error_contrasts:
+  - wrong: 5600000=56×10^5。
+    why_wrong: 科学记数法中 a 应满足 1≤a<10，56 不符合范围。
+    correct: 5600000=5.6×10^6。
+  lesson_summary:
+  - 科学记数法的形式是 a×10^n，且通常 1≤a<10
+  - 近似数要同时给出结果和精确到哪一位

@@ -56,6 +56,11 @@ rag_chunk_refs:
 - rag-ch1-kp-number-line-correction
 - rag-ch1-kp-number-line-practice
 - rag-ch1-kp-number-line-mastery
+- rag-ch1-kp-number-line-worked-example-1
+- rag-ch1-kp-number-line-worked-example-1-steps
+- rag-ch1-kp-number-line-variants
+- rag-ch1-kp-number-line-error-contrast-1
+- rag-ch1-kp-number-line-lesson-summary
 teaching_principles:
 - 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
 - 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
@@ -127,3 +132,20 @@ teaching_plan:
   - 根据点读数
   mastery_checks:
   - 学生能解释一个点为什么表示某个有理数
+  worked_examples:
+  - prompt: 在数轴上表示 -2 和 +3。
+    steps:
+    - 先画出原点、正方向和单位长度
+    - 从原点向左数 2 个单位得到 -2
+    - 从原点向右数 3 个单位得到 +3
+    teacher_note: 学生定位前必须先检查数轴三要素是否齐全。
+  variant_problems:
+  - 读出数轴上原点左侧 4 个单位的点表示的数
+  - 在同一数轴上标出 -1.5、0、2
+  error_contrasts:
+  - wrong: 只画一条直线并把左边点写成 -2，没标原点和单位长度。
+    why_wrong: 没有原点和单位长度，点与数无法建立确定对应。
+    correct: 先标出原点、正方向和单位长度，再按方向与单位数定位。
+  lesson_summary:
+  - 数轴的三要素是原点、正方向和单位长度
+  - 点的位置要用离原点几个单位和朝哪个方向来解释

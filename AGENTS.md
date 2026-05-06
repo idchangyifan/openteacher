@@ -215,11 +215,11 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 推荐下一步：
 
-1. 继续把当前教材 chunk 做厚：为七上第一章补充例题、例题解法步骤、变式练习、易错对比例、课堂小结等 chunk 类型；仍以知识点和教学动作组织，不做机械 token 切块。
-2. 将 MongoDB `textbook_chunks` 检索从轻量关键词匹配升级为基于当前 `current_skill_id` / `current_knowledge_point_id` 的优先召回，并准备后续 MongoDB Atlas Vector Search index。
-3. 继续把 DeepAgents / LangGraph 从“可运行主路径”升级成完整教学图：把 `evaluate_student_answer`、`update_lesson_state`、`retrieve_textbook_chunks`、`create_memory_extraction_job` 做成明确 graph tools / nodes，而不是只靠 runtime prompt。
-4. 将 `current_question`、`student_answer_status`、`next_teaching_action` 等课堂运行态正式持久化到 MongoDB lesson state / checkpoint，并设计自动压缩后的短期记忆摘要字段。
-5. 接入 MongoDB-backed LangGraph store / memory cards：长期 memory cards、extraction jobs、conflict resolution、后续 embedding/vector index 都继续放 MongoDB。
+1. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据：为每个 chunk 增加 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 等字段，让 MongoDB / 后续向量检索能按教学场景筛选和加权。
+2. 将 MongoDB `textbook_chunks` 检索从轻量关键词匹配升级为基于当前 `current_skill_id` / `current_knowledge_point_id` / `content_type` 的优先召回，并准备后续 MongoDB Atlas Vector Search index。
+3. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块。
+4. 继续把 DeepAgents / LangGraph 从“可运行主路径”升级成完整教学图：把 `evaluate_student_answer`、`update_lesson_state`、`retrieve_textbook_chunks`、`create_memory_extraction_job` 做成明确 graph tools / nodes，而不是只靠 runtime prompt。
+5. 将 `current_question`、`student_answer_status`、`next_teaching_action` 等课堂运行态正式持久化到 MongoDB lesson state / checkpoint，并设计自动压缩后的短期记忆摘要字段。
 6. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
 
 ## 最新验证状态
@@ -821,6 +821,16 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 用户明确：本质上仍然是继续完善 `TextbookToTeachingSkill`，把教材更好地做成切片，存储在 MongoDB / 后续向量库里，用于后续 RAG。
 - 已修正顶部 `## 当前下一步` 的主线描述：当前重点不是先做 verifier 或多路召回，而是把教材内容转成高质量、可审核、可检索的教学切片，并为 MongoDB Vector Search 做准备。
 - 这版改动已准备作为一个完整里程碑提交并推送；下一阶段再继续补例题、例题解法步骤、变式练习、易错对比例、课堂小结和 embedding 字段。
+
+2026-05-06，已继续把 `TextbookToTeachingSkill` 的教材 chunks 做厚：
+
+- 已更新 `backend/app/services/textbook_to_skill_pipeline.py`：自动从 `teaching_plan.worked_examples`、`variant_problems`、`error_contrasts`、`lesson_summary` 生成新的 RAG chunks。
+- 新增自动 chunk 类型：`worked_example`、`worked_example_step`、`variant_problem`、`error_contrast`、`lesson_summary`。这些 chunk 继续继承知识点、章节和 outline 合并后的 page_range。
+- 已在 `backend/tests/fixtures/textbook-to-skill-input.yaml` 为七上第一章 8 个教学设计补齐例题、分步解法、变式练习、易错对照和课堂小结。
+- 已重新生成 `backend/tests/fixtures/textbook-to-skill-sample.yaml`，sample 从 72 个 `rag_chunks` 扩展到 112 个；已重新导出 `skills/generated/*.yaml`。
+- 已重新导入远端 MongoDB `textbook_chunks`：同一 pipeline 当前 112 条；14 类 content_type 各 8 条，包括 `worked_example`、`worked_example_step`、`variant_problem`、`error_contrast`、`lesson_summary`。
+- 验证结果：`docker compose exec -T backend pytest tests/test_textbook_to_skill_pipeline.py tests/test_textbook_file_rag.py tests/test_skill_registry.py` 通过 21 项；`docker compose exec -T backend pytest` 通过 54 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 通过。
+- 顶部 `## 当前下一步` 已同步更新：下一阶段优先补 chunk 元数据和按当前 skill/knowledge point/content_type 的 MongoDB 召回权重，再继续补章节复习、跨知识点衔接和分层练习。
 
 ## 开发风格
 

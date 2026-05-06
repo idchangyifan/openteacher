@@ -258,6 +258,23 @@ skill_drafts:
     - 反向解释
     mastery_checks:
     - 学生能自己说出符号背后的相反意义
+    worked_examples:
+    - prompt: 收入 10 元记作 +10，支出 6 元怎样记？
+      steps:
+      - 先判断收入和支出是一组相反意义的量
+      - 已经规定收入用正号表示
+      - 支出就用相反的负号表示为 -6
+      teacher_note: 不急着报答案，先让学生说出“相反意义”再写符号。
+    variant_problems:
+    - 海平面以上 30 米记作 +30 米，海平面以下 12 米怎样记？
+    - 气温升高 4 摄氏度记作 +4 摄氏度，下降 7 摄氏度怎样记？
+    error_contrasts:
+    - wrong: 支出 6 元写作 +6，因为 6 是正数。
+      why_wrong: 这里的符号表示方向，不是只看数字 6 本身。
+      correct: 收入规定为正时，支出作为相反意义的量应写作 -6。
+    lesson_summary:
+    - 正负号先表示相反方向，再和数量大小组合成带符号的数
+    - 0 在不同情境中可能表示基准、分界或没有变化
   evidence:
   - source_ref: textbook-rj-math-grade7-vol1
     page_range:
@@ -298,6 +315,23 @@ skill_drafts:
     - 根据点读数
     mastery_checks:
     - 学生能解释一个点为什么表示某个有理数
+    worked_examples:
+    - prompt: 在数轴上表示 -2 和 +3。
+      steps:
+      - 先画出原点、正方向和单位长度
+      - 从原点向左数 2 个单位得到 -2
+      - 从原点向右数 3 个单位得到 +3
+      teacher_note: 学生定位前必须先检查数轴三要素是否齐全。
+    variant_problems:
+    - 读出数轴上原点左侧 4 个单位的点表示的数
+    - 在同一数轴上标出 -1.5、0、2
+    error_contrasts:
+    - wrong: 只画一条直线并把左边点写成 -2，没标原点和单位长度。
+      why_wrong: 没有原点和单位长度，点与数无法建立确定对应。
+      correct: 先标出原点、正方向和单位长度，再按方向与单位数定位。
+    lesson_summary:
+    - 数轴的三要素是原点、正方向和单位长度
+    - 点的位置要用离原点几个单位和朝哪个方向来解释
   evidence:
   - source_ref: textbook-rj-math-grade7-vol1
     note: 页码由 PDF outline inspection 补入
@@ -338,6 +372,23 @@ skill_drafts:
     - 判断两个数是否互为相反数
     mastery_checks:
     - 学生能说明相反数与原点对称的关系
+    worked_examples:
+    - prompt: 写出 3、-4、0 的相反数。
+      steps:
+      - 3 的相反数与 3 符号相反，是 -3
+      - -4 的相反数与 -4 符号相反，是 4
+      - 0 到原点距离为 0，仍与自己相反
+      teacher_note: 重点纠正“相反数一定是负数”的机械说法。
+    variant_problems:
+    - 判断 2.5 和 -2.5 是否互为相反数
+    - 说出数轴上与 -1 关于原点对称的点表示什么数
+    error_contrasts:
+    - wrong: -4 的相反数是 -4，因为它本来就是负数。
+      why_wrong: 相反数看的是关于原点对称或符号相反，不是保留原符号。
+      correct: -4 的相反数是 4，0 的相反数仍是 0。
+    lesson_summary:
+    - 只有符号不同的两个数互为相反数
+    - 数轴上互为相反数的两个点关于原点对称
   evidence:
   - source_ref: textbook-rj-math-grade7-vol1
     note: 页码由 PDF outline inspection 补入
@@ -378,6 +429,23 @@ skill_drafts:
     - 解释绝对值相等的两个数
     mastery_checks:
     - 学生能用距离语言解释绝对值
+    worked_examples:
+    - prompt: 计算 |-5|，并比较 -5 和 -2 的大小。
+      steps:
+      - '|-5| 表示 -5 到原点的距离'
+      - 距离是 5，所以 |-5| = 5
+      - 在数轴上 -5 在 -2 左边，因此 -5 < -2
+      teacher_note: 先用距离语言解释，再进入符号计算和大小比较。
+    variant_problems:
+    - 计算 |3|、|-3|，并说明为什么结果相同
+    - 比较 -0.5 和 -2 的大小，并用数轴说明
+    error_contrasts:
+    - wrong: -5 比 -2 大，因为 5 比 2 大。
+      why_wrong: 比较负数大小要看数轴位置，不能只比绝对值大小。
+      correct: -5 在 -2 左边，所以 -5 < -2。
+    lesson_summary:
+    - 绝对值表示到原点的距离，因此结果不为负
+    - 比较负数大小时，数轴上越靠右的数越大
   evidence:
   - source_ref: textbook-rj-math-grade7-vol1
     note: 页码由 PDF outline inspection 补入
@@ -419,6 +487,23 @@ skill_drafts:
     - 混合加减
     mastery_checks:
     - 学生能说出每一步符号判断依据
+    worked_examples:
+    - prompt: 计算 (-3)+(+5)，再把 4-(-2) 改写成加法。
+      steps:
+      - (-3)+(+5) 是异号相加，先比较绝对值 5 和 3
+      - 绝对值较大的数是 +5，所以结果为正，大小为 5-3=2
+      - 4-(-2) 改写为 4+(+2)
+      teacher_note: 每一步都要求学生先说符号来源，再做绝对值运算。
+    variant_problems:
+    - 计算 (-7)+(+2)，并说明结果符号
+    - 把 -3-(+5) 改写成加法再计算
+    error_contrasts:
+    - wrong: 4-(-2)=4-2=2。
+      why_wrong: 减去一个负数要转化为加上它的相反数。
+      correct: 4-(-2)=4+(+2)=6。
+    lesson_summary:
+    - 有理数加法先分同号或异号，再处理绝对值
+    - 有理数减法统一转化为加上相反数
   evidence:
   - source_ref: textbook-rj-math-grade7-vol1
     note: 页码由 PDF outline inspection 补入
@@ -460,6 +545,23 @@ skill_drafts:
     - 乘除混合
     mastery_checks:
     - 学生能在计算前先说明结果符号
+    worked_examples:
+    - prompt: 计算 (-2)×(-3)×4，并把 6÷(-3) 改写成乘法。
+      steps:
+      - (-2)×(-3)×4 中有两个负因数，负因数个数为偶数
+      - 结果符号为正，绝对值为 2×3×4=24
+      - 6÷(-3) 改写为 6×(-1/3)
+      teacher_note: 乘除混合先改写成乘法串，再判断负因数个数。
+    variant_problems:
+    - 判断 (-1)×(-2)×(-3) 的结果符号
+    - 把 (-8)÷(+4) 改写成乘法并计算
+    error_contrasts:
+    - wrong: 6÷(-3)=6×3。
+      why_wrong: 除法转乘法时要乘以除数的倒数，符号也不能丢。
+      correct: 6÷(-3)=6×(-1/3)=-2。
+    lesson_summary:
+    - 乘除法先判断符号，再算绝对值
+    - 除以一个非零数等于乘以这个数的倒数
   evidence:
   - source_ref: textbook-rj-math-grade7-vol1
     note: 页码由 PDF outline inspection 补入
@@ -500,6 +602,23 @@ skill_drafts:
     - 计算负数乘方
     mastery_checks:
     - 学生能解释括号对底数的影响
+    worked_examples:
+    - prompt: 比较 -2^2 和 (-2)^2。
+      steps:
+      - -2^2 的底数是 2，先算 2^2，再取相反数
+      - (-2)^2 的底数是 -2，表示两个 -2 相乘
+      - 所以 -2^2=-4，而 (-2)^2=4
+      teacher_note: 先圈底数，再展开乘法，避免只背奇偶规则。
+    variant_problems:
+    - 展开并计算 (-3)^2
+    - 判断 -1^4 和 (-1)^4 是否相等
+    error_contrasts:
+    - wrong: -2^2=4，因为负数的偶次方是正数。
+      why_wrong: 这里没有括号，底数不是 -2。
+      correct: -2^2 表示 -(2^2)，结果是 -4；(-2)^2 才是 4。
+    lesson_summary:
+    - 乘方是相同因数连乘的简写
+    - 处理负数乘方时必须先确认底数是否包含负号
   evidence:
   - source_ref: textbook-rj-math-grade7-vol1
     note: 页码由 PDF outline inspection 补入
@@ -541,6 +660,23 @@ skill_drafts:
     - 按位取近似数
     mastery_checks:
     - 学生能说明 a 和 n 各自代表什么
+    worked_examples:
+    - prompt: 把 5600000 写成科学记数法，并把 3.14 精确到十分位。
+      steps:
+      - 5600000 的小数点向左移动 6 位得到 5.6
+      - 所以 5600000=5.6×10^6，其中 1≤5.6<10
+      - 3.14 精确到十分位看百分位上的 4，舍去后为 3.1
+      teacher_note: 科学记数法要同时检查 a 的范围和小数点移动位数。
+    variant_problems:
+    - 把 720000 写成科学记数法
+    - 把 0.987 精确到百分位
+    error_contrasts:
+    - wrong: 5600000=56×10^5。
+      why_wrong: 科学记数法中 a 应满足 1≤a<10，56 不符合范围。
+      correct: 5600000=5.6×10^6。
+    lesson_summary:
+    - 科学记数法的形式是 a×10^n，且通常 1≤a<10
+    - 近似数要同时给出结果和精确到哪一位
   evidence:
   - source_ref: textbook-rj-math-grade7-vol1
     note: 页码由 PDF outline inspection 补入
@@ -665,6 +801,74 @@ rag_chunks:
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-worked-example-1
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 例题：收入 10 元记作 +10，支出 6 元怎样记。解法步骤：先判断收入和支出是一组相反意义的量；已经规定收入用正号表示；支出就用相反的负号表示为
+    -6。教师提示：不急着报答案，先让学生说出“相反意义”再写符号。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-worked-example-1-steps
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example_step
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 例题“收入 10 元记作 +10，支出 6 元怎样记”的分步讲解：先判断收入和支出是一组相反意义的量；已经规定收入用正号表示；支出就用相反的负号表示为
+    -6。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-variants
+  source_ref: llm-draft-teaching-design
+  content_type: variant_problem
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 可用于迁移练习的变式题：海平面以上 30 米记作 +30 米，海平面以下 12 米怎样记；气温升高 4 摄氏度记作 +4 摄氏度，下降 7 摄氏度怎样记。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-error-contrast-1
+  source_ref: llm-draft-teaching-design
+  content_type: error_contrast
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 错误示例：支出 6 元写作 +6，因为 6 是正数；错误原因：这里的符号表示方向，不是只看数字 6 本身；正确做法：收入规定为正时，支出作为相反意义的量应写作
+    -6。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-lesson-summary
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 本课小结：正负号先表示相反方向，再和数量大小组合成带符号的数；0 在不同情境中可能表示基准、分界或没有变化。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 - id: rag-ch1-kp-number-line-summary
   source_ref: llm-draft-teaching-design
   content_type: concept_summary
@@ -779,6 +983,71 @@ rag_chunks:
     start: 14
     end: 15
   text: 掌握检查：学生能解释一个点为什么表示某个有理数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-worked-example-1
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 例题：在数轴上表示 -2 和 +3。解法步骤：先画出原点、正方向和单位长度；从原点向左数 2 个单位得到 -2；从原点向右数 3 个单位得到 +3。教师提示：学生定位前必须先检查数轴三要素是否齐全。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-worked-example-1-steps
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example_step
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 例题“在数轴上表示 -2 和 +3”的分步讲解：先画出原点、正方向和单位长度；从原点向左数 2 个单位得到 -2；从原点向右数 3 个单位得到 +3。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-variants
+  source_ref: llm-draft-teaching-design
+  content_type: variant_problem
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 可用于迁移练习的变式题：读出数轴上原点左侧 4 个单位的点表示的数；在同一数轴上标出 -1.5、0、2。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-error-contrast-1
+  source_ref: llm-draft-teaching-design
+  content_type: error_contrast
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 错误示例：只画一条直线并把左边点写成 -2，没标原点和单位长度；错误原因：没有原点和单位长度，点与数无法建立确定对应；正确做法：先标出原点、正方向和单位长度，再按方向与单位数定位。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-lesson-summary
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 本课小结：数轴的三要素是原点、正方向和单位长度；点的位置要用离原点几个单位和朝哪个方向来解释。
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
@@ -899,6 +1168,73 @@ rag_chunks:
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-worked-example-1
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 例题：写出 3、-4、0 的相反数。解法步骤：3 的相反数与 3 符号相反，是 -3；-4 的相反数与 -4 符号相反，是 4；0 到原点距离为 0，仍与自己相反。教师提示：重点纠正“相反数一定是负数”的机械说法。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-worked-example-1-steps
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example_step
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 例题“写出 3、-4、0 的相反数”的分步讲解：3 的相反数与 3 符号相反，是 -3；-4 的相反数与 -4 符号相反，是 4；0 到原点距离为
+    0，仍与自己相反。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-variants
+  source_ref: llm-draft-teaching-design
+  content_type: variant_problem
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 可用于迁移练习的变式题：判断 2.5 和 -2.5 是否互为相反数；说出数轴上与 -1 关于原点对称的点表示什么数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-error-contrast-1
+  source_ref: llm-draft-teaching-design
+  content_type: error_contrast
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 错误示例：-4 的相反数是 -4，因为它本来就是负数；错误原因：相反数看的是关于原点对称或符号相反，不是保留原符号；正确做法：-4 的相反数是 4，0
+    的相反数仍是 0。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-lesson-summary
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 本课小结：只有符号不同的两个数互为相反数；数轴上互为相反数的两个点关于原点对称。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 - id: rag-ch1-kp-absolute-value-summary
   source_ref: llm-draft-teaching-design
   content_type: concept_summary
@@ -1013,6 +1349,74 @@ rag_chunks:
     start: 18
     end: 22
   text: 掌握检查：学生能用距离语言解释绝对值。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-worked-example-1
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 例题：计算 |-5|，并比较 -5 和 -2 的大小。解法步骤：|-5| 表示 -5 到原点的距离；距离是 5，所以 |-5| = 5；在数轴上 -5
+    在 -2 左边，因此 -5 < -2。教师提示：先用距离语言解释，再进入符号计算和大小比较。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-worked-example-1-steps
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example_step
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 例题“计算 |-5|，并比较 -5 和 -2 的大小”的分步讲解：|-5| 表示 -5 到原点的距离；距离是 5，所以 |-5| = 5；在数轴上
+    -5 在 -2 左边，因此 -5 < -2。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-variants
+  source_ref: llm-draft-teaching-design
+  content_type: variant_problem
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 可用于迁移练习的变式题：计算 |3|、|-3|，并说明为什么结果相同；比较 -0.5 和 -2 的大小，并用数轴说明。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-error-contrast-1
+  source_ref: llm-draft-teaching-design
+  content_type: error_contrast
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 错误示例：-5 比 -2 大，因为 5 比 2 大；错误原因：比较负数大小要看数轴位置，不能只比绝对值大小；正确做法：-5 在 -2 左边，所以 -5
+    < -2。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-lesson-summary
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 本课小结：绝对值表示到原点的距离，因此结果不为负；比较负数大小时，数轴上越靠右的数越大。
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
@@ -1133,6 +1537,73 @@ rag_chunks:
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-worked-example-1
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 例题：计算 (-3)+(+5)，再把 4-(-2) 改写成加法。解法步骤：(-3)+(+5) 是异号相加，先比较绝对值 5 和 3；绝对值较大的数是
+    +5，所以结果为正，大小为 5-3=2；4-(-2) 改写为 4+(+2)。教师提示：每一步都要求学生先说符号来源，再做绝对值运算。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-worked-example-1-steps
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example_step
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 例题“计算 (-3)+(+5)，再把 4-(-2) 改写成加法”的分步讲解：(-3)+(+5) 是异号相加，先比较绝对值 5 和 3；绝对值较大的数是
+    +5，所以结果为正，大小为 5-3=2；4-(-2) 改写为 4+(+2)。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-variants
+  source_ref: llm-draft-teaching-design
+  content_type: variant_problem
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 可用于迁移练习的变式题：计算 (-7)+(+2)，并说明结果符号；把 -3-(+5) 改写成加法再计算。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-error-contrast-1
+  source_ref: llm-draft-teaching-design
+  content_type: error_contrast
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 错误示例：4-(-2)=4-2=2；错误原因：减去一个负数要转化为加上它的相反数；正确做法：4-(-2)=4+(+2)=6。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-lesson-summary
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 本课小结：有理数加法先分同号或异号，再处理绝对值；有理数减法统一转化为加上相反数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 - id: rag-ch1-kp-rational-multiply-divide-summary
   source_ref: llm-draft-teaching-design
   content_type: concept_summary
@@ -1250,6 +1721,73 @@ rag_chunks:
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-worked-example-1
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 例题：计算 (-2)×(-3)×4，并把 6÷(-3) 改写成乘法。解法步骤：(-2)×(-3)×4 中有两个负因数，负因数个数为偶数；结果符号为正，绝对值为
+    2×3×4=24；6÷(-3) 改写为 6×(-1/3)。教师提示：乘除混合先改写成乘法串，再判断负因数个数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-worked-example-1-steps
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example_step
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 例题“计算 (-2)×(-3)×4，并把 6÷(-3) 改写成乘法”的分步讲解：(-2)×(-3)×4 中有两个负因数，负因数个数为偶数；结果符号为正，绝对值为
+    2×3×4=24；6÷(-3) 改写为 6×(-1/3)。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-variants
+  source_ref: llm-draft-teaching-design
+  content_type: variant_problem
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 可用于迁移练习的变式题：判断 (-1)×(-2)×(-3) 的结果符号；把 (-8)÷(+4) 改写成乘法并计算。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-error-contrast-1
+  source_ref: llm-draft-teaching-design
+  content_type: error_contrast
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 错误示例：6÷(-3)=6×3；错误原因：除法转乘法时要乘以除数的倒数，符号也不能丢；正确做法：6÷(-3)=6×(-1/3)=-2。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-lesson-summary
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 本课小结：乘除法先判断符号，再算绝对值；除以一个非零数等于乘以这个数的倒数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 - id: rag-ch1-kp-rational-powers-summary
   source_ref: llm-draft-teaching-design
   content_type: concept_summary
@@ -1364,6 +1902,74 @@ rag_chunks:
     start: 48
     end: 50
   text: 掌握检查：学生能解释括号对底数的影响。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-worked-example-1
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 例题：比较 -2^2 和 (-2)^2。解法步骤：-2^2 的底数是 2，先算 2^2，再取相反数；(-2)^2 的底数是 -2，表示两个 -2 相乘；所以
+    -2^2=-4，而 (-2)^2=4。教师提示：先圈底数，再展开乘法，避免只背奇偶规则。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-worked-example-1-steps
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example_step
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 例题“比较 -2^2 和 (-2)^2”的分步讲解：-2^2 的底数是 2，先算 2^2，再取相反数；(-2)^2 的底数是 -2，表示两个 -2
+    相乘；所以 -2^2=-4，而 (-2)^2=4。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-variants
+  source_ref: llm-draft-teaching-design
+  content_type: variant_problem
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 可用于迁移练习的变式题：展开并计算 (-3)^2；判断 -1^4 和 (-1)^4 是否相等。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-error-contrast-1
+  source_ref: llm-draft-teaching-design
+  content_type: error_contrast
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 错误示例：-2^2=4，因为负数的偶次方是正数；错误原因：这里没有括号，底数不是 -2；正确做法：-2^2 表示 -(2^2)，结果是 -4；(-2)^2
+    才是 4。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-lesson-summary
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 本课小结：乘方是相同因数连乘的简写；处理负数乘方时必须先确认底数是否包含负号。
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
@@ -1490,6 +2096,78 @@ rag_chunks:
     start: 51
     end: 56
   text: 掌握检查：学生能说明 a 和 n 各自代表什么。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-worked-example-1
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 例题：把 5600000 写成科学记数法，并把 3.14 精确到十分位。解法步骤：5600000 的小数点向左移动 6 位得到 5.6；所以 5600000=5.6×10^6，其中
+    1≤5.6<10；3.14 精确到十分位看百分位上的 4，舍去后为 3.1。教师提示：科学记数法要同时检查 a 的范围和小数点移动位数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-worked-example-1-steps
+  source_ref: llm-draft-teaching-design
+  content_type: worked_example_step
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 例题“把 5600000 写成科学记数法，并把 3.14 精确到十分位”的分步讲解：5600000 的小数点向左移动 6 位得到 5.6；所以 5600000=5.6×10^6，其中
+    1≤5.6<10；3.14 精确到十分位看百分位上的 4，舍去后为 3.1。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-variants
+  source_ref: llm-draft-teaching-design
+  content_type: variant_problem
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 可用于迁移练习的变式题：把 720000 写成科学记数法；把 0.987 精确到百分位。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-error-contrast-1
+  source_ref: llm-draft-teaching-design
+  content_type: error_contrast
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 错误示例：5600000=56×10^5；错误原因：科学记数法中 a 应满足 1≤a<10，56 不符合范围；正确做法：5600000=5.6×10^6。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-lesson-summary
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_summary
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 本课小结：科学记数法的形式是 a×10^n，且通常 1≤a<10；近似数要同时给出结果和精确到哪一位。
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required

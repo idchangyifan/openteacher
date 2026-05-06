@@ -50,7 +50,7 @@ def test_textbook_to_skill_sample_marks_generated_assets_as_draft() -> None:
 
     assert data["review_record"]["status"] == "draft"
     assert len(data["skill_drafts"]) == 8
-    assert len(data["rag_chunks"]) == 72
+    assert len(data["rag_chunks"]) == 112
     assert all(draft["review_status"] == "draft" for draft in data["skill_drafts"])
     assert all(chunk["review_status"] == "draft" for chunk in data["rag_chunks"])
 
@@ -84,6 +84,26 @@ def test_textbook_to_skill_sample_has_teaching_action_chunks() -> None:
     assert "correction_strategy" in content_types
     assert "practice_sequence" in content_types
     assert "mastery_check" in content_types
+    assert "worked_example" in content_types
+    assert "worked_example_step" in content_types
+    assert "variant_problem" in content_types
+    assert "error_contrast" in content_types
+    assert "lesson_summary" in content_types
+
+
+def test_textbook_to_skill_sample_has_rich_teaching_chunks_with_page_ranges() -> None:
+    data = load_yaml(FIXTURE_PATH)
+    chunks = {chunk["id"]: chunk for chunk in data["rag_chunks"]}
+
+    example = chunks["rag-ch1-kp-positive-negative-numbers-worked-example-1"]
+    error = chunks["rag-ch1-kp-rational-powers-error-contrast-1"]
+    variants = chunks["rag-ch1-kp-number-line-variants"]
+
+    assert "支出 6 元" in example["text"]
+    assert "先判断收入和支出" in example["text"]
+    assert example["page_range"] == {"start": 6, "end": 7}
+    assert "底数不是 -2" in error["text"]
+    assert "原点左侧 4 个单位" in variants["text"]
 
 
 def test_textbook_to_skill_builder_generates_expected_artifact_shape() -> None:
