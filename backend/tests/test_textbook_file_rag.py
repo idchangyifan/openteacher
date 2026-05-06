@@ -1,7 +1,7 @@
 from pathlib import Path
 
 from app.services import rag
-from app.services.rag import TextbookFileRagService, get_rag_service
+from app.services.rag import MongoTextbookRagService, TextbookFileRagService, get_rag_service
 
 
 FIXTURE_PATH = Path(__file__).parent / "fixtures" / "textbook-to-skill-sample.yaml"
@@ -35,6 +35,78 @@ def test_get_rag_service_can_select_textbook_file_backend(monkeypatch) -> None:
 
     assert isinstance(service, TextbookFileRagService)
     assert "正数和负数" in service.retrieve("正数和负数")
+
+
+class FakeCursor(list):
+    def limit(self, _count: int):
+        return self
+
+
+class FakeTextbookChunksCollection:
+    def __init__(self, docs):
+        self.docs = docs
+        self.last_filter = None
+
+    def find(self, filter_doc, _projection):
+        self.last_filter = filter_doc
+        return FakeCursor(self.docs)
+
+
+def test_mongo_textbook_rag_retrieves_imported_chunks() -> None:
+    collection = FakeTextbookChunksCollection(
+        [
+            {
+                "id": "rag-ch1-kp-positive-negative-summary",
+                "source_ref": "llm-draft-teaching-design",
+                "content_type": "concept_summary",
+                "chapter_id": "ch1",
+                "knowledge_point_ids": ["kp-positive-negative-numbers"],
+                "text": "正数和负数可用于表示相反意义的量。",
+                "review_status": "draft",
+            },
+            {
+                "id": "rag-ch1-kp-number-line-summary",
+                "source_ref": "llm-draft-teaching-design",
+                "content_type": "concept_summary",
+                "chapter_id": "ch1",
+                "knowledge_point_ids": ["kp-number-line"],
+                "text": "数轴用原点、正方向和单位长度表示数。",
+                "review_status": "draft",
+            },
+        ]
+    )
+    service = MongoTextbookRagService(collection=collection)
+
+    context = service.retrieve("支出 6 元怎么用正数和负数表示？")
+
+    assert "MongoDB 教材 RAG 检索结果" in context
+    assert "rag-ch1-kp-positive-negative-summary" in context
+    assert "kp-positive-negative-numbers" in context
+    assert collection.last_filter is not None
+    assert "$or" in collection.last_filter
+
+
+def test_mongo_textbook_rag_escapes_regex_tokens() -> None:
+    collection = FakeTextbookChunksCollection([])
+    service = MongoTextbookRagService(collection=collection)
+
+    service.retrieve("2(x - 3) = 10")
+
+    regex_values = [
+        clause["text"]["$regex"]
+        for clause in collection.last_filter["$or"]
+        if "text" in clause
+    ]
+    assert "2\\(x" in regex_values
+    assert "\\-" in regex_values
+
+
+def test_get_rag_service_can_select_mongodb_backend(monkeypatch) -> None:
+    monkeypatch.setattr(rag.settings, "rag_backend", "mongodb")
+
+    service = get_rag_service()
+
+    assert isinstance(service, MongoTextbookRagService)
 
 
 def test_textbook_file_rag_can_feed_teacher_prompt(monkeypatch) -> None:

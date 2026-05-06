@@ -1,3 +1,5 @@
+from typing import Any
+
 from app.schemas.lesson import LessonSessionCreate
 from app.schemas.teacher import StudentContext, TeacherChatRequest
 from app.services.deepagents_runtime import DeepAgentsTeachingRuntime
@@ -20,7 +22,11 @@ def make_prompt() -> TeacherPrompt:
         core_skill_guidance="主动授课；识别掌握信号。",
         knowledge_skill_name="通用知识 Skill",
         knowledge_skill_guidance="根据学科选择教学动作。",
-        planner_context="teaching_mode=active_lesson\nlearner_state=insufficient_information",
+        planner_context=(
+            "teaching_mode=active_lesson\n"
+            "learner_state=insufficient_information\n"
+            "next_teacher_goal=继续当前诊断题，先评价学生回答。"
+        ),
     )
 
 
@@ -65,3 +71,130 @@ def test_deepagents_tools_can_read_memory_and_lesson_state() -> None:
     lesson_state = tools["load_lesson_state"]()
     assert "浮力入门" in lesson_state
     assert "理解浮力和重力的关系" in lesson_state
+
+
+def test_teaching_graph_state_uses_session_id_as_thread_and_keeps_lesson_state() -> None:
+    repository = InMemoryLessonRepository()
+    session = repository.create_session(
+        request=LessonSessionCreate(
+            student_id="graph-state-student",
+            subject="数学",
+            title="正数和负数",
+            lesson_goal="理解正负数表示相反意义的量",
+        )
+    )
+    repository.update_session_state(
+        session.id,
+        current_skill_id="opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers",
+        current_knowledge_point_id="kp-positive-negative-numbers",
+        current_chapter_id="ch1",
+    )
+    repository.append_message(
+        session_id=session.id,
+        role="teacher",
+        content="如果收入10元记作+10，那支出6元应该怎么记？",
+    )
+    repository.append_message(session_id=session.id, role="student", content="*6")
+    request = TeacherChatRequest(
+        message="*6",
+        context=StudentContext(
+            student_id="graph-state-student",
+            grade="初一",
+            subject="数学",
+            session_id=session.id,
+        ),
+    )
+    runtime = DeepAgentsTeachingRuntime(memory_service=MemoryService(), lesson_repository=repository)
+
+    graph_state = runtime._build_graph_state(request, make_prompt())
+    payload = graph_state.to_payload()
+
+    assert graph_state.thread_id == session.id
+    assert graph_state.lesson_state.current_chapter_id == "ch1"
+    assert graph_state.lesson_state.current_knowledge_point_id == "kp-positive-negative-numbers"
+    assert graph_state.lesson_state.current_skill_id.endswith("positive-negative-numbers")
+    assert graph_state.current_question == "如果收入10元记作+10，那支出6元应该怎么记？"
+    assert graph_state.student_answer_status == "incorrect_symbol"
+    assert "* 不是正负号" in graph_state.student_answer_feedback
+    assert "不要直接说出完整答案" in graph_state.next_teaching_action
+    assert payload["lesson_state"]["current_skill_id"].endswith("positive-negative-numbers")
+    assert payload["messages"][-1] == {"role": "student", "content": "*6"}
+
+
+def test_deepagents_invocation_passes_mongodb_checkpointer_and_thread_config() -> None:
+    captured: dict[str, Any] = {}
+
+    class FakeAgent:
+        def invoke(self, payload: dict[str, Any], config: dict[str, Any]) -> dict[str, Any]:
+            captured["payload"] = payload
+            captured["config"] = config
+            return {"messages": [{"role": "assistant", "content": "继续看刚才那题：*6 不对。"}]}
+
+    def fake_create_deep_agent(**kwargs: Any) -> FakeAgent:
+        captured["create_kwargs"] = kwargs
+        return FakeAgent()
+
+    repository = InMemoryLessonRepository()
+    session = repository.create_session(
+        request=LessonSessionCreate(
+            student_id="deepagents-thread-student",
+            subject="数学",
+            title="正数和负数",
+            lesson_goal="理解正负数表示相反意义的量",
+        )
+    )
+    request = TeacherChatRequest(
+        message="-6",
+        context=StudentContext(
+            student_id="deepagents-thread-student",
+            grade="初一",
+            subject="数学",
+            session_id=session.id,
+        ),
+    )
+    runtime = DeepAgentsTeachingRuntime(memory_service=MemoryService(), lesson_repository=repository)
+    runtime._load_create_deep_agent = lambda: fake_create_deep_agent  # type: ignore[method-assign]
+    runtime._build_model = lambda: "fake-model"  # type: ignore[method-assign]
+    runtime._build_checkpointer = lambda: "fake-mongodb-checkpointer"  # type: ignore[method-assign]
+
+    result = runtime.generate_reply(request, make_prompt())
+
+    assert result.reply == "继续看刚才那题：*6 不对。"
+    assert captured["create_kwargs"]["checkpointer"] == "fake-mongodb-checkpointer"
+    assert captured["config"]["configurable"]["thread_id"] == session.id
+    assert captured["config"]["metadata"]["session_id"] == session.id
+    user_message = captured["payload"]["messages"][0]["content"]
+    assert f"thread_id：{session.id}" in user_message
+
+
+def test_teaching_graph_state_marks_negative_six_correct_for_current_diagnostic() -> None:
+    repository = InMemoryLessonRepository()
+    session = repository.create_session(
+        request=LessonSessionCreate(
+            student_id="graph-state-correct-student",
+            subject="数学",
+            title="正数和负数",
+        )
+    )
+    repository.append_message(
+        session_id=session.id,
+        role="teacher",
+        content="如果收入10元记作+10，那支出6元应该怎么记？",
+    )
+    repository.append_message(session_id=session.id, role="student", content="-6")
+    request = TeacherChatRequest(
+        message="-6",
+        context=StudentContext(
+            student_id="graph-state-correct-student",
+            grade="初一",
+            subject="数学",
+            session_id=session.id,
+        ),
+    )
+    runtime = DeepAgentsTeachingRuntime(memory_service=MemoryService(), lesson_repository=repository)
+
+    graph_state = runtime._build_graph_state(request, make_prompt())
+
+    assert graph_state.student_answer_status == "correct"
+    assert "先确认正确" in graph_state.student_answer_feedback
+    assert "不要切到下一题" in graph_state.next_teaching_action

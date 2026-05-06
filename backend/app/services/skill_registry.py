@@ -14,6 +14,9 @@ class TeachingSkill:
     name: str
     skill_type: str = "knowledge"
     guidance: str = ""
+    target: dict[str, Any] | None = None
+    selection_keywords: tuple[str, ...] = ()
+    review_status: str = ""
 
 
 @dataclass(frozen=True)
@@ -30,16 +33,44 @@ class SkillRegistry:
     def __init__(self, skills_dir: Path | None = None) -> None:
         self.skills_dir = skills_dir or settings.skills_dir
 
-    def pick_skills(self, grade: str, subject: str) -> SkillSelection:
+    def pick_skills(
+        self,
+        grade: str,
+        subject: str,
+        message: str = "",
+        current_skill_id: str | None = None,
+    ) -> SkillSelection:
         return SkillSelection(
             core=self.get_core_skill(),
-            knowledge=self.pick_knowledge_skill(grade, subject),
+            knowledge=self.pick_knowledge_skill(
+                grade,
+                subject,
+                message,
+                current_skill_id=current_skill_id,
+            ),
         )
 
     def get_core_skill(self) -> TeachingSkill:
         return self._load_skill("universal-teacher-core.yaml")
 
-    def pick_knowledge_skill(self, grade: str, subject: str) -> TeachingSkill:
+    def pick_knowledge_skill(
+        self,
+        grade: str,
+        subject: str,
+        message: str = "",
+        current_skill_id: str | None = None,
+    ) -> TeachingSkill:
+        if self._looks_like_equation_message(message) and subject == "数学":
+            return self._load_skill("junior-math-linear-equation.yaml")
+
+        generated_skill = self._pick_generated_knowledge_skill(grade, subject, message)
+        if generated_skill is not None:
+            return generated_skill
+
+        current_skill = self.get_knowledge_skill_by_id(current_skill_id)
+        if current_skill is not None and self._target_matches(current_skill, grade, subject):
+            return current_skill
+
         if subject == "数学" and grade in {"初一", "初二", "初三"}:
             return self._load_skill("junior-math-linear-equation.yaml")
 
@@ -59,8 +90,29 @@ class SkillRegistry:
             ),
         )
 
-    def pick_skill(self, grade: str, subject: str) -> TeachingSkill:
-        return self.pick_knowledge_skill(grade, subject)
+    def pick_skill(
+        self,
+        grade: str,
+        subject: str,
+        message: str = "",
+        current_skill_id: str | None = None,
+    ) -> TeachingSkill:
+        return self.pick_knowledge_skill(
+            grade,
+            subject,
+            message,
+            current_skill_id=current_skill_id,
+        )
+
+    def get_knowledge_skill_by_id(self, skill_id: str | None) -> TeachingSkill | None:
+        if not skill_id:
+            return None
+        if skill_id == "opent-teacher-junior-math-linear-equation":
+            return self._load_skill("junior-math-linear-equation.yaml")
+        for skill in self._load_generated_knowledge_skills():
+            if skill.id == skill_id:
+                return skill
+        return None
 
     def _load_skill(self, filename: str) -> TeachingSkill:
         path = self.skills_dir / filename
@@ -73,6 +125,113 @@ class SkillRegistry:
             name=str(raw["name"]),
             skill_type=str(raw.get("skill_type", "knowledge")),
             guidance=self._build_guidance(raw),
+            target=raw.get("target") if isinstance(raw.get("target"), dict) else None,
+            selection_keywords=self._selection_keywords(raw),
+            review_status=str(raw.get("review_status", "")),
+        )
+
+    def _pick_generated_knowledge_skill(
+        self, grade: str, subject: str, message: str
+    ) -> TeachingSkill | None:
+        generated_skills = [
+            skill
+            for skill in self._load_generated_knowledge_skills()
+            if self._target_matches(skill, grade, subject)
+        ]
+        if not generated_skills:
+            return None
+
+        scored = [
+            (self._message_match_score(skill, message), skill)
+            for skill in generated_skills
+        ]
+        best_score, best_skill = max(scored, key=lambda item: (item[0], item[1].id))
+        if best_score > 0:
+            return best_skill
+
+        if subject == "数学" and grade in {"初一", "七年级"} and self._looks_like_lesson_start(message):
+            return sorted(generated_skills, key=self._course_order_key)[0]
+
+        return None
+
+    def _course_order_key(self, skill: TeachingSkill) -> tuple[int, str]:
+        target = skill.target or {}
+        page_range = target.get("page_range", {})
+        start_page = page_range.get("start") if isinstance(page_range, dict) else None
+        return (int(start_page) if start_page is not None else 9999, skill.id)
+
+    def _load_generated_knowledge_skills(self) -> list[TeachingSkill]:
+        generated_dir = self.skills_dir / "generated"
+        if not generated_dir.exists():
+            return []
+
+        skills = []
+        for path in sorted(generated_dir.glob("*.yaml")):
+            skill = self._load_skill(f"generated/{path.name}")
+            if skill.skill_type == "knowledge":
+                skills.append(skill)
+        return skills
+
+    def _target_matches(self, skill: TeachingSkill, grade: str, subject: str) -> bool:
+        target = skill.target or {}
+        subjects = {str(item) for item in target.get("subjects", [])}
+        grades = {str(item) for item in target.get("grades", [])}
+        grade_aliases = self._grade_aliases(grade)
+        return (not subjects or subject in subjects) and (not grades or bool(grades & grade_aliases))
+
+    def _message_match_score(self, skill: TeachingSkill, message: str) -> int:
+        normalized = message.lower().strip()
+        if not normalized:
+            return 0
+
+        score = 0
+        for keyword in skill.selection_keywords:
+            keyword_normalized = keyword.lower().strip()
+            if not keyword_normalized:
+                continue
+            if keyword_normalized in normalized:
+                score += max(1, min(len(keyword_normalized), 12))
+
+        target = skill.target or {}
+        for knowledge_point_id in target.get("knowledge_points", []):
+            if str(knowledge_point_id).lower() in normalized:
+                score += 20
+        return score
+
+    def _grade_aliases(self, grade: str) -> set[str]:
+        aliases = {grade}
+        if grade == "初一":
+            aliases.update({"七年级", "7年级", "七上"})
+        if grade == "初二":
+            aliases.update({"八年级", "8年级"})
+        if grade == "初三":
+            aliases.update({"九年级", "9年级"})
+        return aliases
+
+    def _looks_like_equation_message(self, message: str) -> bool:
+        normalized = message.lower().replace(" ", "")
+        return any(
+            token in normalized
+            for token in ["方程", "移项", "去括号", "x=", "=x", "2(x", "x-"]
+        )
+
+    def _looks_like_lesson_start(self, message: str) -> bool:
+        return any(
+            token in message
+            for token in [
+                "开始学",
+                "开始教学",
+                "开始上课",
+                "给我上课",
+                "讲一讲",
+                "学一下",
+                "今天学",
+                "请开始",
+                "主动教学",
+                "继续教学",
+                "继续上课",
+                "上课",
+            ]
         )
 
     def _build_guidance(self, raw: dict[str, Any]) -> str:
@@ -159,7 +318,56 @@ class SkillRegistry:
             if formatted_examples:
                 parts.append("示例回复：" + " | ".join(formatted_examples))
 
+        target = raw.get("target", {})
+        if isinstance(target, dict):
+            knowledge_points = target.get("knowledge_points", [])
+            page_range = target.get("page_range", {})
+            if knowledge_points:
+                parts.append("适用知识点：" + "；".join(str(item) for item in knowledge_points))
+            if isinstance(page_range, dict) and page_range.get("start") is not None:
+                parts.append(
+                    f"教材页码候选：第 {page_range.get('start')} - {page_range.get('end')} 页"
+                )
+
+        source_evidence = raw.get("source_evidence", [])
+        if source_evidence:
+            formatted_evidence = []
+            for item in source_evidence:
+                if not isinstance(item, dict):
+                    continue
+                page_range = item.get("page_range", {})
+                formatted_evidence.append(
+                    f"{item.get('source_ref', '')} 页码={page_range.get('start')}-{page_range.get('end')} 备注={item.get('note', '')}"
+                )
+            if formatted_evidence:
+                parts.append("来源证据：" + " | ".join(formatted_evidence))
+
+        teaching_plan = raw.get("teaching_plan", {})
+        if isinstance(teaching_plan, dict):
+            plan_parts = []
+            for key, label in [
+                ("learning_objectives", "学习目标"),
+                ("prerequisites", "前置知识"),
+                ("opening", "导入方式"),
+                ("practice_sequence", "练习顺序"),
+                ("mastery_checks", "掌握检查"),
+            ]:
+                values = teaching_plan.get(key, [])
+                if values:
+                    plan_parts.append(f"{label}=" + "；".join(str(item) for item in values))
+            if plan_parts:
+                parts.append("教学设计：" + " | ".join(plan_parts))
+
         return "\n".join(parts)
+
+    def _selection_keywords(self, raw: dict[str, Any]) -> tuple[str, ...]:
+        selection = raw.get("selection", {})
+        if not isinstance(selection, dict):
+            return ()
+        keywords = selection.get("keywords", [])
+        if not isinstance(keywords, list):
+            return ()
+        return tuple(str(item) for item in keywords if str(item).strip())
 
 
 @lru_cache

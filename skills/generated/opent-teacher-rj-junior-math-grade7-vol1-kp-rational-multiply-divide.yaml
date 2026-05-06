@@ -1,0 +1,133 @@
+id: opent-teacher-rj-junior-math-grade7-vol1-kp-rational-multiply-divide
+name: 人教版初中数学七年级上册：有理数的乘除法
+version: 0.1.0
+skill_type: knowledge
+review_status: draft
+target:
+  school_stages:
+  - junior
+  grades:
+  - 初一
+  - 七年级
+  subjects:
+  - 数学
+  textbook_versions:
+  - rj-junior-math-grade7-vol1
+  chapters:
+  - ch1
+  knowledge_points:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+selection:
+  keywords:
+  - 两数乘法
+  - 乘除混合
+  - 除法转化
+  - 多因数乘法
+  - divide
+  - 有理数的乘除法
+  - multiply
+  - rational
+  - 能先判断积或商的符号
+  - 能把除法转化为乘以倒数
+  - 除法转乘法时忘记取倒数
+  - 多个负因数时符号判断混乱
+  - 两个负数相乘为什么是正数？
+  - 掌握有理数乘除法的符号法则
+  - 学生能在计算前先说明结果符号
+  - 除以 -3 可以改写成乘以什么？
+  - 从正负因数个数与结果符号的关系导入
+  - kp-rational-multiply-divide
+  priority: 80
+source_evidence:
+- source_ref: textbook-rj-math-grade7-vol1
+  note: 页码由 PDF outline inspection 补入
+  page_range:
+    start: 35
+    end: 47
+rag_chunk_refs:
+- rag-ch1-kp-rational-multiply-divide-summary
+- rag-ch1-kp-rational-multiply-divide-method
+- rag-ch1-kp-rational-multiply-divide-objectives
+- rag-ch1-kp-rational-multiply-divide-opening
+- rag-ch1-kp-rational-multiply-divide-diagnosis
+- rag-ch1-kp-rational-multiply-divide-misconceptions
+- rag-ch1-kp-rational-multiply-divide-correction
+- rag-ch1-kp-rational-multiply-divide-practice
+- rag-ch1-kp-rational-multiply-divide-mastery
+teaching_principles:
+- 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
+- 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
+- 所有教材事实和教学策略都保留来源、页码和审核状态，方便人工校验。
+diagnosis:
+  opening_questions:
+  - 两个负数相乘为什么是正数？
+  - 除以 -3 可以改写成乘以什么？
+  checkpoint_questions:
+  - 学生能在计算前先说明结果符号
+  mastery_signals:
+  - 学生能在计算前先说明结果符号
+error_patterns:
+- id: misconception-1
+  name: 多个负因数时符号判断混乱
+  signs:
+  - 多个负因数时符号判断混乱
+  correction_strategy:
+  - 先数负因数个数判断符号
+  - 先改写除法，再约分或计算
+  followup_practice:
+  - 两数乘法
+  - 多因数乘法
+  - 除法转化
+  - 乘除混合
+- id: misconception-2
+  name: 除法转乘法时忘记取倒数
+  signs:
+  - 除法转乘法时忘记取倒数
+  correction_strategy:
+  - 先数负因数个数判断符号
+  - 先改写除法，再约分或计算
+  followup_practice:
+  - 两数乘法
+  - 多因数乘法
+  - 除法转化
+  - 乘除混合
+response_policy:
+  direct_answer_policy: 不能直接给可抄答案；先提出一个与当前知识点有关的最小诊断问题或下一步。
+  strictness_policy: 温暖但有要求；学生答对时先确认，再要求一句理由、检验或进入下一小节。
+  praise_policy: 表扬要具体到概念、步骤或表达，不泛泛夸聪明。
+  repeated_error_policy: 重复错误时回到教材情境或核心概念，只修正一个关键误区。
+  uncertainty_policy: 如果教材页码、定义或例题证据不足，标记需要审核，不编造教材内容。
+safety:
+  forbidden_behaviors:
+  - 把 generated skill 当作已审核官方结论直接发布。
+  - 编造教材原文、页码或例题。
+  - 为了防抄答案而机械要求学生重写已经掌握的步骤。
+  privacy_notes:
+  - 本 skill 只记录学习相关信息，不索要身份证号、精确住址或联系方式。
+teaching_plan:
+  learning_objectives:
+  - 掌握有理数乘除法的符号法则
+  - 能把除法转化为乘以倒数
+  prerequisites:
+  - 有理数加减、相反数和倒数
+  opening:
+  - 从正负因数个数与结果符号的关系导入
+  diagnosis_questions:
+  - 两个负数相乘为什么是正数？
+  - 除以 -3 可以改写成乘以什么？
+  misconceptions:
+  - 多个负因数时符号判断混乱
+  - 除法转乘法时忘记取倒数
+  correction_strategies:
+  - 先数负因数个数判断符号
+  - 先改写除法，再约分或计算
+  practice_sequence:
+  - 两数乘法
+  - 多因数乘法
+  - 除法转化
+  - 乘除混合
+  mastery_checks:
+  - 学生能在计算前先说明结果符号

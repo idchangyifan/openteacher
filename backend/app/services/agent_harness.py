@@ -1,6 +1,7 @@
 import logging
 
 from app.core.settings import settings
+from app.schemas.lesson import LessonSessionDetail
 from app.schemas.teacher import MemoryEvent, TeacherChatRequest, TeacherChatResponse
 from app.services.deepagents_runtime import DeepAgentsTeachingRuntime
 from app.services.llm_provider import LlmProvider, MockTeacherProvider, TeacherPrompt, get_llm_provider
@@ -8,7 +9,7 @@ from app.services.lesson_store import LessonRepository, get_lesson_repository
 from app.services.memory import MemoryService, get_memory_service
 from app.services.planner import PlannerService, get_planner_service
 from app.services.rag import RagService, get_rag_service
-from app.services.skill_registry import SkillRegistry, get_skill_registry
+from app.services.skill_registry import SkillRegistry, TeachingSkill, get_skill_registry
 
 logger = logging.getLogger(__name__)
 
@@ -45,13 +46,28 @@ class AgentHarness:
                 content=request.message,
             )
 
-        skills = self.skill_registry.pick_skills(request.context.grade, effective_subject)
-        memory = self.memory_service.get_student_summary(request.context.student_id)
         lesson_detail = (
             self.lesson_repository.get_session_detail(request.context.session_id)
             if request.context.session_id
             else None
         )
+        skills = self.skill_registry.pick_skills(
+            request.context.grade,
+            effective_subject,
+            message=request.message,
+            current_skill_id=(
+                lesson_detail.session.current_skill_id if lesson_detail is not None else None
+            ),
+        )
+        if request.context.session_id:
+            self.lesson_repository.update_session_state(
+                request.context.session_id,
+                **self._lesson_state_from_skill(skills.knowledge),
+            )
+            lesson_detail = self.lesson_repository.get_session_detail(request.context.session_id)
+
+        rag_query = self._build_lesson_context_query(request.message, lesson_detail)
+        memory = self.memory_service.get_student_summary(request.context.student_id)
         planner_decision = self.planner_service.plan(
             request,
             effective_subject=effective_subject,
@@ -59,7 +75,7 @@ class AgentHarness:
             memory_summary=memory,
             lesson_detail=lesson_detail,
         )
-        retrieved_context = self.rag_service.retrieve(request.message)
+        retrieved_context = self.rag_service.retrieve(rag_query)
         prompt = TeacherPrompt(
             message=request.message,
             grade=request.context.grade,
@@ -124,6 +140,42 @@ class AgentHarness:
         if any(keyword in normalized for keyword in ["语文", "作文", "阅读", "比喻", "修辞"]):
             return "语文"
         return fallback_subject
+
+    def _build_lesson_context_query(
+        self,
+        message: str,
+        lesson_detail: LessonSessionDetail | None,
+    ) -> str:
+        if lesson_detail is None:
+            return message
+
+        recent_messages = lesson_detail.messages[-6:]
+        if not recent_messages:
+            return message
+
+        history = "\n".join(
+            f"{lesson_message.role}: {lesson_message.content}"
+            for lesson_message in recent_messages
+        )
+        state_lines = [
+            f"current_chapter_id={lesson_detail.session.current_chapter_id or ''}",
+            f"current_section_id={lesson_detail.session.current_section_id or ''}",
+            f"current_knowledge_point_id={lesson_detail.session.current_knowledge_point_id or ''}",
+            f"current_skill_id={lesson_detail.session.current_skill_id or ''}",
+        ]
+        return f"{message}\n\n当前课堂状态：\n" + "\n".join(state_lines) + f"\n\n最近课堂记录：\n{history}"
+
+    def _lesson_state_from_skill(self, skill: TeachingSkill) -> dict[str, str | None]:
+        target = skill.target or {}
+        knowledge_points = target.get("knowledge_points", [])
+        chapters = target.get("chapters", [])
+        sections = target.get("sections", [])
+        return {
+            "current_skill_id": skill.id,
+            "current_knowledge_point_id": str(knowledge_points[0]) if knowledge_points else None,
+            "current_chapter_id": str(chapters[0]) if chapters else None,
+            "current_section_id": str(sections[0]) if sections else None,
+        }
 
 
 def get_agent_harness() -> AgentHarness:

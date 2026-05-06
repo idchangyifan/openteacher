@@ -2,17 +2,18 @@
 
 OpenTeacher 的 harness agent 是主控教师智能体，不是简单的 LLM provider 包装，也不是只把 LangChain DeepAgents 接进来。它负责把课程目标、学生记忆、教学技能、课堂状态、工具调用、安全边界和质量检查组织成一套可运行、可调试、可扩展的教师系统。
 
-本架构长期采用 LangChain DeepAgents / LangGraph 作为 agent runtime 基础，但 OpenTeacher 的教师职责、记忆策略、guardrails、skill 生态和评测观测必须定义在项目自己的领域层。
+本架构采用 LangChain DeepAgents / LangGraph 作为主 agent runtime 基础。OpenTeacher 的教师职责、记忆策略、guardrails、skill 生态和评测观测仍定义在项目自己的领域层，但 `/teacher/chat` 的主控路径应进入 DeepAgents / LangGraph graph，而不是继续依赖 provider-style 单轮 prompt。
 
 ## 关键边界
 
 这里的 harness agent 指 OpenTeacher 自己的主控教师架构，而不是某个第三方库的薄封装。
 
-- DeepAgents / LangGraph 是 runtime：负责执行 agent 图、工具调用和后续 subagent 编排。
+- DeepAgents / LangGraph 是主 runtime：负责执行 agent 图、工具调用、checkpoint、短期记忆、上下文压缩和后续 subagent 编排。
 - OpenTeacher harness 是产品主控层：负责 planner、executor、verifier、记忆策略、guardrails、skill 选择、课堂状态和可观测性。
 - planner / executor / verifier 是最小三层结构。即使第一阶段规则很轻，也必须显式存在，不能把所有判断塞进一个 system prompt。
 - LangSmith 是调试和追踪层，不是教学决策来源；trace 应服务于复盘“为什么这样教”。
 - Skill 广场可以二期建设，但 runtime selection、schema validation、来源和版本字段必须提前预留。
+- MongoDB 是长短期记忆、课程状态、checkpoint、RAG 和后续向量检索的统一存储；PostgreSQL 只承载用户、账号、权限、班级、教师/志愿者和运营关系等关系型数据。
 
 ## 目标
 
@@ -33,9 +34,11 @@ harness agent 应该让 OpenTeacher 能够：
 Student / UI
   -> Lesson API / Teacher API
   -> Harness Agent
-      -> Planner
-      -> Executor
-      -> Verifier
+      -> LangGraph / DeepAgents Thread (thread_id = session_id)
+      -> MongoDB Checkpointer / Store
+      -> Planner Node
+      -> Executor Node
+      -> Verifier Node
       -> Memory Layer
       -> Guardrails
       -> Skill Registry / Skill Marketplace
@@ -70,6 +73,18 @@ Planner 决定“现在应该怎么教”。
 
 Planner 不直接生成最终回答。它生成教学计划和执行约束。
 
+Planner 的输入必须来自 graph state，而不是只来自当前一句学生消息。最低 state 字段应包括：
+
+- `messages`
+- `lesson_state.current_phase`
+- `lesson_state.current_chapter_id`
+- `lesson_state.current_knowledge_point_id`
+- `lesson_state.current_skill_id`
+- `current_question`
+- `student_answer_status`
+- `retrieved_memory`
+- `retrieved_chunks`
+
 ### Executor
 
 Executor 执行 Planner 的计划。
@@ -92,6 +107,8 @@ Executor 可以由 LangChain DeepAgents 执行。它可以使用 subagents，例
 - `safety_review_agent`
 
 第一阶段不一定真的拆 subagents，但接口上应允许后续拆分。
+
+Provider 模型只应作为 Executor 内部 LLM 调用，不应继续作为 `AgentHarness` 的主控决策路径。
 
 ### Verifier
 
@@ -124,10 +141,20 @@ Verifier 输出：
 记忆层不是单个向量库。它包含：
 
 - 课堂事实：完整 lesson sessions、messages、state snapshots
+- 短期 checkpoint：LangGraph thread state 和 checkpoint writes
+- 课程状态：当前 chapter、section、knowledge point、skill、current question、student answer status
 - 结构化记忆：memory cards
 - 冲突处理：memory conflicts
 - 抽取任务：memory extraction jobs
 - 检索视图：MongoDB Atlas Vector Search embedding index
+
+物理存储统一使用 MongoDB：
+
+- source of truth：`lesson_sessions`、`lesson_messages`
+- 短期 checkpoint：`langgraph_checkpoints`、`langgraph_checkpoint_writes`
+- 课程状态：`lesson_sessions` 当前字段和可选 `lesson_state_snapshots`
+- 长期记忆：`memory_cards`、`memory_conflicts`
+- 教材/RAG/向量视图：`textbook_chunks`、MongoDB Atlas Vector Search index
 
 harness agent 调用记忆必须经过工具和策略：
 

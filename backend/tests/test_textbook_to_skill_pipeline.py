@@ -50,7 +50,7 @@ def test_textbook_to_skill_sample_marks_generated_assets_as_draft() -> None:
 
     assert data["review_record"]["status"] == "draft"
     assert len(data["skill_drafts"]) == 8
-    assert len(data["rag_chunks"]) == 16
+    assert len(data["rag_chunks"]) == 72
     assert all(draft["review_status"] == "draft" for draft in data["skill_drafts"])
     assert all(chunk["review_status"] == "draft" for chunk in data["rag_chunks"])
 
@@ -71,6 +71,19 @@ def test_textbook_to_skill_sample_rag_chunks_are_traceable() -> None:
             "authorized_use",
         }
         assert set(chunk["knowledge_point_ids"]).issubset(knowledge_point_ids)
+
+
+def test_textbook_to_skill_sample_has_teaching_action_chunks() -> None:
+    data = load_yaml(FIXTURE_PATH)
+    content_types = {chunk["content_type"] for chunk in data["rag_chunks"]}
+
+    assert "learning_objectives" in content_types
+    assert "lesson_opening" in content_types
+    assert "diagnostic_question" in content_types
+    assert "misconception" in content_types
+    assert "correction_strategy" in content_types
+    assert "practice_sequence" in content_types
+    assert "mastery_check" in content_types
 
 
 def test_textbook_to_skill_builder_generates_expected_artifact_shape() -> None:

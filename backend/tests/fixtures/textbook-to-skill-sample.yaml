@@ -574,6 +574,97 @@ rag_chunks:
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-objectives
+  source_ref: llm-draft-teaching-design
+  content_type: learning_objectives
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 本知识点的学习目标：理解正负数可以表示相反意义的量；能把生活情境转化为带符号的数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-opening
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_opening
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 适合的课堂导入：从温度、海拔、收入支出等相反意义的量导入。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-diagnosis
+  source_ref: llm-draft-teaching-design
+  content_type: diagnostic_question
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 可用于诊断学生理解的问题：如果收入 10 元记作 +10，支出 6 元可以怎样记；0 一定表示没有吗？请举一个情境说明。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-misconceptions
+  source_ref: llm-draft-teaching-design
+  content_type: misconception
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 常见误区：认为负数一定表示“不存在”；把 0 当成正数或负数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-correction
+  source_ref: llm-draft-teaching-design
+  content_type: correction_strategy
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 纠错策略：先回到具体情境，再抽象成符号；比较“方向”和“数量大小”两个维度。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-practice
+  source_ref: llm-draft-teaching-design
+  content_type: practice_sequence
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 练习推进顺序：情境读数；符号表示；反向解释。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-positive-negative-numbers-mastery
+  source_ref: llm-draft-teaching-design
+  content_type: mastery_check
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+  text: 掌握检查：学生能自己说出符号背后的相反意义。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 - id: rag-ch1-kp-number-line-summary
   source_ref: llm-draft-teaching-design
   content_type: concept_summary
@@ -597,6 +688,97 @@ rag_chunks:
     start: 14
     end: 15
   text: 教数轴时先检查三要素，再让学生用“方向”和“单位长度”说明点的位置。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-objectives
+  source_ref: llm-draft-teaching-design
+  content_type: learning_objectives
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 本知识点的学习目标：理解数轴用点表示有理数；掌握原点、正方向和单位长度三要素。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-opening
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_opening
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 适合的课堂导入：从温度计或直线路标导入，把位置和数联系起来。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-diagnosis
+  source_ref: llm-draft-teaching-design
+  content_type: diagnostic_question
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 可用于诊断学生理解的问题：如果 0 在中间，+3 和 -3 应该分别在原点哪一边；单位长度变了，点表示的数会怎样变化。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-misconceptions
+  source_ref: llm-draft-teaching-design
+  content_type: misconception
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 常见误区：只画直线不标原点或单位长度；认为负数越靠左数值越大。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-correction
+  source_ref: llm-draft-teaching-design
+  content_type: correction_strategy
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 纠错策略：先补齐三要素，再定位点；用“离原点几个单位、向哪边”描述位置。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-practice
+  source_ref: llm-draft-teaching-design
+  content_type: practice_sequence
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 练习推进顺序：识别数轴三要素；在数轴上标点；根据点读数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-number-line-mastery
+  source_ref: llm-draft-teaching-design
+  content_type: mastery_check
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+  text: 掌握检查：学生能解释一个点为什么表示某个有理数。
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
@@ -626,6 +808,97 @@ rag_chunks:
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-objectives
+  source_ref: llm-draft-teaching-design
+  content_type: learning_objectives
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 本知识点的学习目标：理解相反数表示数轴上关于原点对称的两个数；能求一个数的相反数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-opening
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_opening
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 适合的课堂导入：从数轴上 +2 与 -2 到原点距离相同、方向相反导入。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-diagnosis
+  source_ref: llm-draft-teaching-design
+  content_type: diagnostic_question
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 可用于诊断学生理解的问题：3 的相反数是什么？为什么；0 的相反数是什么。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-misconceptions
+  source_ref: llm-draft-teaching-design
+  content_type: misconception
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 常见误区：认为相反数一定是负数；忘记 0 的相反数仍是 0。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-correction
+  source_ref: llm-draft-teaching-design
+  content_type: correction_strategy
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 纠错策略：回到“只有符号不同”而不是“变成负数”；用数轴对称位置解释 0。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-practice
+  source_ref: llm-draft-teaching-design
+  content_type: practice_sequence
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 练习推进顺序：写出具体数的相反数；从数轴读相反数；判断两个数是否互为相反数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-opposite-numbers-mastery
+  source_ref: llm-draft-teaching-design
+  content_type: mastery_check
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-opposite-numbers
+  page_range:
+    start: 16
+    end: 17
+  text: 掌握检查：学生能说明相反数与原点对称的关系。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 - id: rag-ch1-kp-absolute-value-summary
   source_ref: llm-draft-teaching-design
   content_type: concept_summary
@@ -649,6 +922,97 @@ rag_chunks:
     start: 18
     end: 22
   text: 不要只教“去负号”，应要求学生先说这个点离原点几个单位。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-objectives
+  source_ref: llm-draft-teaching-design
+  content_type: learning_objectives
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 本知识点的学习目标：理解绝对值是数轴上点到原点的距离；能用绝对值比较有理数大小。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-opening
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_opening
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 适合的课堂导入：从 -3 和 +3 到原点距离都为 3 导入。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-diagnosis
+  source_ref: llm-draft-teaching-design
+  content_type: diagnostic_question
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 可用于诊断学生理解的问题：|-5| 为什么等于 5；-5 和 -2 哪个大？你能用数轴解释吗。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-misconceptions
+  source_ref: llm-draft-teaching-design
+  content_type: misconception
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 常见误区：把绝对值当作“去掉负号”的机械规则；比较负数大小时只看数字大小。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-correction
+  source_ref: llm-draft-teaching-design
+  content_type: correction_strategy
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 纠错策略：先说距离，再写符号结果；用数轴位置判断大小。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-practice
+  source_ref: llm-draft-teaching-design
+  content_type: practice_sequence
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 练习推进顺序：求绝对值；比较两个负数；解释绝对值相等的两个数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-absolute-value-mastery
+  source_ref: llm-draft-teaching-design
+  content_type: mastery_check
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-absolute-value
+  page_range:
+    start: 18
+    end: 22
+  text: 掌握检查：学生能用距离语言解释绝对值。
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
@@ -678,6 +1042,97 @@ rag_chunks:
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-objectives
+  source_ref: llm-draft-teaching-design
+  content_type: learning_objectives
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 本知识点的学习目标：掌握有理数加法的符号和绝对值处理；理解减法可以转化为加上相反数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-opening
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_opening
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 适合的课堂导入：从收入支出或温度变化导入有理数加减。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-diagnosis
+  source_ref: llm-draft-teaching-design
+  content_type: diagnostic_question
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 可用于诊断学生理解的问题：(-3)+(+5) 的符号为什么是正；减去 -2 可以转化成什么。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-misconceptions
+  source_ref: llm-draft-teaching-design
+  content_type: misconception
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 常见误区：异号相加时符号乱选；把减去负数仍写成减。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-correction
+  source_ref: llm-draft-teaching-design
+  content_type: correction_strategy
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 纠错策略：先判断同号或异号，再处理绝对值；把减法统一改写成加法再计算。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-practice
+  source_ref: llm-draft-teaching-design
+  content_type: practice_sequence
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 练习推进顺序：同号加法；异号加法；减法转化；混合加减。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-add-subtract-mastery
+  source_ref: llm-draft-teaching-design
+  content_type: mastery_check
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+  text: 掌握检查：学生能说出每一步符号判断依据。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 - id: rag-ch1-kp-rational-multiply-divide-summary
   source_ref: llm-draft-teaching-design
   content_type: concept_summary
@@ -701,6 +1156,97 @@ rag_chunks:
     start: 35
     end: 47
   text: 对乘除混合题，要求学生先改写成乘法串，再判断负因数个数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-objectives
+  source_ref: llm-draft-teaching-design
+  content_type: learning_objectives
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 本知识点的学习目标：掌握有理数乘除法的符号法则；能把除法转化为乘以倒数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-opening
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_opening
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 适合的课堂导入：从正负因数个数与结果符号的关系导入。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-diagnosis
+  source_ref: llm-draft-teaching-design
+  content_type: diagnostic_question
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 可用于诊断学生理解的问题：两个负数相乘为什么是正数；除以 -3 可以改写成乘以什么。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-misconceptions
+  source_ref: llm-draft-teaching-design
+  content_type: misconception
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 常见误区：多个负因数时符号判断混乱；除法转乘法时忘记取倒数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-correction
+  source_ref: llm-draft-teaching-design
+  content_type: correction_strategy
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 纠错策略：先数负因数个数判断符号；先改写除法，再约分或计算。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-practice
+  source_ref: llm-draft-teaching-design
+  content_type: practice_sequence
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 练习推进顺序：两数乘法；多因数乘法；除法转化；乘除混合。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-multiply-divide-mastery
+  source_ref: llm-draft-teaching-design
+  content_type: mastery_check
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-multiply-divide
+  page_range:
+    start: 35
+    end: 47
+  text: 掌握检查：学生能在计算前先说明结果符号。
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
@@ -730,6 +1276,97 @@ rag_chunks:
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-objectives
+  source_ref: llm-draft-teaching-design
+  content_type: learning_objectives
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 本知识点的学习目标：理解乘方、底数、指数和幂；能判断负数乘方的符号。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-opening
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_opening
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 适合的课堂导入：从重复乘法压缩写法导入乘方。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-diagnosis
+  source_ref: llm-draft-teaching-design
+  content_type: diagnostic_question
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 可用于诊断学生理解的问题：(-2)^3 表示几个 -2 相乘；-2^2 和 (-2)^2 有什么不同。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-misconceptions
+  source_ref: llm-draft-teaching-design
+  content_type: misconception
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 常见误区：混淆 -2^2 与 (-2)^2；只看指数奇偶，不先确认底数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-correction
+  source_ref: llm-draft-teaching-design
+  content_type: correction_strategy
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 纠错策略：先圈出底数，再展开成乘法；用负因数个数判断符号。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-practice
+  source_ref: llm-draft-teaching-design
+  content_type: practice_sequence
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 练习推进顺序：识别底数和指数；展开乘方；计算负数乘方。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-rational-powers-mastery
+  source_ref: llm-draft-teaching-design
+  content_type: mastery_check
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+  text: 掌握检查：学生能解释括号对底数的影响。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
 - id: rag-ch1-kp-scientific-notation-summary
   source_ref: llm-draft-teaching-design
   content_type: concept_summary
@@ -755,6 +1392,104 @@ rag_chunks:
     start: 51
     end: 56
   text: 教近似数时应要求学生说清“精确到哪一位”，而不只给四舍五入结果。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-objectives
+  source_ref: llm-draft-teaching-design
+  content_type: learning_objectives
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 本知识点的学习目标：能用科学记数法表示较大的数；能按要求取近似数并说明精确位。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-opening
+  source_ref: llm-draft-teaching-design
+  content_type: lesson_opening
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 适合的课堂导入：从天文、人口等大数读写困难导入科学记数法。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-diagnosis
+  source_ref: llm-draft-teaching-design
+  content_type: diagnostic_question
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 可用于诊断学生理解的问题：5600000 写成 a × 10^n 时，a 应该在什么范围；3.14 精确到十分位是多少。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-misconceptions
+  source_ref: llm-draft-teaching-design
+  content_type: misconception
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 常见误区：科学记数法中 a 不满足 1≤a<10；近似数精确位说不清。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-correction
+  source_ref: llm-draft-teaching-design
+  content_type: correction_strategy
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 纠错策略：先移动小数点得到 a，再数移动位数；用数位表检查精确到哪一位。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-practice
+  source_ref: llm-draft-teaching-design
+  content_type: practice_sequence
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 练习推进顺序：大数改写；科学记数法还原；按位取近似数。
+  text_role: llm_inferred
+  review_status: draft
+  copyright_policy: generated_review_required
+- id: rag-ch1-kp-scientific-notation-mastery
+  source_ref: llm-draft-teaching-design
+  content_type: mastery_check
+  chapter_id: ch1
+  knowledge_point_ids:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+  text: 掌握检查：学生能说明 a 和 n 各自代表什么。
   text_role: llm_inferred
   review_status: draft
   copyright_policy: generated_review_required

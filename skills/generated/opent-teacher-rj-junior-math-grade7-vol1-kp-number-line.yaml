@@ -1,0 +1,129 @@
+id: opent-teacher-rj-junior-math-grade7-vol1-kp-number-line
+name: 人教版初中数学七年级上册：数轴
+version: 0.1.0
+skill_type: knowledge
+review_status: draft
+target:
+  school_stages:
+  - junior
+  grades:
+  - 初一
+  - 七年级
+  subjects:
+  - 数学
+  textbook_versions:
+  - rj-junior-math-grade7-vol1
+  chapters:
+  - ch1
+  knowledge_points:
+  - kp-number-line
+  page_range:
+    start: 14
+    end: 15
+selection:
+  keywords:
+  - 数轴
+  - line
+  - 根据点读数
+  - number
+  - 在数轴上标点
+  - 识别数轴三要素
+  - 能说出数轴的三要素
+  - 理解数轴用点表示有理数
+  - 认为负数越靠左数值越大
+  - 只画直线不标原点或单位长度
+  - 能把有理数在数轴上表示出来
+  - kp-number-line
+  - 掌握原点、正方向和单位长度三要素
+  - 单位长度变了，点表示的数会怎样变化？
+  - 学生能解释一个点为什么表示某个有理数
+  - 从温度计或直线路标导入，把位置和数联系起来
+  - 如果 0 在中间，+3 和 -3 应该分别在原点哪一边？
+  priority: 80
+source_evidence:
+- source_ref: textbook-rj-math-grade7-vol1
+  note: 页码由 PDF outline inspection 补入
+  page_range:
+    start: 14
+    end: 15
+rag_chunk_refs:
+- rag-ch1-kp-number-line-summary
+- rag-ch1-kp-number-line-method
+- rag-ch1-kp-number-line-objectives
+- rag-ch1-kp-number-line-opening
+- rag-ch1-kp-number-line-diagnosis
+- rag-ch1-kp-number-line-misconceptions
+- rag-ch1-kp-number-line-correction
+- rag-ch1-kp-number-line-practice
+- rag-ch1-kp-number-line-mastery
+teaching_principles:
+- 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
+- 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
+- 所有教材事实和教学策略都保留来源、页码和审核状态，方便人工校验。
+diagnosis:
+  opening_questions:
+  - 如果 0 在中间，+3 和 -3 应该分别在原点哪一边？
+  - 单位长度变了，点表示的数会怎样变化？
+  checkpoint_questions:
+  - 学生能解释一个点为什么表示某个有理数
+  mastery_signals:
+  - 学生能解释一个点为什么表示某个有理数
+error_patterns:
+- id: misconception-1
+  name: 只画直线不标原点或单位长度
+  signs:
+  - 只画直线不标原点或单位长度
+  correction_strategy:
+  - 先补齐三要素，再定位点
+  - 用“离原点几个单位、向哪边”描述位置
+  followup_practice:
+  - 识别数轴三要素
+  - 在数轴上标点
+  - 根据点读数
+- id: misconception-2
+  name: 认为负数越靠左数值越大
+  signs:
+  - 认为负数越靠左数值越大
+  correction_strategy:
+  - 先补齐三要素，再定位点
+  - 用“离原点几个单位、向哪边”描述位置
+  followup_practice:
+  - 识别数轴三要素
+  - 在数轴上标点
+  - 根据点读数
+response_policy:
+  direct_answer_policy: 不能直接给可抄答案；先提出一个与当前知识点有关的最小诊断问题或下一步。
+  strictness_policy: 温暖但有要求；学生答对时先确认，再要求一句理由、检验或进入下一小节。
+  praise_policy: 表扬要具体到概念、步骤或表达，不泛泛夸聪明。
+  repeated_error_policy: 重复错误时回到教材情境或核心概念，只修正一个关键误区。
+  uncertainty_policy: 如果教材页码、定义或例题证据不足，标记需要审核，不编造教材内容。
+safety:
+  forbidden_behaviors:
+  - 把 generated skill 当作已审核官方结论直接发布。
+  - 编造教材原文、页码或例题。
+  - 为了防抄答案而机械要求学生重写已经掌握的步骤。
+  privacy_notes:
+  - 本 skill 只记录学习相关信息，不索要身份证号、精确住址或联系方式。
+teaching_plan:
+  learning_objectives:
+  - 理解数轴用点表示有理数
+  - 掌握原点、正方向和单位长度三要素
+  prerequisites:
+  - 正数、负数和 0 的意义
+  opening:
+  - 从温度计或直线路标导入，把位置和数联系起来
+  diagnosis_questions:
+  - 如果 0 在中间，+3 和 -3 应该分别在原点哪一边？
+  - 单位长度变了，点表示的数会怎样变化？
+  misconceptions:
+  - 只画直线不标原点或单位长度
+  - 认为负数越靠左数值越大
+  correction_strategies:
+  - 先补齐三要素，再定位点
+  - 用“离原点几个单位、向哪边”描述位置
+  practice_sequence:
+  - 识别数轴三要素
+  - 在数轴上标点
+  - 根据点读数
+  mastery_checks:
+  - 学生能解释一个点为什么表示某个有理数

@@ -123,3 +123,63 @@ def test_teacher_chat_does_not_force_physics_question_into_math_skill() -> None:
     assert response.status_code == 200
     body = response.json()
     assert body["skill_id"] == "opent-teacher-general"
+
+
+def test_teacher_chat_keeps_current_generated_skill_for_short_followup() -> None:
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/v1/lessons",
+        json={
+            "student_id": "short-context-student",
+            "grade": "初一",
+            "subject": "数学",
+            "title": "七上第一章课堂",
+            "lesson_goal": "学习正数和负数",
+        },
+    )
+    session_id = create_response.json()["id"]
+
+    start_response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "请开始教学",
+            "context": {
+                "student_id": "short-context-student",
+                "grade": "初一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+                "session_id": session_id,
+            },
+        },
+    )
+    followup_response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "我不知道",
+            "context": {
+                "student_id": "short-context-student",
+                "grade": "初一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+                "session_id": session_id,
+            },
+        },
+    )
+
+    assert start_response.status_code == 200
+    assert followup_response.status_code == 200
+    assert start_response.json()["skill_id"] == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert followup_response.json()["skill_id"] == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert followup_response.json()["skill_id"] != "opent-teacher-junior-math-linear-equation"
+
+    detail_response = client.get(f"/api/v1/lessons/{session_id}")
+    session = detail_response.json()["session"]
+    assert session["current_skill_id"] == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert session["current_knowledge_point_id"] == "kp-positive-negative-numbers"
+    assert session["current_chapter_id"] == "ch1"

@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+import re
+from typing import Any
 
+from pymongo import MongoClient
 import yaml
 
 from app.core.settings import settings
@@ -27,7 +30,10 @@ class RagService:
     """
 
     def retrieve(self, query: str) -> str:
-        return "当前样板知识库：初中数学一元一次方程"
+        return (
+            "当前未启用真实教材 RAG；"
+            "请优先依据已选择的 Teaching Skill 和课堂上下文授课。"
+        )
 
 
 class TextbookFileRagService:
@@ -109,7 +115,11 @@ class TextbookFileRagService:
 
     def _tokens(self, query: str) -> list[str]:
         normalized = query.lower().strip()
-        tokens = [token for token in normalized.replace("，", " ").replace("。", " ").split() if token]
+        tokens = [
+            token
+            for token in normalized.replace("，", " ").replace("。", " ").split()
+            if token
+        ]
         for keyword in [
             "正数",
             "负数",
@@ -126,7 +136,107 @@ class TextbookFileRagService:
         return list(dict.fromkeys(tokens))
 
 
+class MongoTextbookRagService:
+    """MongoDB-backed RAG over imported textbook chunks."""
+
+    def __init__(
+        self,
+        collection: Any | None = None,
+        *,
+        max_chunks: int = 3,
+    ) -> None:
+        self.collection = collection or self._default_collection()
+        self.max_chunks = max_chunks
+
+    def retrieve(self, query: str) -> str:
+        chunks = self._find_chunks(query)
+        if not chunks:
+            return "MongoDB 教材 RAG 暂无可用 chunks。"
+
+        lines = ["MongoDB 教材 RAG 检索结果："]
+        for chunk in chunks:
+            knowledge_points = "、".join(chunk.knowledge_point_ids) or "未标注知识点"
+            lines.append(
+                "- "
+                f"[{chunk.id}] {chunk.content_type} / {chunk.chapter_id} / {knowledge_points}："
+                f"{chunk.text}"
+            )
+        return "\n".join(lines)
+
+    def _default_collection(self) -> Any:
+        client = MongoClient(settings.mongodb_uri)
+        return client[settings.mongodb_database]["textbook_chunks"]
+
+    def _find_chunks(self, query: str) -> list[RagChunk]:
+        tokens = self._tokens(query)
+        clauses = self._query_clauses(tokens)
+        raw_docs = list(
+            self.collection.find(
+                {"$or": clauses} if clauses else {},
+                {
+                    "_id": 0,
+                    "id": 1,
+                    "source_ref": 1,
+                    "content_type": 1,
+                    "chapter_id": 1,
+                    "knowledge_point_ids": 1,
+                    "text": 1,
+                    "review_status": 1,
+                },
+            ).limit(50)
+        )
+        chunks = [chunk for chunk in (self._chunk_from_doc(doc) for doc in raw_docs) if chunk]
+        scored = [
+            (self._score(query, chunk), index, chunk) for index, chunk in enumerate(chunks)
+        ]
+        return [
+            chunk
+            for score, _index, chunk in sorted(scored, key=lambda item: (-item[0], item[1]))
+            if score > 0
+        ][: self.max_chunks]
+
+    def _query_clauses(self, tokens: list[str]) -> list[dict[str, Any]]:
+        clauses: list[dict[str, Any]] = []
+        for token in tokens:
+            if not token:
+                continue
+            escaped = re.escape(token)
+            clauses.extend(
+                [
+                    {"text": {"$regex": escaped, "$options": "i"}},
+                    {"content_type": {"$regex": escaped, "$options": "i"}},
+                    {"chapter_id": token},
+                    {"knowledge_point_ids": token},
+                ]
+            )
+        return clauses
+
+    def _chunk_from_doc(self, doc: dict[str, Any]) -> RagChunk | None:
+        text = doc.get("text")
+        if not isinstance(text, str) or not text.strip():
+            return None
+        return RagChunk(
+            id=str(doc.get("id") or "unknown"),
+            source_ref=str(doc.get("source_ref") or ""),
+            content_type=str(doc.get("content_type") or "unknown"),
+            chapter_id=str(doc.get("chapter_id") or ""),
+            knowledge_point_ids=[
+                str(value) for value in doc.get("knowledge_point_ids", []) or []
+            ],
+            text=text.strip(),
+            review_status=str(doc.get("review_status") or "draft"),
+        )
+
+    def _score(self, query: str, chunk: RagChunk) -> int:
+        return TextbookFileRagService(Path())._score(query, chunk)
+
+    def _tokens(self, query: str) -> list[str]:
+        return TextbookFileRagService(Path())._tokens(query)
+
+
 def get_rag_service() -> RagService:
     if settings.rag_backend == "textbook_file":
         return TextbookFileRagService(settings.textbook_rag_artifact_path)
+    if settings.rag_backend == "mongodb":
+        return MongoTextbookRagService()
     return RagService()

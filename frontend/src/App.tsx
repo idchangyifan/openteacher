@@ -71,7 +71,7 @@ const initialMessages: ChatMessage[] = [
   {
     id: "initial",
     role: "teacher",
-    content: "把题目或你卡住的步骤发给我。注意，我不会直接给答案；我会先看你到底卡在哪里。"
+    content: "可以直接说“请开始教学”。我会从七年级数学第一章开始，先做一个小诊断，再进入讲解和练习。"
   }
 ];
 
@@ -127,7 +127,7 @@ async function createLesson(context: StudentContext): Promise<LessonSession | nu
         grade: context.grade,
         subject: context.subject,
         title: `${context.subject}主动课堂`,
-        lesson_goal: "先诊断当前水平，再进入一段讲解和练习",
+        lesson_goal: "围绕当前课程位置先诊断，再讲解、练习和复盘",
         teacher_style: context.teacher_style,
         mode: "active_lesson"
       })
@@ -451,7 +451,7 @@ export default function App() {
           <textarea
             value={input}
             onChange={(event) => setInput(event.target.value)}
-            placeholder="例如：2(x - 3) = 10，我不知道下一步怎么做"
+            placeholder="例如：请开始教学 / 数轴是什么 / 绝对值我不懂"
             rows={3}
           />
           <button type="submit" disabled={isThinking}>

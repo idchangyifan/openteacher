@@ -2,7 +2,7 @@ from app.services.skill_registry import SkillRegistry
 
 
 def test_skill_registry_combines_universal_core_with_knowledge_skill() -> None:
-    skills = SkillRegistry().pick_skills("初一", "数学")
+    skills = SkillRegistry().pick_skills("初一", "数学", message="2(x - 3) = 10，下一步怎么做？")
 
     assert skills.core.id == "opent-teacher-universal-core"
     assert skills.core.skill_type == "core"
@@ -10,6 +10,24 @@ def test_skill_registry_combines_universal_core_with_knowledge_skill() -> None:
     assert "answer_seeking" in skills.core.guidance
     assert skills.knowledge.id == "opent-teacher-junior-math-linear-equation"
     assert skills.response_skill_id == skills.knowledge.id
+
+
+def test_skill_registry_selects_generated_textbook_skill_from_message() -> None:
+    skills = SkillRegistry().pick_skills("初一", "数学", message="老师，数轴的三要素是什么？")
+
+    assert skills.knowledge.id == "opent-teacher-rj-junior-math-grade7-vol1-kp-number-line"
+    assert skills.knowledge.review_status == "draft"
+    assert "教材页码候选：第 14 - 15 页" in skills.knowledge.guidance
+    assert "识别数轴三要素" in skills.knowledge.guidance
+
+
+def test_skill_registry_uses_first_generated_skill_for_lesson_start() -> None:
+    skills = SkillRegistry().pick_skills("初一", "数学", message="请开始教学")
+
+    assert skills.knowledge.id == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert "正数和负数" in skills.knowledge.name
 
 
 def test_skill_registry_uses_universal_core_for_general_subjects() -> None:

@@ -1,0 +1,131 @@
+id: opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers
+name: 人教版初中数学七年级上册：正数和负数的意义
+version: 0.1.0
+skill_type: knowledge
+review_status: draft
+target:
+  school_stages:
+  - junior
+  grades:
+  - 初一
+  - 七年级
+  subjects:
+  - 数学
+  textbook_versions:
+  - rj-junior-math-grade7-vol1
+  chapters:
+  - ch1
+  knowledge_points:
+  - kp-positive-negative-numbers
+  page_range:
+    start: 6
+    end: 7
+selection:
+  keywords:
+  - '10'
+  - 反向解释
+  - 情境读数
+  - 符号表示
+  - itive
+  - number
+  - negative
+  - 正数和负数的意义
+  - 把 0 当成正数或负数
+  - 能用正负数表示相反意义的量
+  - 认为负数一定表示“不存在”
+  - 能把生活情境转化为带符号的数
+  - 理解正负数可以表示相反意义的量
+  - 能解释 0 在具体情境中的意义
+  - 学生能自己说出符号背后的相反意义
+  - 0 一定表示没有吗？请举一个情境说明。
+  - 从温度、海拔、收入支出等相反意义的量导入
+  - kp-positive-negative-numbers
+  - 如果收入 10 元记作 +10，支出 6 元可以怎样记？
+  priority: 80
+source_evidence:
+- source_ref: textbook-rj-math-grade7-vol1
+  page_range:
+    start: 6
+    end: 7
+  note: 页码待 PDF 解析确认
+rag_chunk_refs:
+- rag-ch1-kp-positive-negative-summary
+- rag-ch1-kp-positive-negative-method
+- rag-ch1-kp-positive-negative-numbers-objectives
+- rag-ch1-kp-positive-negative-numbers-opening
+- rag-ch1-kp-positive-negative-numbers-diagnosis
+- rag-ch1-kp-positive-negative-numbers-misconceptions
+- rag-ch1-kp-positive-negative-numbers-correction
+- rag-ch1-kp-positive-negative-numbers-practice
+- rag-ch1-kp-positive-negative-numbers-mastery
+teaching_principles:
+- 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
+- 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
+- 所有教材事实和教学策略都保留来源、页码和审核状态，方便人工校验。
+diagnosis:
+  opening_questions:
+  - 如果收入 10 元记作 +10，支出 6 元可以怎样记？
+  - 0 一定表示没有吗？请举一个情境说明。
+  checkpoint_questions:
+  - 学生能自己说出符号背后的相反意义
+  mastery_signals:
+  - 学生能自己说出符号背后的相反意义
+error_patterns:
+- id: misconception-1
+  name: 认为负数一定表示“不存在”
+  signs:
+  - 认为负数一定表示“不存在”
+  correction_strategy:
+  - 先回到具体情境，再抽象成符号
+  - 比较“方向”和“数量大小”两个维度
+  followup_practice:
+  - 情境读数
+  - 符号表示
+  - 反向解释
+- id: misconception-2
+  name: 把 0 当成正数或负数
+  signs:
+  - 把 0 当成正数或负数
+  correction_strategy:
+  - 先回到具体情境，再抽象成符号
+  - 比较“方向”和“数量大小”两个维度
+  followup_practice:
+  - 情境读数
+  - 符号表示
+  - 反向解释
+response_policy:
+  direct_answer_policy: 不能直接给可抄答案；先提出一个与当前知识点有关的最小诊断问题或下一步。
+  strictness_policy: 温暖但有要求；学生答对时先确认，再要求一句理由、检验或进入下一小节。
+  praise_policy: 表扬要具体到概念、步骤或表达，不泛泛夸聪明。
+  repeated_error_policy: 重复错误时回到教材情境或核心概念，只修正一个关键误区。
+  uncertainty_policy: 如果教材页码、定义或例题证据不足，标记需要审核，不编造教材内容。
+safety:
+  forbidden_behaviors:
+  - 把 generated skill 当作已审核官方结论直接发布。
+  - 编造教材原文、页码或例题。
+  - 为了防抄答案而机械要求学生重写已经掌握的步骤。
+  privacy_notes:
+  - 本 skill 只记录学习相关信息，不索要身份证号、精确住址或联系方式。
+teaching_plan:
+  learning_objectives:
+  - 理解正负数可以表示相反意义的量
+  - 能把生活情境转化为带符号的数
+  prerequisites:
+  - 小学整数、小数和生活数量经验
+  opening:
+  - 从温度、海拔、收入支出等相反意义的量导入
+  diagnosis_questions:
+  - 如果收入 10 元记作 +10，支出 6 元可以怎样记？
+  - 0 一定表示没有吗？请举一个情境说明。
+  misconceptions:
+  - 认为负数一定表示“不存在”
+  - 把 0 当成正数或负数
+  correction_strategies:
+  - 先回到具体情境，再抽象成符号
+  - 比较“方向”和“数量大小”两个维度
+  practice_sequence:
+  - 情境读数
+  - 符号表示
+  - 反向解释
+  mastery_checks:
+  - 学生能自己说出符号背后的相反意义

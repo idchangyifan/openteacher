@@ -1,0 +1,129 @@
+id: opent-teacher-rj-junior-math-grade7-vol1-kp-rational-powers
+name: 人教版初中数学七年级上册：有理数的乘方
+version: 0.1.0
+skill_type: knowledge
+review_status: draft
+target:
+  school_stages:
+  - junior
+  grades:
+  - 初一
+  - 七年级
+  subjects:
+  - 数学
+  textbook_versions:
+  - rj-junior-math-grade7-vol1
+  chapters:
+  - ch1
+  knowledge_points:
+  - kp-rational-powers
+  page_range:
+    start: 48
+    end: 50
+selection:
+  keywords:
+  - 展开乘方
+  - power
+  - 有理数的乘方
+  - 计算负数乘方
+  - 识别底数和指数
+  - rational
+  - 能判断负数乘方的符号
+  - 能区分底数、指数和幂
+  - 能处理负数乘方的符号
+  - 理解乘方、底数、指数和幂
+  - 从重复乘法压缩写法导入乘方
+  - 只看指数奇偶，不先确认底数
+  - 学生能解释括号对底数的影响
+  - 混淆 -2^2 与 (-2)^2
+  - (-2)^3 表示几个 -2 相乘？
+  - kp-rational-powers
+  - -2^2 和 (-2)^2 有什么不同？
+  priority: 80
+source_evidence:
+- source_ref: textbook-rj-math-grade7-vol1
+  note: 页码由 PDF outline inspection 补入
+  page_range:
+    start: 48
+    end: 50
+rag_chunk_refs:
+- rag-ch1-kp-rational-powers-summary
+- rag-ch1-kp-rational-powers-method
+- rag-ch1-kp-rational-powers-objectives
+- rag-ch1-kp-rational-powers-opening
+- rag-ch1-kp-rational-powers-diagnosis
+- rag-ch1-kp-rational-powers-misconceptions
+- rag-ch1-kp-rational-powers-correction
+- rag-ch1-kp-rational-powers-practice
+- rag-ch1-kp-rational-powers-mastery
+teaching_principles:
+- 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
+- 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
+- 所有教材事实和教学策略都保留来源、页码和审核状态，方便人工校验。
+diagnosis:
+  opening_questions:
+  - (-2)^3 表示几个 -2 相乘？
+  - -2^2 和 (-2)^2 有什么不同？
+  checkpoint_questions:
+  - 学生能解释括号对底数的影响
+  mastery_signals:
+  - 学生能解释括号对底数的影响
+error_patterns:
+- id: misconception-1
+  name: 混淆 -2^2 与 (-2)^2
+  signs:
+  - 混淆 -2^2 与 (-2)^2
+  correction_strategy:
+  - 先圈出底数，再展开成乘法
+  - 用负因数个数判断符号
+  followup_practice:
+  - 识别底数和指数
+  - 展开乘方
+  - 计算负数乘方
+- id: misconception-2
+  name: 只看指数奇偶，不先确认底数
+  signs:
+  - 只看指数奇偶，不先确认底数
+  correction_strategy:
+  - 先圈出底数，再展开成乘法
+  - 用负因数个数判断符号
+  followup_practice:
+  - 识别底数和指数
+  - 展开乘方
+  - 计算负数乘方
+response_policy:
+  direct_answer_policy: 不能直接给可抄答案；先提出一个与当前知识点有关的最小诊断问题或下一步。
+  strictness_policy: 温暖但有要求；学生答对时先确认，再要求一句理由、检验或进入下一小节。
+  praise_policy: 表扬要具体到概念、步骤或表达，不泛泛夸聪明。
+  repeated_error_policy: 重复错误时回到教材情境或核心概念，只修正一个关键误区。
+  uncertainty_policy: 如果教材页码、定义或例题证据不足，标记需要审核，不编造教材内容。
+safety:
+  forbidden_behaviors:
+  - 把 generated skill 当作已审核官方结论直接发布。
+  - 编造教材原文、页码或例题。
+  - 为了防抄答案而机械要求学生重写已经掌握的步骤。
+  privacy_notes:
+  - 本 skill 只记录学习相关信息，不索要身份证号、精确住址或联系方式。
+teaching_plan:
+  learning_objectives:
+  - 理解乘方、底数、指数和幂
+  - 能判断负数乘方的符号
+  prerequisites:
+  - 有理数乘法
+  opening:
+  - 从重复乘法压缩写法导入乘方
+  diagnosis_questions:
+  - (-2)^3 表示几个 -2 相乘？
+  - -2^2 和 (-2)^2 有什么不同？
+  misconceptions:
+  - 混淆 -2^2 与 (-2)^2
+  - 只看指数奇偶，不先确认底数
+  correction_strategies:
+  - 先圈出底数，再展开成乘法
+  - 用负因数个数判断符号
+  practice_sequence:
+  - 识别底数和指数
+  - 展开乘方
+  - 计算负数乘方
+  mastery_checks:
+  - 学生能解释括号对底数的影响

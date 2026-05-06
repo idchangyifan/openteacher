@@ -4,7 +4,7 @@ from functools import lru_cache
 from typing import Protocol
 from uuid import uuid4
 
-from pymongo import ASCENDING, DESCENDING, MongoClient
+from pymongo import ASCENDING, DESCENDING, MongoClient, ReturnDocument
 
 from app.core.settings import settings
 from app.schemas.lesson import (
@@ -35,6 +35,16 @@ class LessonRepository(Protocol):
         content: str,
         message_type: str = "conversation",
     ) -> LessonMessage | None: ...
+
+    def update_session_state(
+        self,
+        session_id: str,
+        *,
+        current_skill_id: str | None = None,
+        current_knowledge_point_id: str | None = None,
+        current_chapter_id: str | None = None,
+        current_section_id: str | None = None,
+    ) -> LessonSession | None: ...
 
 
 class LessonRepositoryMixin:
@@ -99,6 +109,10 @@ class InMemoryLessonRepository(LessonRepositoryMixin):
                 grade=session.grade,
                 status=session.status,
                 current_phase=session.current_phase,
+                current_chapter_id=session.current_chapter_id,
+                current_section_id=session.current_section_id,
+                current_knowledge_point_id=session.current_knowledge_point_id,
+                current_skill_id=session.current_skill_id,
                 pending_student_action=session.pending_student_action,
                 summary=session.summary,
                 updated_at=session.updated_at,
@@ -140,6 +154,27 @@ class InMemoryLessonRepository(LessonRepositoryMixin):
             session.summary = self._summarize_messages(self.messages.get(session.id, []))
         self.sessions[session.id] = session
         return message
+
+    def update_session_state(
+        self,
+        session_id: str,
+        *,
+        current_skill_id: str | None = None,
+        current_knowledge_point_id: str | None = None,
+        current_chapter_id: str | None = None,
+        current_section_id: str | None = None,
+    ) -> LessonSession | None:
+        session = self.sessions.get(session_id)
+        if session is None:
+            return None
+
+        session.current_skill_id = current_skill_id
+        session.current_knowledge_point_id = current_knowledge_point_id
+        session.current_chapter_id = current_chapter_id
+        session.current_section_id = current_section_id
+        session.updated_at = _now()
+        self.sessions[session.id] = session
+        return session
 
 
 class MongoLessonRepository(LessonRepositoryMixin):
@@ -203,6 +238,10 @@ class MongoLessonRepository(LessonRepositoryMixin):
                 grade=document["grade"],
                 status=document["status"],
                 current_phase=document["current_phase"],
+                current_chapter_id=document.get("current_chapter_id"),
+                current_section_id=document.get("current_section_id"),
+                current_knowledge_point_id=document.get("current_knowledge_point_id"),
+                current_skill_id=document.get("current_skill_id"),
                 pending_student_action=document["pending_student_action"],
                 summary=document["summary"],
                 updated_at=document["updated_at"],
@@ -253,6 +292,31 @@ class MongoLessonRepository(LessonRepositoryMixin):
             update["summary"] = self._summarize_messages(messages)
         self.sessions.update_one({"_id": session_id}, {"$set": update})
         return message
+
+    def update_session_state(
+        self,
+        session_id: str,
+        *,
+        current_skill_id: str | None = None,
+        current_knowledge_point_id: str | None = None,
+        current_chapter_id: str | None = None,
+        current_section_id: str | None = None,
+    ) -> LessonSession | None:
+        update = {
+            "current_skill_id": current_skill_id,
+            "current_knowledge_point_id": current_knowledge_point_id,
+            "current_chapter_id": current_chapter_id,
+            "current_section_id": current_section_id,
+            "updated_at": _now(),
+        }
+        result = self.sessions.find_one_and_update(
+            {"_id": session_id},
+            {"$set": update},
+            return_document=ReturnDocument.AFTER,
+        )
+        if result is None:
+            return None
+        return self._session_from_document(result)
 
     def _session_to_document(self, session: LessonSession) -> dict:
         document = session.model_dump()

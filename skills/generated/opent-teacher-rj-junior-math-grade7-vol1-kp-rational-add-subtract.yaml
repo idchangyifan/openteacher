@@ -1,0 +1,134 @@
+id: opent-teacher-rj-junior-math-grade7-vol1-kp-rational-add-subtract
+name: 人教版初中数学七年级上册：有理数的加减法
+version: 0.1.0
+skill_type: knowledge
+review_status: draft
+target:
+  school_stages:
+  - junior
+  grades:
+  - 初一
+  - 七年级
+  subjects:
+  - 数学
+  textbook_versions:
+  - rj-junior-math-grade7-vol1
+  chapters:
+  - ch1
+  knowledge_points:
+  - kp-rational-add-subtract
+  page_range:
+    start: 23
+    end: 34
+selection:
+  keywords:
+  - add
+  - 减法转化
+  - 同号加法
+  - 异号加法
+  - 混合加减
+  - ubtract
+  - 有理数的加减法
+  - rational
+  - 异号相加时符号乱选
+  - 把减去负数仍写成减
+  - 能把减法转化为加上相反数
+  - 减去 -2 可以转化成什么？
+  - 学生能说出每一步符号判断依据
+  - 理解减法可以转化为加上相反数
+  - 掌握有理数加法的符号和绝对值处理
+  - 能按同号、异号规则计算有理数加法
+  - 从收入支出或温度变化导入有理数加减
+  - (-3)+(+5) 的符号为什么是正？
+  - kp-rational-add-subtract
+  priority: 80
+source_evidence:
+- source_ref: textbook-rj-math-grade7-vol1
+  note: 页码由 PDF outline inspection 补入
+  page_range:
+    start: 23
+    end: 34
+rag_chunk_refs:
+- rag-ch1-kp-rational-add-subtract-summary
+- rag-ch1-kp-rational-add-subtract-method
+- rag-ch1-kp-rational-add-subtract-objectives
+- rag-ch1-kp-rational-add-subtract-opening
+- rag-ch1-kp-rational-add-subtract-diagnosis
+- rag-ch1-kp-rational-add-subtract-misconceptions
+- rag-ch1-kp-rational-add-subtract-correction
+- rag-ch1-kp-rational-add-subtract-practice
+- rag-ch1-kp-rational-add-subtract-mastery
+teaching_principles:
+- 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
+- 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
+- 所有教材事实和教学策略都保留来源、页码和审核状态，方便人工校验。
+diagnosis:
+  opening_questions:
+  - (-3)+(+5) 的符号为什么是正？
+  - 减去 -2 可以转化成什么？
+  checkpoint_questions:
+  - 学生能说出每一步符号判断依据
+  mastery_signals:
+  - 学生能说出每一步符号判断依据
+error_patterns:
+- id: misconception-1
+  name: 异号相加时符号乱选
+  signs:
+  - 异号相加时符号乱选
+  correction_strategy:
+  - 先判断同号或异号，再处理绝对值
+  - 把减法统一改写成加法再计算
+  followup_practice:
+  - 同号加法
+  - 异号加法
+  - 减法转化
+  - 混合加减
+- id: misconception-2
+  name: 把减去负数仍写成减
+  signs:
+  - 把减去负数仍写成减
+  correction_strategy:
+  - 先判断同号或异号，再处理绝对值
+  - 把减法统一改写成加法再计算
+  followup_practice:
+  - 同号加法
+  - 异号加法
+  - 减法转化
+  - 混合加减
+response_policy:
+  direct_answer_policy: 不能直接给可抄答案；先提出一个与当前知识点有关的最小诊断问题或下一步。
+  strictness_policy: 温暖但有要求；学生答对时先确认，再要求一句理由、检验或进入下一小节。
+  praise_policy: 表扬要具体到概念、步骤或表达，不泛泛夸聪明。
+  repeated_error_policy: 重复错误时回到教材情境或核心概念，只修正一个关键误区。
+  uncertainty_policy: 如果教材页码、定义或例题证据不足，标记需要审核，不编造教材内容。
+safety:
+  forbidden_behaviors:
+  - 把 generated skill 当作已审核官方结论直接发布。
+  - 编造教材原文、页码或例题。
+  - 为了防抄答案而机械要求学生重写已经掌握的步骤。
+  privacy_notes:
+  - 本 skill 只记录学习相关信息，不索要身份证号、精确住址或联系方式。
+teaching_plan:
+  learning_objectives:
+  - 掌握有理数加法的符号和绝对值处理
+  - 理解减法可以转化为加上相反数
+  prerequisites:
+  - 绝对值和相反数
+  opening:
+  - 从收入支出或温度变化导入有理数加减
+  diagnosis_questions:
+  - (-3)+(+5) 的符号为什么是正？
+  - 减去 -2 可以转化成什么？
+  misconceptions:
+  - 异号相加时符号乱选
+  - 把减去负数仍写成减
+  correction_strategies:
+  - 先判断同号或异号，再处理绝对值
+  - 把减法统一改写成加法再计算
+  practice_sequence:
+  - 同号加法
+  - 异号加法
+  - 减法转化
+  - 混合加减
+  mastery_checks:
+  - 学生能说出每一步符号判断依据

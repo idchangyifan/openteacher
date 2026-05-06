@@ -46,6 +46,10 @@ class LessonSession(BaseModel):
     mode: LessonMode = "active_lesson"
     status: LessonStatus = "in_progress"
     current_phase: LessonPhase = "lesson_start"
+    current_chapter_id: str | None = None
+    current_section_id: str | None = None
+    current_knowledge_point_id: str | None = None
+    current_skill_id: str | None = None
     pending_student_action: str = "回答老师的第一个诊断问题"
     summary: str = "课堂刚开始，尚未形成复习摘要。"
     created_at: datetime = Field(default_factory=utc_now)
@@ -70,6 +74,10 @@ class LessonSessionSummary(BaseModel):
     grade: str
     status: LessonStatus
     current_phase: LessonPhase
+    current_chapter_id: str | None = None
+    current_section_id: str | None = None
+    current_knowledge_point_id: str | None = None
+    current_skill_id: str | None = None
     pending_student_action: str
     summary: str
     updated_at: datetime
@@ -78,4 +86,3 @@ class LessonSessionSummary(BaseModel):
 class LessonSessionDetail(BaseModel):
     session: LessonSession
     messages: list[LessonMessage]
-

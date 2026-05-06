@@ -1,0 +1,143 @@
+id: opent-teacher-rj-junior-math-grade7-vol1-kp-scientific-notation
+name: 人教版初中数学七年级上册：科学记数法
+version: 0.1.0
+skill_type: knowledge
+review_status: draft
+target:
+  school_stages:
+  - junior
+  grades:
+  - 初一
+  - 七年级
+  subjects:
+  - 数学
+  textbook_versions:
+  - rj-junior-math-grade7-vol1
+  chapters:
+  - ch1
+  knowledge_points:
+  - kp-scientific-notation
+  - kp-approximation
+  page_range:
+    start: 51
+    end: 56
+selection:
+  keywords:
+  - '10'
+  - '14'
+  - <10
+  - 大数改写
+  - 科学记数法
+  - 按位取近似数
+  - '5600000'
+  - 科学记数法还原
+  - notation
+  - cientific
+  - 近似数精确位说不清
+  - 能用科学记数法表示较大的数
+  - 能按要求取近似数并说明精确位
+  - 3.14 精确到十分位是多少？
+  - 能判断 a 的范围和 n 的意义
+  - 学生能说明 a 和 n 各自代表什么
+  - 科学记数法中 a 不满足 1≤a<10
+  - 从天文、人口等大数读写困难导入科学记数法
+  - 能把较大的数写成 a × 10^n 的形式
+  - kp-scientific-notation
+  - 5600000 写成 a × 10^n 时，a 应该在什么范围？
+  priority: 80
+source_evidence:
+- source_ref: textbook-rj-math-grade7-vol1
+  note: 页码由 PDF outline inspection 补入
+  page_range:
+    start: 51
+    end: 56
+rag_chunk_refs:
+- rag-ch1-kp-scientific-notation-summary
+- rag-ch1-kp-approximation-method
+- rag-ch1-kp-scientific-notation-objectives
+- rag-ch1-kp-scientific-notation-opening
+- rag-ch1-kp-scientific-notation-diagnosis
+- rag-ch1-kp-scientific-notation-misconceptions
+- rag-ch1-kp-scientific-notation-correction
+- rag-ch1-kp-scientific-notation-practice
+- rag-ch1-kp-scientific-notation-mastery
+- rag-ch1-kp-scientific-notation-summary
+- rag-ch1-kp-approximation-method
+- rag-ch1-kp-scientific-notation-objectives
+- rag-ch1-kp-scientific-notation-opening
+- rag-ch1-kp-scientific-notation-diagnosis
+- rag-ch1-kp-scientific-notation-misconceptions
+- rag-ch1-kp-scientific-notation-correction
+- rag-ch1-kp-scientific-notation-practice
+- rag-ch1-kp-scientific-notation-mastery
+teaching_principles:
+- 围绕教材章节组织主动授课，不把学生输入只当成孤立题目。
+- 先诊断学生对本知识点的概念理解，再推进讲解、练习或纠错。
+- 所有教材事实和教学策略都保留来源、页码和审核状态，方便人工校验。
+diagnosis:
+  opening_questions:
+  - 5600000 写成 a × 10^n 时，a 应该在什么范围？
+  - 3.14 精确到十分位是多少？
+  checkpoint_questions:
+  - 学生能说明 a 和 n 各自代表什么
+  mastery_signals:
+  - 学生能说明 a 和 n 各自代表什么
+error_patterns:
+- id: misconception-1
+  name: 科学记数法中 a 不满足 1≤a<10
+  signs:
+  - 科学记数法中 a 不满足 1≤a<10
+  correction_strategy:
+  - 先移动小数点得到 a，再数移动位数
+  - 用数位表检查精确到哪一位
+  followup_practice:
+  - 大数改写
+  - 科学记数法还原
+  - 按位取近似数
+- id: misconception-2
+  name: 近似数精确位说不清
+  signs:
+  - 近似数精确位说不清
+  correction_strategy:
+  - 先移动小数点得到 a，再数移动位数
+  - 用数位表检查精确到哪一位
+  followup_practice:
+  - 大数改写
+  - 科学记数法还原
+  - 按位取近似数
+response_policy:
+  direct_answer_policy: 不能直接给可抄答案；先提出一个与当前知识点有关的最小诊断问题或下一步。
+  strictness_policy: 温暖但有要求；学生答对时先确认，再要求一句理由、检验或进入下一小节。
+  praise_policy: 表扬要具体到概念、步骤或表达，不泛泛夸聪明。
+  repeated_error_policy: 重复错误时回到教材情境或核心概念，只修正一个关键误区。
+  uncertainty_policy: 如果教材页码、定义或例题证据不足，标记需要审核，不编造教材内容。
+safety:
+  forbidden_behaviors:
+  - 把 generated skill 当作已审核官方结论直接发布。
+  - 编造教材原文、页码或例题。
+  - 为了防抄答案而机械要求学生重写已经掌握的步骤。
+  privacy_notes:
+  - 本 skill 只记录学习相关信息，不索要身份证号、精确住址或联系方式。
+teaching_plan:
+  learning_objectives:
+  - 能用科学记数法表示较大的数
+  - 能按要求取近似数并说明精确位
+  prerequisites:
+  - 乘方和 10 的幂
+  opening:
+  - 从天文、人口等大数读写困难导入科学记数法
+  diagnosis_questions:
+  - 5600000 写成 a × 10^n 时，a 应该在什么范围？
+  - 3.14 精确到十分位是多少？
+  misconceptions:
+  - 科学记数法中 a 不满足 1≤a<10
+  - 近似数精确位说不清
+  correction_strategies:
+  - 先移动小数点得到 a，再数移动位数
+  - 用数位表检查精确到哪一位
+  practice_sequence:
+  - 大数改写
+  - 科学记数法还原
+  - 按位取近似数
+  mastery_checks:
+  - 学生能说明 a 和 n 各自代表什么

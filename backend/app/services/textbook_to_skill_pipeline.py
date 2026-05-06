@@ -279,7 +279,11 @@ def _build_rag_chunks(teaching_designs: list[Any], llm_source_id: str) -> list[d
             raise PipelineInputError("teaching_designs items must be objects")
         chapter_id = _required_str(design, "chapter_id")
         knowledge_point_ids = list(_required_list(design, "target_knowledge_point_ids"))
-        for chunk in design.get("rag_chunks", []) or []:
+        design_page_range = _first_evidence_page_range(design.get("evidence", []) or [])
+        for chunk in [
+            *list(design.get("rag_chunks", []) or []),
+            *_generated_rag_chunks(design),
+        ]:
             if not isinstance(chunk, Mapping):
                 raise PipelineInputError("rag_chunks items must be objects")
             chunks.append(
@@ -289,7 +293,7 @@ def _build_rag_chunks(teaching_designs: list[Any], llm_source_id: str) -> list[d
                     "content_type": str(chunk.get("content_type") or "concept_summary"),
                     "chapter_id": str(chunk.get("chapter_id") or chapter_id),
                     "knowledge_point_ids": list(chunk.get("knowledge_point_ids") or knowledge_point_ids),
-                    "page_range": _page_range(chunk.get("page_range")),
+                    "page_range": _page_range(chunk.get("page_range") or design_page_range),
                     "text": _required_str(chunk, "text"),
                     "text_role": str(chunk.get("text_role") or "llm_inferred"),
                     "review_status": str(chunk.get("review_status") or "draft"),
@@ -299,6 +303,121 @@ def _build_rag_chunks(teaching_designs: list[Any], llm_source_id: str) -> list[d
                 }
             )
     return chunks
+
+
+def _first_evidence_page_range(evidence_items: list[Any]) -> dict[str, int | None] | None:
+    for item in evidence_items:
+        if not isinstance(item, Mapping):
+            continue
+        page_range = _page_range(item.get("page_range"))
+        if page_range != {"start": None, "end": None}:
+            return page_range
+    return None
+
+
+def _generated_rag_chunks(design: Mapping[str, Any]) -> list[dict[str, Any]]:
+    teaching_plan = design.get("teaching_plan") or {}
+    if not isinstance(teaching_plan, Mapping):
+        return []
+
+    chapter_id = _required_str(design, "chapter_id")
+    knowledge_point_ids = list(_required_list(design, "target_knowledge_point_ids"))
+    prefix = f"rag-{chapter_id}-{knowledge_point_ids[0]}"
+    generated: list[dict[str, Any]] = []
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="objectives",
+            content_type="learning_objectives",
+            values=teaching_plan.get("learning_objectives", []),
+            lead="本知识点的学习目标：",
+        )
+    )
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="opening",
+            content_type="lesson_opening",
+            values=teaching_plan.get("opening", []),
+            lead="适合的课堂导入：",
+        )
+    )
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="diagnosis",
+            content_type="diagnostic_question",
+            values=teaching_plan.get("diagnosis_questions", []),
+            lead="可用于诊断学生理解的问题：",
+        )
+    )
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="misconceptions",
+            content_type="misconception",
+            values=teaching_plan.get("misconceptions", []),
+            lead="常见误区：",
+        )
+    )
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="correction",
+            content_type="correction_strategy",
+            values=teaching_plan.get("correction_strategies", []),
+            lead="纠错策略：",
+        )
+    )
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="practice",
+            content_type="practice_sequence",
+            values=teaching_plan.get("practice_sequence", []),
+            lead="练习推进顺序：",
+        )
+    )
+    generated.extend(
+        _chunk_group(
+            prefix=prefix,
+            suffix="mastery",
+            content_type="mastery_check",
+            values=teaching_plan.get("mastery_checks", []),
+            lead="掌握检查：",
+        )
+    )
+    return generated
+
+
+def _chunk_group(
+    *,
+    prefix: str,
+    suffix: str,
+    content_type: str,
+    values: Any,
+    lead: str,
+) -> list[dict[str, Any]]:
+    if not values:
+        return []
+    items = [_strip_terminal_punctuation(str(value).strip()) for value in list(values)]
+    items = [item for item in items if item]
+    if not items:
+        return []
+    return [
+        {
+            "id": f"{prefix}-{suffix}",
+            "content_type": content_type,
+            "text": f"{lead}{'；'.join(items)}。",
+            "text_role": "llm_inferred",
+            "review_status": "draft",
+            "copyright_policy": "generated_review_required",
+        }
+    ]
+
+
+def _strip_terminal_punctuation(text: str) -> str:
+    return text.rstrip("。！？!?；;，, ")
 
 
 def _build_eval_cases(source: Mapping[str, Any], teaching_designs: list[Any]) -> list[dict[str, Any]]:
