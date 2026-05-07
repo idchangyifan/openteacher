@@ -235,3 +235,53 @@ def test_teacher_chat_uses_recent_lesson_for_last_class_recall_without_session()
     detail_response = client.get(f"/api/v1/lessons/{session_id}")
     messages = detail_response.json()["messages"]
     assert messages[-2]["content"] == "上堂课我们讲到哪儿了？"
+
+
+def test_teacher_chat_asks_placement_when_grade_is_not_covered() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "请开始教学",
+            "context": {
+                "student_id": "placement-grade-student",
+                "grade": "高一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["skill_id"] == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert "完全没学过正数和负数" in body["reply"]
+    assert "已经会了想学后面的内容" in body["reply"]
+
+
+def test_teacher_chat_responds_to_negative_number_sequence_question_with_placement() -> None:
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "不是应该先教负数吗？",
+            "context": {
+                "student_id": "placement-question-student",
+                "grade": "高一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+            },
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["skill_id"] == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert "你问得对" in body["reply"]
+    assert "完全没学过正数和负数" in body["reply"]

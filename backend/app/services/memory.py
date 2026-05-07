@@ -17,6 +17,9 @@ if TYPE_CHECKING:
 class LearningEvent:
     kind: str
     summary: str
+    learning_status: str = "in_progress"
+    topic_key: str | None = None
+    confidence: float = 0.72
 
 
 @dataclass(frozen=True)
@@ -36,6 +39,8 @@ class MemoryCard:
     evidence_snippets: list[str] = field(default_factory=list)
     last_seen_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     review_status: str = "auto_accepted"
+    learning_status: str = "in_progress"
+    topic_key: str | None = None
     expires_at: datetime | None = None
     supersedes: list[str] = field(default_factory=list)
     conflict_group: str | None = None
@@ -53,6 +58,8 @@ class MemoryExtractionJob:
     status: str
     event_kind: str
     event_summary: str
+    event_learning_status: str = "in_progress"
+    event_topic_key: str | None = None
     source_session_id: str | None = None
     source_message_ids: list[str] = field(default_factory=list)
     card_ids: list[str] = field(default_factory=list)
@@ -142,7 +149,13 @@ class MemoryService:
 
         if memory_cards:
             formatted_cards = [
-                f"{card.kind}:{card.summary} (confidence={card.confidence:.2f})"
+                (
+                    f"{card.kind}:{card.summary} "
+                    f"(learning_status={card.learning_status}; "
+                    f"topic={card.topic_key or 'unknown'}; "
+                    f"confidence={card.confidence:.2f}; "
+                    "学习信号不等于已经掌握)"
+                )
                 for card in memory_cards[:5]
             ]
             memory_parts.append("长期记忆卡片（背景假设）：" + " | ".join(formatted_cards))
@@ -179,6 +192,23 @@ class MemoryService:
                 "",
                 "- Current lesson transcript and lesson state are authoritative.",
                 "- Long-term memory is background only; never override current_skill_id.",
+                "- A memory card saying the student is learning a topic is not mastery.",
+                (
+                    "- learning_status=needs_placement means ask what the student "
+                    "has already learned before moving on."
+                ),
+                (
+                    "- learning_status=needs_support means slow down and diagnose "
+                    "the stuck point."
+                ),
+                (
+                    "- learning_status=in_progress means continue teaching, not "
+                    "that the student mastered it."
+                ),
+                (
+                    "- learning_status=mastered needs student reasoning evidence, "
+                    "not a bare final answer."
+                ),
                 "- If current and long-term memory conflict, trust the current lesson.",
                 "",
                 "## Memory Summary",
@@ -218,6 +248,8 @@ class MemoryService:
             status="completed",
             event_kind=event.kind,
             event_summary=event.summary,
+            event_learning_status=event.learning_status,
+            event_topic_key=event.topic_key,
             source_session_id=source_session_id,
             source_message_ids=source_message_ids,
             card_ids=card_ids,
@@ -244,16 +276,56 @@ class MemoryService:
 
     def _extract_learning_event(self, subject: str, message: str, reply: str) -> LearningEvent:
         if any(word in message for word in ["答案", "直接告诉", "抄"]):
-            return LearningEvent(kind="learning_behavior", summary="学生尝试直接获取答案")
+            return LearningEvent(
+                kind="learning_behavior",
+                summary="学生尝试直接获取答案",
+                learning_status="needs_support",
+                confidence=0.82,
+            )
+
+        if self._looks_like_positive_negative_placement_question(message):
+            return LearningEvent(
+                kind="course_placement",
+                summary="学生需要确认正数和负数的学习起点",
+                learning_status="needs_placement",
+                topic_key="kp-positive-negative-numbers",
+                confidence=0.86,
+            )
 
         if any(
             token in f"{message}\n{reply}"
             for token in ["正数", "负数", "收入", "支出", "+10", "-6"]
         ):
-            return LearningEvent(kind="academic_signal", summary="学生正在学习正数和负数")
+            if self._looks_like_positive_negative_mastery(message):
+                return LearningEvent(
+                    kind="academic_signal",
+                    summary="学生能够解释正数和负数表示相反意义的量",
+                    learning_status="mastered",
+                    topic_key="kp-positive-negative-numbers",
+                    confidence=0.84,
+                )
+            if self._looks_like_student_stuck(message):
+                return LearningEvent(
+                    kind="academic_signal",
+                    summary="学生在正数和负数上需要支持",
+                    learning_status="needs_support",
+                    topic_key="kp-positive-negative-numbers",
+                    confidence=0.78,
+                )
+            return LearningEvent(
+                kind="academic_signal",
+                summary="学生正在学习正数和负数",
+                learning_status="in_progress",
+                topic_key="kp-positive-negative-numbers",
+                confidence=0.72,
+            )
 
         if "x" in message:
-            return LearningEvent(kind="academic_signal", summary="学生正在练习一元一次方程")
+            return LearningEvent(
+                kind="academic_signal",
+                summary="学生正在练习一元一次方程",
+                topic_key="kp-linear-equation",
+            )
 
         return LearningEvent(kind="conversation", summary=f"学生进行了{subject}学习对话")
 
@@ -272,22 +344,41 @@ class MemoryService:
             return None
         evidence_snippets = [f"student: {message}", f"teacher: {reply}"]
         return MemoryCard(
-            id=self._stable_card_id(student_id, subject, event.kind, event.summary),
+            id=self._stable_card_id(
+                student_id,
+                subject,
+                event.kind,
+                event.summary,
+                topic_key=event.topic_key,
+            ),
             student_id=student_id,
             subject=subject,
             kind=event.kind,
             summary=event.summary,
             evidence=f"student: {message}\nteacher: {reply}",
-            confidence=0.72 if event.kind == "academic_signal" else 0.82,
+            confidence=event.confidence,
             tags=self._memory_tags(event.summary),
             source_session_id=source_session_id,
             source_message_ids=source_message_ids or [],
             evidence_snippets=evidence_snippets,
+            learning_status=event.learning_status,
+            topic_key=event.topic_key,
             conflict_group=self._memory_conflict_group(event.summary),
         )
 
-    def _stable_card_id(self, student_id: str, subject: str, kind: str, summary: str) -> str:
-        raw = f"{student_id}:{subject}:{kind}:{summary}"
+    def _stable_card_id(
+        self,
+        student_id: str,
+        subject: str,
+        kind: str,
+        summary: str,
+        topic_key: str | None = None,
+    ) -> str:
+        raw = (
+            f"{student_id}:{subject}:topic:{topic_key}"
+            if topic_key
+            else f"{student_id}:{subject}:{kind}:{summary}"
+        )
         if not raw.strip(":"):
             return f"memory-{uuid4().hex}"
         digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
@@ -295,7 +386,7 @@ class MemoryService:
 
     def _memory_tags(self, summary: str) -> list[str]:
         tags = []
-        for token in ["正数", "负数", "一元一次方程", "直接获取答案"]:
+        for token in ["正数", "负数", "一元一次方程", "直接获取答案", "学习起点"]:
             if token in summary:
                 tags.append(token)
         return tags
@@ -306,6 +397,48 @@ class MemoryService:
         if "一元一次方程" in summary:
             return "current_math_topic"
         return None
+
+    def _looks_like_positive_negative_placement_question(self, message: str) -> bool:
+        if "负数" not in message:
+            return False
+        return any(
+            token in message
+            for token in ["先教", "先学", "先讲", "不先", "应该先", "为什么", "顺序", "开始"]
+        )
+
+    def _looks_like_positive_negative_mastery(self, message: str) -> bool:
+        if "-6" not in message and "负六" not in message and "负 6" not in message:
+            return False
+        return any(
+            token in message
+            for token in ["因为", "支出", "花", "少", "减少", "相反", "负数", "记作", "亏", "下降", "低于"]
+        )
+
+    def _looks_like_student_stuck(self, message: str) -> bool:
+        return any(token in message for token in ["不知道", "不懂", "不会", "没学过", "看不懂", "听不懂"])
+
+    def _resolve_learning_status(
+        self,
+        previous_status: str | None,
+        incoming_status: str,
+    ) -> str:
+        if incoming_status in {"needs_placement", "needs_support", "mastered"}:
+            return incoming_status
+        if previous_status in {"needs_placement", "needs_support", "mastered"}:
+            return previous_status
+        return incoming_status
+
+    def _should_preserve_existing_memory_fact(
+        self,
+        previous_status: str | None,
+        incoming_status: str,
+        resolved_status: str,
+    ) -> bool:
+        return (
+            incoming_status == "in_progress"
+            and previous_status in {"needs_placement", "needs_support", "mastered"}
+            and resolved_status != incoming_status
+        )
 
 
 class MongoMemoryService(MemoryService):
@@ -339,6 +472,10 @@ class MongoMemoryService(MemoryService):
             [("review_status", ASCENDING), ("updated_at", DESCENDING)],
             name="review_status_updated",
         )
+        self.cards.create_index(
+            [("student_id", ASCENDING), ("subject", ASCENDING), ("topic_key", ASCENDING)],
+            name="student_subject_topic",
+        )
         self.extraction_jobs.create_index(
             [("student_id", ASCENDING), ("created_at", DESCENDING)],
             name="student_created",
@@ -366,24 +503,67 @@ class MongoMemoryService(MemoryService):
 
     def upsert_memory_card(self, card: MemoryCard) -> MemoryCard:
         now = datetime.now(timezone.utc)
+        existing_document = self.cards.find_one({"_id": card.id})
+        previous_status = (
+            str(existing_document.get("learning_status") or "in_progress")
+            if existing_document
+            else None
+        )
+        learning_status = self._resolve_learning_status(previous_status, card.learning_status)
+        preserve_existing_fact = bool(
+            existing_document
+            and self._should_preserve_existing_memory_fact(
+                previous_status,
+                card.learning_status,
+                learning_status,
+            )
+        )
+        summary = (
+            str(existing_document.get("summary") or card.summary)
+            if preserve_existing_fact
+            else card.summary
+        )
+        kind = (
+            str(existing_document.get("kind") or card.kind)
+            if preserve_existing_fact
+            else card.kind
+        )
+        confidence = (
+            float(existing_document.get("confidence") or card.confidence)
+            if preserve_existing_fact
+            else card.confidence
+        )
+        tags = (
+            [str(value) for value in existing_document.get("tags", []) or []]
+            if preserve_existing_fact
+            else card.tags
+        )
         payload = self._card_to_document(card)
         payload["updated_at"] = now
+        payload["learning_status"] = learning_status
+        payload["summary"] = summary
+        payload["kind"] = kind
+        payload["confidence"] = confidence
+        payload["tags"] = tags
         payload.setdefault("created_at", card.created_at)
         result = self.cards.find_one_and_update(
             {"_id": card.id},
             {
                 "$set": {
-                    "summary": card.summary,
+                    "kind": kind,
+                    "summary": summary,
                     "evidence": card.evidence,
-                    "confidence": card.confidence,
+                    "confidence": confidence,
                     "status": card.status,
-                    "tags": card.tags,
+                    "tags": tags,
                     "source": card.source,
                     "source_session_id": card.source_session_id,
                     "source_message_ids": card.source_message_ids,
                     "evidence_snippets": card.evidence_snippets,
                     "last_seen_at": now,
                     "review_status": card.review_status,
+                    "learning_status": learning_status,
+                    "topic_key": card.topic_key,
                     "expires_at": card.expires_at,
                     "supersedes": card.supersedes,
                     "conflict_group": card.conflict_group,
@@ -394,7 +574,6 @@ class MongoMemoryService(MemoryService):
                 "$setOnInsert": {
                     "student_id": card.student_id,
                     "subject": card.subject,
-                    "kind": card.kind,
                     "created_at": card.created_at,
                 },
             },
@@ -447,6 +626,8 @@ class MongoMemoryService(MemoryService):
             "evidence_snippets": card.evidence_snippets,
             "last_seen_at": card.last_seen_at,
             "review_status": card.review_status,
+            "learning_status": card.learning_status,
+            "topic_key": card.topic_key,
             "expires_at": card.expires_at,
             "supersedes": card.supersedes,
             "conflict_group": card.conflict_group,
@@ -465,6 +646,8 @@ class MongoMemoryService(MemoryService):
             "status": job.status,
             "event_kind": job.event_kind,
             "event_summary": job.event_summary,
+            "event_learning_status": job.event_learning_status,
+            "event_topic_key": job.event_topic_key,
             "source_session_id": job.source_session_id,
             "source_message_ids": job.source_message_ids,
             "card_ids": job.card_ids,
@@ -496,6 +679,8 @@ class MongoMemoryService(MemoryService):
             ],
             last_seen_at=document.get("last_seen_at") or datetime.now(timezone.utc),
             review_status=str(document.get("review_status") or "auto_accepted"),
+            learning_status=str(document.get("learning_status") or "in_progress"),
+            topic_key=document.get("topic_key"),
             expires_at=document.get("expires_at"),
             supersedes=[str(value) for value in document.get("supersedes", []) or []],
             conflict_group=document.get("conflict_group"),

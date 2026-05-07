@@ -66,6 +66,20 @@ class MockTeacherProvider:
                 "如果你写错，我会指出具体错在哪里。"
             )
 
+        if self._looks_like_course_placement_question(normalized):
+            return (
+                "你问得对，学习顺序要先弄清楚，不能硬往后跳。"
+                "我先确认一下：你是完全没学过正数和负数，还是学过但不太懂？"
+                "如果没学稳，我们就从“负数表示相反意义的量”开始。"
+            )
+
+        if self._looks_like_lesson_start(normalized) and prompt.subject == "数学":
+            return (
+                "我先确认你的起点：你是完全没学过正数和负数，"
+                "还是学过但不太懂，或者已经会了想学后面的内容？"
+                "你选一个，我再决定从负数意义开始，还是继续往后。"
+            )
+
         if any(fragment in normalized for fragment in ["移项不变号", "移项没变号", "+3变成+3"]):
             return (
                 "先停在移项这一步。项跨过等号时符号要改变，这是等式两边同时加减同一项的结果。"
@@ -107,6 +121,18 @@ class MockTeacherProvider:
         has_problem = "2(x-3)=10" in compact or "2（x-3）=10" in compact
         has_solution = "x=8" in compact or "x＝8" in compact
         return has_problem and has_solution
+
+    def _looks_like_lesson_start(self, message: str) -> bool:
+        return any(
+            token in message
+            for token in ["开始教学", "请开始", "开始上课", "给我上课", "上课"]
+        )
+
+    def _looks_like_course_placement_question(self, message: str) -> bool:
+        return "负数" in message and any(
+            token in message
+            for token in ["先教", "先学", "先讲", "不先", "应该先", "为什么", "顺序"]
+        )
 
 
 class OpenAIResponsesProvider:
@@ -158,6 +184,9 @@ class OpenAIResponsesProvider:
             "先明确确认正确，不要机械要求从头重写；再根据需要要求一句理由、验算、总结或进入下一阶段。"
             "学生自我否定时要稳定情绪，但仍回到学习任务。"
             "不要反复显式说“判断卡点”；把判断留在内部，直接给学生一个有帮助的回应。"
+            "如果学生质疑课程顺序，例如“为什么不先教负数”，不要硬解释当前安排；"
+            "先承认这个问题合理，再用一个问题确认学生当前是没学过、学过但没懂、"
+            "还是已经会了要学后续内容。长期记忆里的“正在学习”不等于已经掌握。"
             f"当前教师风格：{prompt.teacher_style}。当前 Skill：{prompt.skill_name}。"
             "回复使用中文，短而清楚，一次通常只推进一个关键步骤。"
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"
@@ -240,6 +269,9 @@ class DoubaoChatCompletionsProvider:
             "先明确确认正确，不要机械要求从头重写；再根据需要要求一句理由、验算、总结或进入下一阶段。"
             "一次只推进一个关键步骤。"
             "如果学生自我否定，先稳定情绪，但必须回到学习任务。"
+            "如果学生质疑课程顺序，例如“为什么不先教负数”，不要硬解释当前安排；"
+            "先承认这个问题合理，再用一个问题确认学生当前是没学过、学过但没懂、"
+            "还是已经会了要学后续内容。长期记忆里的“正在学习”不等于已经掌握。"
             "回复必须使用中文，短而清楚。"
             f"当前教师风格：{prompt.teacher_style}。当前 Skill：{prompt.skill_name}。\n"
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"

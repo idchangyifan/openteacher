@@ -145,6 +145,22 @@ class SkillRegistry:
             for skill in self._load_generated_knowledge_skills()
             if self._target_matches(skill, grade, subject)
         ]
+        all_subject_generated_skills = [
+            skill
+            for skill in self._load_generated_knowledge_skills()
+            if self._subject_matches(skill, subject)
+        ]
+        if (
+            subject == "数学"
+            and all_subject_generated_skills
+            and (
+                self._looks_like_lesson_start(message)
+                or self._looks_like_course_placement_question(message)
+            )
+        ):
+            candidate_skills = generated_skills or all_subject_generated_skills
+            return sorted(candidate_skills, key=self._course_order_key)[0]
+
         if not generated_skills:
             return None
 
@@ -185,6 +201,11 @@ class SkillRegistry:
         grades = {str(item) for item in target.get("grades", [])}
         grade_aliases = self._grade_aliases(grade)
         return (not subjects or subject in subjects) and (not grades or bool(grades & grade_aliases))
+
+    def _subject_matches(self, skill: TeachingSkill, subject: str) -> bool:
+        target = skill.target or {}
+        subjects = {str(item) for item in target.get("subjects", [])}
+        return not subjects or subject in subjects
 
     def _message_match_score(self, skill: TeachingSkill, message: str) -> int:
         normalized = message.lower().strip()
@@ -238,6 +259,20 @@ class SkillRegistry:
                 "继续教学",
                 "继续上课",
                 "上课",
+            ]
+        )
+
+    def _looks_like_course_placement_question(self, message: str) -> bool:
+        return "负数" in message and any(
+            token in message
+            for token in [
+                "先教",
+                "先学",
+                "先讲",
+                "不先",
+                "应该先",
+                "为什么",
+                "顺序",
             ]
         )
 

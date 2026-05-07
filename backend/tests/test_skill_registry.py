@@ -30,6 +30,22 @@ def test_skill_registry_uses_first_generated_skill_for_lesson_start() -> None:
     assert "正数和负数" in skills.knowledge.name
 
 
+def test_skill_registry_uses_available_textbook_start_when_grade_is_not_covered() -> None:
+    skills = SkillRegistry().pick_skills("高一", "数学", message="请开始教学")
+
+    assert skills.knowledge.id == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+
+
+def test_skill_registry_treats_negative_number_sequence_question_as_placement() -> None:
+    skills = SkillRegistry().pick_skills("高一", "数学", message="不是应该先教负数吗？")
+
+    assert skills.knowledge.id == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+
+
 def test_skill_registry_uses_universal_core_for_general_subjects() -> None:
     skills = SkillRegistry().pick_skills("初一", "语文")
 

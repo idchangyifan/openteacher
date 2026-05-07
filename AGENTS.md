@@ -85,7 +85,7 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 ## 当前进度
 
-截至 2026-05-07，当前工作区已完成长期记忆 v2 与课堂历史删除管理，准备提交。
+截至 2026-05-07，当前工作区已完成长期记忆 v2.1：课堂历史删除管理、跨年级起课回落到可用教材 skill、正负数学习状态更新机制。
 
 已完成的主线能力：
 
@@ -100,14 +100,16 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 长期记忆从硬编码 lesson-history snapshot 升级到 MongoDB `memory_cards`：`MemoryService.record_learning_event()` 会把明确学习信号写成结构化卡片；普通 conversation 不进入长期记忆。
 - `memory_cards` 已加厚来源与审计字段：`source_session_id`、`source_message_ids`、`evidence_snippets`、`last_seen_at`、`review_status`、`expires_at`、`supersedes`、`conflict_group` 和来源课堂删除标记。
 - 已新增 MongoDB `memory_extraction_jobs`，每次受控抽取都会记录来源 session/message、抽取事件、生成的 card ids 和抽取版本。
+- `memory_cards` 已增加 `topic_key` 与 `learning_status`：同一知识点复用同一张卡，支持 `needs_placement`、`needs_support`、`in_progress`、`mastered` 更新；裸答案不会被抽成掌握，只有学生给出理由才会进入 `mastered`。
 - 历史课堂支持软删除：`DELETE /api/v1/lessons/{session_id}` 会把课堂标为 `deleted`，列表和详情不再返回，但保留原始消息和已抽取记忆；对应记忆只标记 `source_session_deleted=True`，不级联删除。
 - 当前课堂 transcript、lesson state、`current_skill_id` 永远高于最近课堂和长期记忆卡片；长期记忆只作为背景假设。
 - 修复了“刚学正负数，问上堂课却回到一元一次方程”的问题：连续性输入会挂回最近同学科课堂，skill registry 会保留当前 skill。
+- 修复了高一数学没有专属教材 skill 时误入 general/绝对值的问题：数学起课和“为什么不先教负数”会回落到当前可用的人教七上正负数 skill，并先询问学生起点。
 - 前端已优化：Enter 发送、Shift+Enter 换行；等待文案更自然；默认记忆摘要不再展示一元一次方程假数据。
 
 ## 当前已知问题
 
-- `memory_cards` 已有抽取任务和来源审计，但仍缺人工审核界面、冲突解决、过期/撤销策略和更细粒度 rerank。
+- `memory_cards` 已有抽取任务、来源审计和学习状态更新，但仍缺人工审核界面、冲突解决、过期/撤销策略和更细粒度 rerank。
 - DeepAgents summarization/checkpoint/store 还没有完整合流：长课堂会话超过阈值后的自动压缩策略尚未实现。
 - RAG 还缺可审核 trace：需要记录候选 routes、rerank 分数、最终 chunks 和使用的 lesson state / student_answer_status。
 - TextbookToTeachingSkill 的 schema 还需要把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 等字段正式固化。
@@ -115,17 +117,18 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 ## 推荐下一步
 
-1. 给长期记忆补人工审核/撤销管理：查看 `memory_cards`、改 `review_status`、停用错误记忆、处理 `conflict_group`。
-2. 接入 DeepAgents summarization/checkpoint/store：超过阈值后压缩完整课堂历史，但保留当前未完成问题、学生最新回答状态和下一步教学动作。
-3. 为 MongoDB RAG 增加可审核召回 trace：记录 routes、rerank 分数、最终 chunks、lesson state、student_answer_status，方便回放“为什么用了这些 chunk”。
-4. 继续完善 TextbookToTeachingSkill：把 chunk 元数据写入正式 schema，准备 MongoDB Atlas Vector Search index / embedding 字段。
-5. 继续补教材切片质量：章节复习、跨知识点衔接、分层练习、学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块。
+1. 给长期记忆补人工审核/撤销管理：查看 `memory_cards`、改 `review_status`、停用错误记忆、处理 `conflict_group`；审核操作应保留审计日志。
+2. 把记忆抽取从当前启发式升级为更完整的受控抽取器：识别“已掌握/需要支持/需要定位起点/行为偏好”等事件，但离线抽取不要调用豆包。
+3. 接入 DeepAgents summarization/checkpoint/store：超过阈值后压缩完整课堂历史，但保留当前未完成问题、学生最新回答状态和下一步教学动作。
+4. 为 MongoDB RAG 增加可审核召回 trace：记录 routes、rerank 分数、最终 chunks、lesson state、student_answer_status，方便回放“为什么用了这些 chunk”。
+5. 继续完善 TextbookToTeachingSkill：把 chunk 元数据写入正式 schema，准备 MongoDB Atlas Vector Search index / embedding 字段。
 6. 继续改善老师自然度：DeepAgents/LangGraph 只负责准备上下文、RAG 和记忆 trace，不把教学过程做成有限状态机；回复生成保留 LLM 的临场判断。
 
 ## 最新验证
 
 2026-05-07 最后一次完整验证：
 
+- `docker compose exec -T backend pytest tests/test_memory.py tests/test_skill_registry.py tests/test_teacher_chat.py`：25 passed。
 - `docker compose exec -T backend pytest`：66 passed。
 - `docker compose exec -T backend pytest tests/test_memory.py tests/test_lesson_sessions.py tests/test_teacher_chat.py`：18 passed。
 - `docker compose exec -T backend ruff check app tests alembic`：通过。
@@ -134,6 +137,14 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - MongoDB smoke：删除来源课堂后，课堂详情不再可见；已抽取 `memory_cards` 保留且 `source_session_deleted=True`。
 
 ## 最近工作日志
+
+2026-05-07，长期记忆状态更新机制：
+
+- `MemoryCard` 增加 `topic_key` 和 `learning_status`，正负数同一 topic 的不同信号会更新同一张卡，不再追加互相冲突的“正在学习/已掌握”条目。
+- `MemoryService.record_learning_event()` 现在区分课程起点质疑、卡住、进行中和掌握证据；学生只写 `-6` 仍是 `in_progress`，只有写出“支出和收入相反所以记作 -6”这类理由才会标为 `mastered`。
+- `MemoryExtractionJob` 记录 `event_learning_status` 和 `event_topic_key`，便于后续审核和回放抽取决策。
+- 高一数学起课、质疑“为什么不先教负数”会选择当前可用正负数 skill，并要求老师先确认学生是没学过、学过但没懂，还是已经会了想往后学。
+- 验证：`tests/test_memory.py tests/test_skill_registry.py tests/test_teacher_chat.py` 共 25 passed。
 
 2026-05-07，长期记忆 v2 与课堂历史删除管理：
 
