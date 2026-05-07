@@ -13,6 +13,10 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://openteacher:openteacher@localhost:5432/openteacher"
     frontend_origin: str = "http://localhost:5173"
     memory_backend: str = "mock"
+    memory_update_queue_backend: str = "inline"
+    memory_update_worker_poll_seconds: float = 0.5
+    memory_update_worker_batch_size: int = 10
+    memory_update_worker_max_attempts: int = 3
     lesson_store_backend: str = "memory"
     mongodb_uri: str = "mongodb://localhost:27017"
     mongodb_database: str = "openteacher"

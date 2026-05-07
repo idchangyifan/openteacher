@@ -7,6 +7,10 @@ from app.services.deepagents_runtime import DeepAgentsTeachingRuntime
 from app.services.llm_provider import LlmProvider, MockTeacherProvider, TeacherPrompt, get_llm_provider
 from app.services.lesson_store import LessonRepository, get_lesson_repository
 from app.services.memory import MemoryService, get_memory_service
+from app.services.memory_update_queue import (
+    MemoryUpdateDispatcher,
+    build_memory_update_dispatcher,
+)
 from app.services.planner import PlannerService, get_planner_service
 from app.services.rag import RagService, RagTurnContext, get_rag_service
 from app.services.skill_registry import SkillRegistry, TeachingSkill, get_skill_registry
@@ -29,6 +33,7 @@ class AgentHarness:
         lesson_repository: LessonRepository,
         deepagents_runtime: DeepAgentsTeachingRuntime,
         planner_service: PlannerService,
+        memory_update_dispatcher: MemoryUpdateDispatcher | None = None,
     ) -> None:
         self.memory_service = memory_service
         self.rag_service = rag_service
@@ -37,6 +42,9 @@ class AgentHarness:
         self.lesson_repository = lesson_repository
         self.deepagents_runtime = deepagents_runtime
         self.planner_service = planner_service
+        self.memory_update_dispatcher = memory_update_dispatcher or build_memory_update_dispatcher(
+            memory_service
+        )
 
     def reply(self, request: TeacherChatRequest) -> TeacherChatResponse:
         effective_subject = self._infer_effective_subject(
@@ -136,7 +144,7 @@ class AgentHarness:
             )
             teacher_message_id = teacher_message.id if teacher_message is not None else None
 
-        event = self.memory_service.record_learning_event(
+        submission = self.memory_update_dispatcher.submit(
             student_id=request.context.student_id,
             subject=effective_subject,
             message=request.message,
@@ -148,11 +156,16 @@ class AgentHarness:
                 if message_id is not None
             ],
         )
+        memory_events = (
+            [MemoryEvent(kind=submission.event.kind, summary=submission.event.summary)]
+            if submission.event is not None
+            else [MemoryEvent(kind="memory_update_queued", summary="学习进度更新已排队")]
+        )
 
         return TeacherChatResponse(
             reply=reply,
             skill_id=skills.response_skill_id,
-            memory_events=[MemoryEvent(kind=event.kind, summary=event.summary)],
+            memory_events=memory_events,
         )
 
     def _attach_recent_lesson_for_continuation(
@@ -331,4 +344,5 @@ def get_agent_harness() -> AgentHarness:
             rag_service=rag_service,
         ),
         planner_service=get_planner_service(),
+        memory_update_dispatcher=build_memory_update_dispatcher(memory_service),
     )

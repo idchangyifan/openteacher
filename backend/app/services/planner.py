@@ -96,8 +96,18 @@ class PlannerService:
         lesson_detail: LessonSessionDetail | None,
     ) -> PlannerDecision:
         learner_state = self._classify_learner_state(request.message)
-        teaching_mode = self._choose_teaching_mode(request, learner_state, lesson_detail)
-        next_teacher_goal = self._choose_next_teacher_goal(teaching_mode, learner_state)
+        mastered_positive_negative = self._has_mastered_positive_negative(memory_summary)
+        teaching_mode = self._choose_teaching_mode(
+            request,
+            learner_state,
+            lesson_detail,
+            mastered_positive_negative=mastered_positive_negative,
+        )
+        next_teacher_goal = self._choose_next_teacher_goal(
+            teaching_mode,
+            learner_state,
+            mastered_positive_negative=mastered_positive_negative,
+        )
         tools = self._choose_tools(request, learner_state, lesson_detail)
         memory_query = self._build_memory_query(
             request=request,
@@ -148,6 +158,7 @@ class PlannerService:
         request: TeacherChatRequest,
         learner_state: LearnerState,
         lesson_detail: LessonSessionDetail | None,
+        mastered_positive_negative: bool = False,
     ) -> TeachingMode:
         if learner_state == "safety_risk":
             return "qa"
@@ -168,6 +179,8 @@ class PlannerService:
             }:
                 return phase
             return "active_lesson"
+        if mastered_positive_negative and self._looks_like_lesson_start(request.message):
+            return "review"
         if any(word in request.message for word in ["开始学", "给我上课", "讲一讲", "学一下"]):
             return "active_lesson"
         if learner_state == "answer_seeking":
@@ -175,8 +188,13 @@ class PlannerService:
         return "diagnostic_check"
 
     def _choose_next_teacher_goal(
-        self, teaching_mode: TeachingMode, learner_state: LearnerState
+        self,
+        teaching_mode: TeachingMode,
+        learner_state: LearnerState,
+        mastered_positive_negative: bool = False,
     ) -> str:
+        if mastered_positive_negative and teaching_mode == "review":
+            return "不要重新从正负数入门开始；先复盘已掌握点，再给迁移练习或进入下一小节。"
         if learner_state == "mastery_signal":
             return "先确认学生已完成当前任务，再用一句理由、检验或小结确认理解。"
         if learner_state == "answer_seeking":
@@ -237,6 +255,18 @@ class PlannerService:
         return any(
             fragment in compact
             for fragment in ["x=8", "x＝8", "算出来", "做完了", "我会了", "左边右边都是"]
+        )
+
+    def _looks_like_lesson_start(self, message: str) -> bool:
+        return any(
+            token in message
+            for token in ["开始教学", "请开始", "开始上课", "给我上课", "上课"]
+        )
+
+    def _has_mastered_positive_negative(self, memory_summary: str) -> bool:
+        return (
+            "topic=kp-positive-negative-numbers" in memory_summary
+            and "learning_status=mastered" in memory_summary
         )
 
 

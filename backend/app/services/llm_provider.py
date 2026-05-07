@@ -73,6 +73,15 @@ class MockTeacherProvider:
                 "如果没学稳，我们就从“负数表示相反意义的量”开始。"
             )
 
+        if self._looks_like_lesson_start(normalized) and self._has_mastered_positive_negative(
+            prompt.memory_summary
+        ):
+            return (
+                "我记得你已经能解释收入用正号、支出用负号的理由了。"
+                "我们不从头重讲正负数，先用一个迁移题确认能不能用到新情境："
+                "零上5摄氏度记作+5℃，那零下3摄氏度怎么记？顺便说一句理由。"
+            )
+
         if self._looks_like_lesson_start(normalized) and prompt.subject == "数学":
             return (
                 "我先确认你的起点：你是完全没学过正数和负数，"
@@ -134,6 +143,12 @@ class MockTeacherProvider:
             for token in ["先教", "先学", "先讲", "不先", "应该先", "为什么", "顺序"]
         )
 
+    def _has_mastered_positive_negative(self, memory_summary: str) -> bool:
+        return (
+            "topic=kp-positive-negative-numbers" in memory_summary
+            and "learning_status=mastered" in memory_summary
+        )
+
 
 class OpenAIResponsesProvider:
     def __init__(
@@ -187,6 +202,8 @@ class OpenAIResponsesProvider:
             "如果学生质疑课程顺序，例如“为什么不先教负数”，不要硬解释当前安排；"
             "先承认这个问题合理，再用一个问题确认学生当前是没学过、学过但没懂、"
             "还是已经会了要学后续内容。长期记忆里的“正在学习”不等于已经掌握。"
+            "如果长期记忆显示当前知识点 learning_status=mastered，学生说“开始教学”时，"
+            "不要重新从入门诊断开始；先简短复盘已掌握点，再进入迁移练习、变式或下一知识点。"
             f"当前教师风格：{prompt.teacher_style}。当前 Skill：{prompt.skill_name}。"
             "回复使用中文，短而清楚，一次通常只推进一个关键步骤。"
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"
@@ -272,6 +289,8 @@ class DoubaoChatCompletionsProvider:
             "如果学生质疑课程顺序，例如“为什么不先教负数”，不要硬解释当前安排；"
             "先承认这个问题合理，再用一个问题确认学生当前是没学过、学过但没懂、"
             "还是已经会了要学后续内容。长期记忆里的“正在学习”不等于已经掌握。"
+            "如果长期记忆显示当前知识点 learning_status=mastered，学生说“开始教学”时，"
+            "不要重新从入门诊断开始；先简短复盘已掌握点，再进入迁移练习、变式或下一知识点。"
             "回复必须使用中文，短而清楚。"
             f"当前教师风格：{prompt.teacher_style}。当前 Skill：{prompt.skill_name}。\n"
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"

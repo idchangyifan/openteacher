@@ -407,11 +407,30 @@ class MemoryService:
         )
 
     def _looks_like_positive_negative_mastery(self, message: str) -> bool:
-        if "-6" not in message and "负六" not in message and "负 6" not in message:
+        compact = message.replace(" ", "")
+        has_signed_quantity = any(
+            token in compact
+            for token in ["-6", "负六", "用-", "用负", "负数", "负号", "记作-"]
+        )
+        has_opposite_meaning = "收入" in message and "支出" in message and "相反" in message
+        if not has_signed_quantity and not has_opposite_meaning:
             return False
         return any(
             token in message
-            for token in ["因为", "支出", "花", "少", "减少", "相反", "负数", "记作", "亏", "下降", "低于"]
+            for token in [
+                "因为",
+                "所以",
+                "支出",
+                "花",
+                "少",
+                "减少",
+                "相反",
+                "负数",
+                "记作",
+                "亏",
+                "下降",
+                "低于",
+            ]
         )
 
     def _looks_like_student_stuck(self, message: str) -> bool:

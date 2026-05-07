@@ -148,6 +148,22 @@ def test_memory_service_only_marks_mastery_when_student_gives_reasoning() -> Non
     assert service.cards[0].summary == "学生能够解释正数和负数表示相反意义的量"
 
 
+def test_memory_service_marks_mastery_when_student_explains_sign_without_number() -> None:
+    service = CapturingMemoryService()
+
+    event = service.record_learning_event(
+        student_id="memory-card-student",
+        subject="数学",
+        message="因为支出和收入是相反意义的量，收入用+表示，所以支出用-表示",
+        reply="完全正确。",
+        source_session_id="lesson-positive-negative",
+    )
+
+    assert event.learning_status == "mastered"
+    assert service.cards[0].learning_status == "mastered"
+    assert service.cards[0].summary == "学生能够解释正数和负数表示相反意义的量"
+
+
 def test_memory_service_does_not_downgrade_mastery_on_later_topic_mention() -> None:
     service = CapturingMemoryService()
     service.record_learning_event(
