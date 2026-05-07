@@ -4,7 +4,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 LessonMode = Literal["active_lesson", "qa"]
-LessonStatus = Literal["in_progress", "completed", "archived"]
+LessonStatus = Literal["in_progress", "completed", "archived", "deleted"]
 LessonPhase = Literal[
     "lesson_start",
     "concept_instruction",
@@ -54,6 +54,7 @@ class LessonSession(BaseModel):
     summary: str = "课堂刚开始，尚未形成复习摘要。"
     created_at: datetime = Field(default_factory=utc_now)
     updated_at: datetime = Field(default_factory=utc_now)
+    deleted_at: datetime | None = None
 
 
 class LessonMessage(BaseModel):
@@ -81,6 +82,7 @@ class LessonSessionSummary(BaseModel):
     pending_student_action: str
     summary: str
     updated_at: datetime
+    deleted_at: datetime | None = None
 
 
 class LessonSessionDetail(BaseModel):

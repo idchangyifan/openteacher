@@ -45,12 +45,14 @@ class AgentHarness:
         )
         request = self._attach_recent_lesson_for_continuation(request, effective_subject)
 
+        student_message_id = None
         if request.context.session_id:
-            self.lesson_repository.append_message(
+            student_message = self.lesson_repository.append_message(
                 session_id=request.context.session_id,
                 role="student",
                 content=request.message,
             )
+            student_message_id = student_message.id if student_message is not None else None
 
         lesson_detail = (
             self.lesson_repository.get_session_detail(request.context.session_id)
@@ -125,18 +127,26 @@ class AgentHarness:
         )
         reply = self._generate_reply(request, prompt)
 
+        teacher_message_id = None
         if request.context.session_id:
-            self.lesson_repository.append_message(
+            teacher_message = self.lesson_repository.append_message(
                 session_id=request.context.session_id,
                 role="teacher",
                 content=reply,
             )
+            teacher_message_id = teacher_message.id if teacher_message is not None else None
 
         event = self.memory_service.record_learning_event(
             student_id=request.context.student_id,
             subject=effective_subject,
             message=request.message,
             reply=reply,
+            source_session_id=request.context.session_id,
+            source_message_ids=[
+                message_id
+                for message_id in [student_message_id, teacher_message_id]
+                if message_id is not None
+            ],
         )
 
         return TeacherChatResponse(

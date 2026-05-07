@@ -80,3 +80,34 @@ def test_unknown_lesson_session_returns_404() -> None:
     response = client.get("/api/v1/lessons/not-found")
 
     assert response.status_code == 404
+
+
+def test_lesson_session_can_be_soft_deleted() -> None:
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/v1/lessons",
+        json={
+            "student_id": "lesson-delete-student",
+            "subject": "数学",
+            "title": "准备删除的课堂",
+        },
+    )
+    session_id = create_response.json()["id"]
+
+    delete_response = client.delete(f"/api/v1/lessons/{session_id}")
+
+    assert delete_response.status_code == 204
+    list_response = client.get("/api/v1/lessons", params={"student_id": "lesson-delete-student"})
+    assert list_response.status_code == 200
+    assert [lesson["id"] for lesson in list_response.json()] == []
+
+    detail_response = client.get(f"/api/v1/lessons/{session_id}")
+    assert detail_response.status_code == 404
+
+
+def test_unknown_lesson_session_delete_returns_404() -> None:
+    client = TestClient(app)
+
+    response = client.delete("/api/v1/lessons/not-found")
+
+    assert response.status_code == 404

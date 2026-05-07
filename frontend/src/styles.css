@@ -145,12 +145,13 @@ select {
 
 .lesson-item {
   display: grid;
-  justify-items: stretch;
-  gap: 4px;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: stretch;
+  gap: 6px;
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 10px;
+  padding: 8px;
   color: var(--ink);
   background: white;
   text-align: left;
@@ -164,12 +165,42 @@ select {
   color: var(--accent-dark);
 }
 
+.lesson-open-button {
+  display: grid;
+  justify-items: stretch;
+  gap: 4px;
+  min-width: 0;
+  border-radius: 6px;
+  padding: 2px;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+}
+
+.lesson-open-button:hover {
+  background: transparent;
+}
+
 .lesson-item span {
   display: flex;
   align-items: center;
   gap: 6px;
   min-width: 0;
   font-size: 13px;
+}
+
+.lesson-delete-button {
+  width: 34px;
+  height: 34px;
+  align-self: center;
+  border-radius: 6px;
+  color: var(--muted);
+  background: transparent;
+}
+
+.lesson-delete-button:hover {
+  color: #8c2f2f;
+  background: #f7e7e7;
 }
 
 .lesson-item small,

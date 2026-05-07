@@ -31,6 +31,33 @@ class MemoryCard:
     status: str = "active"
     tags: list[str] = field(default_factory=list)
     source: str = "controlled_extraction"
+    source_session_id: str | None = None
+    source_message_ids: list[str] = field(default_factory=list)
+    evidence_snippets: list[str] = field(default_factory=list)
+    last_seen_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    review_status: str = "auto_accepted"
+    expires_at: datetime | None = None
+    supersedes: list[str] = field(default_factory=list)
+    conflict_group: str | None = None
+    source_session_deleted: bool = False
+    source_session_deleted_at: datetime | None = None
+    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+@dataclass(frozen=True)
+class MemoryExtractionJob:
+    id: str
+    student_id: str
+    subject: str
+    status: str
+    event_kind: str
+    event_summary: str
+    source_session_id: str | None = None
+    source_message_ids: list[str] = field(default_factory=list)
+    card_ids: list[str] = field(default_factory=list)
+    error: str | None = None
+    extractor_version: str = "controlled-v1"
     created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -166,17 +193,36 @@ class MemoryService:
         subject: str,
         message: str,
         reply: str,
+        source_session_id: str | None = None,
+        source_message_ids: list[str] | None = None,
     ) -> LearningEvent:
         event = self._extract_learning_event(subject=subject, message=message, reply=reply)
+        source_message_ids = source_message_ids or []
         card = self._memory_card_from_event(
             student_id=student_id,
             subject=subject,
             event=event,
             message=message,
             reply=reply,
+            source_session_id=source_session_id,
+            source_message_ids=source_message_ids,
         )
+        card_ids = []
         if card is not None:
-            self.upsert_memory_card(card)
+            stored_card = self.upsert_memory_card(card)
+            card_ids.append(stored_card.id)
+        job = MemoryExtractionJob(
+            id=f"memory-job-{uuid4().hex}",
+            student_id=student_id,
+            subject=subject,
+            status="completed",
+            event_kind=event.kind,
+            event_summary=event.summary,
+            source_session_id=source_session_id,
+            source_message_ids=source_message_ids,
+            card_ids=card_ids,
+        )
+        self.record_extraction_job(job)
         return event
 
     def retrieve_memory_cards(
@@ -190,11 +236,20 @@ class MemoryService:
     def upsert_memory_card(self, card: MemoryCard) -> MemoryCard:
         return card
 
+    def record_extraction_job(self, job: MemoryExtractionJob) -> MemoryExtractionJob:
+        return job
+
+    def mark_source_session_deleted(self, session_id: str) -> None:
+        return None
+
     def _extract_learning_event(self, subject: str, message: str, reply: str) -> LearningEvent:
         if any(word in message for word in ["答案", "直接告诉", "抄"]):
             return LearningEvent(kind="learning_behavior", summary="学生尝试直接获取答案")
 
-        if any(token in f"{message}\n{reply}" for token in ["正数", "负数", "收入", "支出", "+10", "-6"]):
+        if any(
+            token in f"{message}\n{reply}"
+            for token in ["正数", "负数", "收入", "支出", "+10", "-6"]
+        ):
             return LearningEvent(kind="academic_signal", summary="学生正在学习正数和负数")
 
         if "x" in message:
@@ -210,9 +265,12 @@ class MemoryService:
         event: LearningEvent,
         message: str,
         reply: str,
+        source_session_id: str | None = None,
+        source_message_ids: list[str] | None = None,
     ) -> MemoryCard | None:
         if event.kind == "conversation":
             return None
+        evidence_snippets = [f"student: {message}", f"teacher: {reply}"]
         return MemoryCard(
             id=self._stable_card_id(student_id, subject, event.kind, event.summary),
             student_id=student_id,
@@ -222,6 +280,10 @@ class MemoryService:
             evidence=f"student: {message}\nteacher: {reply}",
             confidence=0.72 if event.kind == "academic_signal" else 0.82,
             tags=self._memory_tags(event.summary),
+            source_session_id=source_session_id,
+            source_message_ids=source_message_ids or [],
+            evidence_snippets=evidence_snippets,
+            conflict_group=self._memory_conflict_group(event.summary),
         )
 
     def _stable_card_id(self, student_id: str, subject: str, kind: str, summary: str) -> str:
@@ -238,6 +300,13 @@ class MemoryService:
                 tags.append(token)
         return tags
 
+    def _memory_conflict_group(self, summary: str) -> str | None:
+        if "正数" in summary or "负数" in summary:
+            return "current_math_topic"
+        if "一元一次方程" in summary:
+            return "current_math_topic"
+        return None
+
 
 class MongoMemoryService(MemoryService):
     def __init__(
@@ -249,6 +318,7 @@ class MongoMemoryService(MemoryService):
         self.client = client or MongoClient(uri, serverSelectionTimeoutMS=3000)
         self.db = self.client[database]
         self.cards = self.db["memory_cards"]
+        self.extraction_jobs = self.db["memory_extraction_jobs"]
         self._ensure_indexes()
 
     def _ensure_indexes(self) -> None:
@@ -261,6 +331,26 @@ class MongoMemoryService(MemoryService):
             name="student_status",
         )
         self.cards.create_index([("kind", ASCENDING), ("tags", ASCENDING)], name="kind_tags")
+        self.cards.create_index(
+            [("source_session_id", ASCENDING), ("updated_at", DESCENDING)],
+            name="source_session_updated",
+        )
+        self.cards.create_index(
+            [("review_status", ASCENDING), ("updated_at", DESCENDING)],
+            name="review_status_updated",
+        )
+        self.extraction_jobs.create_index(
+            [("student_id", ASCENDING), ("created_at", DESCENDING)],
+            name="student_created",
+        )
+        self.extraction_jobs.create_index(
+            [("source_session_id", ASCENDING), ("created_at", DESCENDING)],
+            name="source_session_created",
+        )
+        self.extraction_jobs.create_index(
+            [("status", ASCENDING), ("created_at", DESCENDING)],
+            name="status_created",
+        )
 
     def retrieve_memory_cards(
         self,
@@ -289,6 +379,16 @@ class MongoMemoryService(MemoryService):
                     "status": card.status,
                     "tags": card.tags,
                     "source": card.source,
+                    "source_session_id": card.source_session_id,
+                    "source_message_ids": card.source_message_ids,
+                    "evidence_snippets": card.evidence_snippets,
+                    "last_seen_at": now,
+                    "review_status": card.review_status,
+                    "expires_at": card.expires_at,
+                    "supersedes": card.supersedes,
+                    "conflict_group": card.conflict_group,
+                    "source_session_deleted": card.source_session_deleted,
+                    "source_session_deleted_at": card.source_session_deleted_at,
                     "updated_at": now,
                 },
                 "$setOnInsert": {
@@ -303,6 +403,33 @@ class MongoMemoryService(MemoryService):
         )
         return self._card_from_document(result or payload)
 
+    def record_extraction_job(self, job: MemoryExtractionJob) -> MemoryExtractionJob:
+        self.extraction_jobs.insert_one(self._job_to_document(job))
+        return job
+
+    def mark_source_session_deleted(self, session_id: str) -> None:
+        now = datetime.now(timezone.utc)
+        self.cards.update_many(
+            {"source_session_id": session_id},
+            {
+                "$set": {
+                    "source_session_deleted": True,
+                    "source_session_deleted_at": now,
+                    "updated_at": now,
+                }
+            },
+        )
+        self.extraction_jobs.update_many(
+            {"source_session_id": session_id},
+            {
+                "$set": {
+                    "source_session_deleted": True,
+                    "source_session_deleted_at": now,
+                    "updated_at": now,
+                }
+            },
+        )
+
     def _card_to_document(self, card: MemoryCard) -> dict:
         document = {
             "_id": card.id,
@@ -315,8 +442,36 @@ class MongoMemoryService(MemoryService):
             "status": card.status,
             "tags": card.tags,
             "source": card.source,
+            "source_session_id": card.source_session_id,
+            "source_message_ids": card.source_message_ids,
+            "evidence_snippets": card.evidence_snippets,
+            "last_seen_at": card.last_seen_at,
+            "review_status": card.review_status,
+            "expires_at": card.expires_at,
+            "supersedes": card.supersedes,
+            "conflict_group": card.conflict_group,
+            "source_session_deleted": card.source_session_deleted,
+            "source_session_deleted_at": card.source_session_deleted_at,
             "created_at": card.created_at,
             "updated_at": card.updated_at,
+        }
+        return document
+
+    def _job_to_document(self, job: MemoryExtractionJob) -> dict:
+        document = {
+            "_id": job.id,
+            "student_id": job.student_id,
+            "subject": job.subject,
+            "status": job.status,
+            "event_kind": job.event_kind,
+            "event_summary": job.event_summary,
+            "source_session_id": job.source_session_id,
+            "source_message_ids": job.source_message_ids,
+            "card_ids": job.card_ids,
+            "error": job.error,
+            "extractor_version": job.extractor_version,
+            "created_at": job.created_at,
+            "updated_at": job.updated_at,
         }
         return document
 
@@ -332,6 +487,20 @@ class MongoMemoryService(MemoryService):
             status=str(document.get("status") or "active"),
             tags=[str(value) for value in document.get("tags", []) or []],
             source=str(document.get("source") or "controlled_extraction"),
+            source_session_id=document.get("source_session_id"),
+            source_message_ids=[
+                str(value) for value in document.get("source_message_ids", []) or []
+            ],
+            evidence_snippets=[
+                str(value) for value in document.get("evidence_snippets", []) or []
+            ],
+            last_seen_at=document.get("last_seen_at") or datetime.now(timezone.utc),
+            review_status=str(document.get("review_status") or "auto_accepted"),
+            expires_at=document.get("expires_at"),
+            supersedes=[str(value) for value in document.get("supersedes", []) or []],
+            conflict_group=document.get("conflict_group"),
+            source_session_deleted=bool(document.get("source_session_deleted") or False),
+            source_session_deleted_at=document.get("source_session_deleted_at"),
             created_at=document.get("created_at") or datetime.now(timezone.utc),
             updated_at=document.get("updated_at") or datetime.now(timezone.utc),
         )

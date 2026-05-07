@@ -28,6 +28,8 @@ class LessonRepository(Protocol):
 
     def get_session_detail(self, session_id: str) -> LessonSessionDetail | None: ...
 
+    def delete_session(self, session_id: str) -> bool: ...
+
     def append_message(
         self,
         session_id: str,
@@ -98,7 +100,9 @@ class InMemoryLessonRepository(LessonRepositoryMixin):
 
     def list_sessions(self, student_id: str) -> list[LessonSessionSummary]:
         sessions = [
-            session for session in self.sessions.values() if session.student_id == student_id
+            session
+            for session in self.sessions.values()
+            if session.student_id == student_id and session.status != "deleted"
         ]
         sessions.sort(key=lambda item: item.updated_at, reverse=True)
         return [
@@ -122,9 +126,21 @@ class InMemoryLessonRepository(LessonRepositoryMixin):
 
     def get_session_detail(self, session_id: str) -> LessonSessionDetail | None:
         session = self.sessions.get(session_id)
-        if session is None:
+        if session is None or session.status == "deleted":
             return None
         return LessonSessionDetail(session=session, messages=self.messages.get(session_id, []))
+
+    def delete_session(self, session_id: str) -> bool:
+        session = self.sessions.get(session_id)
+        if session is None or session.status == "deleted":
+            return False
+
+        session.status = "deleted"
+        session.deleted_at = _now()
+        session.updated_at = session.deleted_at
+        session.pending_student_action = "课堂历史已删除。"
+        self.sessions[session.id] = session
+        return True
 
     def append_message(
         self,
@@ -134,7 +150,7 @@ class InMemoryLessonRepository(LessonRepositoryMixin):
         message_type: str = "conversation",
     ) -> LessonMessage | None:
         session = self.sessions.get(session_id)
-        if session is None:
+        if session is None or session.status == "deleted":
             return None
 
         message = LessonMessage(
@@ -165,7 +181,7 @@ class InMemoryLessonRepository(LessonRepositoryMixin):
         current_section_id: str | None = None,
     ) -> LessonSession | None:
         session = self.sessions.get(session_id)
-        if session is None:
+        if session is None or session.status == "deleted":
             return None
 
         session.current_skill_id = current_skill_id
@@ -229,7 +245,9 @@ class MongoLessonRepository(LessonRepositoryMixin):
         return session
 
     def list_sessions(self, student_id: str) -> list[LessonSessionSummary]:
-        documents = self.sessions.find({"student_id": student_id}).sort("updated_at", DESCENDING)
+        documents = self.sessions.find(
+            {"student_id": student_id, "status": {"$ne": "deleted"}}
+        ).sort("updated_at", DESCENDING)
         return [
             LessonSessionSummary(
                 id=document["_id"],
@@ -245,12 +263,15 @@ class MongoLessonRepository(LessonRepositoryMixin):
                 pending_student_action=document["pending_student_action"],
                 summary=document["summary"],
                 updated_at=document["updated_at"],
+                deleted_at=document.get("deleted_at"),
             )
             for document in documents
         ]
 
     def get_session_detail(self, session_id: str) -> LessonSessionDetail | None:
-        session_document = self.sessions.find_one({"_id": session_id})
+        session_document = self.sessions.find_one(
+            {"_id": session_id, "status": {"$ne": "deleted"}}
+        )
         if session_document is None:
             return None
 
@@ -262,6 +283,21 @@ class MongoLessonRepository(LessonRepositoryMixin):
             messages=[self._message_from_document(document) for document in message_documents],
         )
 
+    def delete_session(self, session_id: str) -> bool:
+        now = _now()
+        result = self.sessions.update_one(
+            {"_id": session_id, "status": {"$ne": "deleted"}},
+            {
+                "$set": {
+                    "status": "deleted",
+                    "deleted_at": now,
+                    "updated_at": now,
+                    "pending_student_action": "课堂历史已删除。",
+                }
+            },
+        )
+        return result.modified_count > 0
+
     def append_message(
         self,
         session_id: str,
@@ -269,7 +305,7 @@ class MongoLessonRepository(LessonRepositoryMixin):
         content: str,
         message_type: str = "conversation",
     ) -> LessonMessage | None:
-        session = self.sessions.find_one({"_id": session_id})
+        session = self.sessions.find_one({"_id": session_id, "status": {"$ne": "deleted"}})
         if session is None:
             return None
 
@@ -310,7 +346,7 @@ class MongoLessonRepository(LessonRepositoryMixin):
             "updated_at": _now(),
         }
         result = self.sessions.find_one_and_update(
-            {"_id": session_id},
+            {"_id": session_id, "status": {"$ne": "deleted"}},
             {"$set": update},
             return_document=ReturnDocument.AFTER,
         )

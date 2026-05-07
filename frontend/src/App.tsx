@@ -1,5 +1,5 @@
 import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
-import { BookOpen, History, Plus, RotateCcw, Send, UserRound } from "lucide-react";
+import { BookOpen, History, Plus, RotateCcw, Send, Trash2, UserRound } from "lucide-react";
 
 type Role = "teacher" | "student";
 
@@ -168,6 +168,20 @@ async function getLesson(sessionId: string): Promise<LessonSessionDetail | null>
   }
 }
 
+async function deleteLesson(sessionId: string): Promise<boolean> {
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/api/v1/lessons/${sessionId}`, {
+      method: "DELETE"
+    });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 export default function App() {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [context, setContext] = useState<StudentContext>(defaultContext);
@@ -328,6 +342,26 @@ export default function App() {
     setActiveSkill("已恢复历史课堂");
   }
 
+  async function handleDeleteLesson(sessionId: string) {
+    const lesson = lessons.find((item) => item.id === sessionId);
+    const confirmed = window.confirm(
+      `删除「${lesson?.title ?? "这节课堂"}」的历史记录？已抽取的长期记忆会保留为学习背景。`
+    );
+    if (!confirmed) return;
+
+    const deleted = await deleteLesson(sessionId);
+    if (!deleted) return;
+
+    if (context.session_id === sessionId) {
+      setMessages(initialMessages);
+      setMemoryEvents([]);
+      setActiveSkill("未选择");
+      setActiveLesson(null);
+      setContext((current) => ({ ...current, session_id: undefined }));
+    }
+    await refreshLessons();
+  }
+
   return (
     <main className="app-shell">
       <aside className="sidebar" aria-label="学生上下文">
@@ -393,20 +427,33 @@ export default function App() {
           <div className="lesson-list">
             {lessons.length > 0 ? (
               lessons.slice(0, 5).map((lesson) => (
-                <button
+                <div
                   className={`lesson-item ${
                     context.session_id === lesson.id ? "active" : ""
                   }`}
                   key={lesson.id}
-                  type="button"
-                  onClick={() => void handleOpenLesson(lesson.id)}
                 >
-                  <span>
-                    <History size={14} />
-                    {lesson.title}
-                  </span>
-                  <small>{lesson.pending_student_action}</small>
-                </button>
+                  <button
+                    className="lesson-open-button"
+                    type="button"
+                    onClick={() => void handleOpenLesson(lesson.id)}
+                  >
+                    <span>
+                      <History size={14} />
+                      {lesson.title}
+                    </span>
+                    <small>{lesson.pending_student_action}</small>
+                  </button>
+                  <button
+                    className="lesson-delete-button"
+                    type="button"
+                    aria-label={`删除${lesson.title}`}
+                    title="删除课堂历史"
+                    onClick={() => void handleDeleteLesson(lesson.id)}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               ))
             ) : (
               <p className="empty-note">还没有历史课堂。发送第一条消息或新建课堂后会记录在这里。</p>

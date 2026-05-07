@@ -85,7 +85,7 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 ## 当前进度
 
-截至 2026-05-07，`main` 最新提交是 `cee1d09 feat: persist controlled memory cards`，已推送到 GitHub。
+截至 2026-05-07，当前工作区已完成长期记忆 v2 与课堂历史删除管理，准备提交。
 
 已完成的主线能力：
 
@@ -98,13 +98,16 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 短期记忆不再只拼最近 6 条消息；DeepAgents `dynamic_prompt` middleware 注入完整当前 session transcript、当前问题、学生回答状态、当前 skill / knowledge point。
 - 长期记忆已接入 DeepAgents 原生 `MemoryMiddleware`，由 `StaticMemoryBackend` 提供只读 `/openteacher/student-memory.md`。
 - 长期记忆从硬编码 lesson-history snapshot 升级到 MongoDB `memory_cards`：`MemoryService.record_learning_event()` 会把明确学习信号写成结构化卡片；普通 conversation 不进入长期记忆。
+- `memory_cards` 已加厚来源与审计字段：`source_session_id`、`source_message_ids`、`evidence_snippets`、`last_seen_at`、`review_status`、`expires_at`、`supersedes`、`conflict_group` 和来源课堂删除标记。
+- 已新增 MongoDB `memory_extraction_jobs`，每次受控抽取都会记录来源 session/message、抽取事件、生成的 card ids 和抽取版本。
+- 历史课堂支持软删除：`DELETE /api/v1/lessons/{session_id}` 会把课堂标为 `deleted`，列表和详情不再返回，但保留原始消息和已抽取记忆；对应记忆只标记 `source_session_deleted=True`，不级联删除。
 - 当前课堂 transcript、lesson state、`current_skill_id` 永远高于最近课堂和长期记忆卡片；长期记忆只作为背景假设。
 - 修复了“刚学正负数，问上堂课却回到一元一次方程”的问题：连续性输入会挂回最近同学科课堂，skill registry 会保留当前 skill。
 - 前端已优化：Enter 发送、Shift+Enter 换行；等待文案更自然；默认记忆摘要不再展示一元一次方程假数据。
 
 ## 当前已知问题
 
-- `memory_cards` 还是第一版受控抽取：规则保守、可审计，但还没有抽取任务队列、人工审核、冲突解决、过期/撤销策略。
+- `memory_cards` 已有抽取任务和来源审计，但仍缺人工审核界面、冲突解决、过期/撤销策略和更细粒度 rerank。
 - DeepAgents summarization/checkpoint/store 还没有完整合流：长课堂会话超过阈值后的自动压缩策略尚未实现。
 - RAG 还缺可审核 trace：需要记录候选 routes、rerank 分数、最终 chunks 和使用的 lesson state / student_answer_status。
 - TextbookToTeachingSkill 的 schema 还需要把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 等字段正式固化。
@@ -112,7 +115,7 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 ## 推荐下一步
 
-1. 继续把 MongoDB `memory_cards` 做成可靠长期记忆层：增加抽取任务记录、证据片段、审核字段、冲突/过期策略和更细的 retrieve/rerank。
+1. 给长期记忆补人工审核/撤销管理：查看 `memory_cards`、改 `review_status`、停用错误记忆、处理 `conflict_group`。
 2. 接入 DeepAgents summarization/checkpoint/store：超过阈值后压缩完整课堂历史，但保留当前未完成问题、学生最新回答状态和下一步教学动作。
 3. 为 MongoDB RAG 增加可审核召回 trace：记录 routes、rerank 分数、最终 chunks、lesson state、student_answer_status，方便回放“为什么用了这些 chunk”。
 4. 继续完善 TextbookToTeachingSkill：把 chunk 元数据写入正式 schema，准备 MongoDB Atlas Vector Search index / embedding 字段。
@@ -123,14 +126,24 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 2026-05-07 最后一次完整验证：
 
-- `docker compose exec -T backend pytest`：63 passed。
-- `docker compose exec -T backend pytest tests/test_memory.py tests/test_deepagents_runtime.py tests/test_teacher_chat.py`：20 passed。
+- `docker compose exec -T backend pytest`：66 passed。
+- `docker compose exec -T backend pytest tests/test_memory.py tests/test_lesson_sessions.py tests/test_teacher_chat.py`：18 passed。
 - `docker compose exec -T backend ruff check app tests alembic`：通过。
-- `docker compose config --quiet`：通过。
+- `docker compose exec -T frontend pnpm build`：通过。
 - `git diff --check`：通过。
-- MongoDB smoke：容器内确认 `MEMORY_BACKEND=mongodb`，并成功写入/读取“学生正在学习正数和负数”的 `memory_cards`。
+- MongoDB smoke：删除来源课堂后，课堂详情不再可见；已抽取 `memory_cards` 保留且 `source_session_deleted=True`。
 
 ## 最近工作日志
+
+2026-05-07，长期记忆 v2 与课堂历史删除管理：
+
+- `MemoryCard` 增加来源 session/message、证据片段、审核状态、过期/替代/冲突组和来源课堂删除标记。
+- 新增 `MemoryExtractionJob` 和 MongoDB `memory_extraction_jobs` collection；每次受控抽取都记录来源、事件、生成卡片和抽取版本。
+- `AgentHarness` 现在把学生/老师消息 id 与 session id 传入长期记忆抽取，记忆卡片能追溯到课堂来源。
+- 新增 `DELETE /api/v1/lessons/{session_id}`，课堂采用软删除；列表、详情、追加消息和状态更新都会忽略 deleted session。
+- 删除课堂不级联删除已抽取记忆；只给相关 `memory_cards` / extraction jobs 标记 `source_session_deleted=True`，保留学习画像和审计信息。
+- 前端课堂历史增加删除按钮；删除当前课堂后清空当前会话并回到初始状态，确认文案说明长期记忆会保留。
+- 验证：后端全量 66 passed，ruff 通过，frontend build 通过，MongoDB 删除来源 smoke 通过。
 
 2026-05-07，压缩 `AGENTS.md`：
 
