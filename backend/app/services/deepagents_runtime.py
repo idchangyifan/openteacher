@@ -6,11 +6,13 @@ from typing import Any
 from langchain.agents.middleware import dynamic_prompt
 from langchain.agents.middleware.types import AgentMiddleware
 from langchain_openai import ChatOpenAI
+from deepagents.middleware.memory import MemoryMiddleware
 from pymongo import MongoClient
 
 from app.core.settings import settings
 from app.schemas.lesson import LessonSessionDetail
 from app.schemas.teacher import TeacherChatRequest
+from app.services.deepagents_memory import StaticMemoryBackend
 from app.services.lesson_store import LessonRepository
 from app.services.llm_provider import TeacherPrompt
 from app.services.memory import MemoryService
@@ -186,6 +188,11 @@ class DeepAgentsTeachingRuntime:
                 request.context.student_id,
                 subject=request.context.subject,
                 lesson_detail=detail,
+                recent_lessons=self._recent_lesson_summaries(
+                    request.context.student_id,
+                    request.context.subject,
+                    request.context.grade,
+                ),
             )
             return (
                 f"学生：{request.context.student_id}\n"
@@ -292,7 +299,33 @@ class DeepAgentsTeachingRuntime:
                 ]
             )
 
-        return [opent_teacher_short_term_context]
+        return [
+            opent_teacher_short_term_context,
+            self._build_student_memory_middleware(graph_state),
+        ]
+
+    def _build_student_memory_middleware(
+        self,
+        graph_state: TeachingGraphState,
+    ) -> MemoryMiddleware:
+        memory_path = "/openteacher/student-memory.md"
+        lesson_detail = self.lesson_repository.get_session_detail(
+            graph_state.lesson_state.session_id
+        ) if graph_state.lesson_state.session_id else None
+        memory_text = self.memory_service.format_deepagents_memory(
+            student_id=graph_state.student_id,
+            subject=graph_state.subject,
+            lesson_detail=lesson_detail,
+            recent_lessons=self._recent_lesson_summaries(
+                graph_state.student_id,
+                graph_state.subject,
+                graph_state.grade,
+            ),
+        )
+        return MemoryMiddleware(
+            backend=StaticMemoryBackend({memory_path: memory_text}),
+            sources=[memory_path],
+        )
 
     def _format_short_term_context(self, graph_state: TeachingGraphState) -> str:
         transcript = "\n".join(format_message_lines(graph_state.messages))
@@ -373,6 +406,13 @@ class DeepAgentsTeachingRuntime:
         if not request.context.session_id:
             return None
         return self.lesson_repository.get_session_detail(request.context.session_id)
+
+    def _recent_lesson_summaries(self, student_id: str, subject: str, grade: str):
+        return [
+            session
+            for session in self.lesson_repository.list_sessions(student_id)
+            if session.subject == subject and session.grade == grade
+        ][:3]
 
     def _build_lesson_state(
         self,

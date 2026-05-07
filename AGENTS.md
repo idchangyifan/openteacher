@@ -222,14 +222,15 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 推荐下一步：
 
-1. 继续完善长短期记忆优先级：当前课堂 session 和最近课堂必须优先于长期记忆卡片；长期记忆只作为背景假设，不能覆盖当前 `current_skill_id`、课堂 transcript 和 lesson state。
-2. 继续改善老师回复的自然度：DeepAgents/LangGraph 应显式准备上下文、RAG 和记忆，但不要把教学过程做成有限状态机；回复生成要保留 LLM 的临场判断、换问法、类比和鼓励能力。
-3. 把当前 DeepAgents middleware 的全量 session context 与 summarization/checkpoint/store 结合：超过阈值后自动压缩历史，但必须保留当前未完成问题、学生最新回答状态和下一步教学动作。
-4. 继续把 DeepAgents 运行态从“工具 + middleware”升级成可观测教学图：节点用于准备材料和记录 trace，不用于锁死教学话术；planner、answer evaluation、lesson state update、RAG retrieval、executor 的顺序应可回放。
-5. 为 MongoDB RAG 增加可审核的召回 trace：记录每轮候选 routes、rerank 分数、最终 chunks、使用的 lesson state / student_answer_status，方便回放“为什么拿了这几条 chunk”。
-6. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
-7. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
-8. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
+1. 继续把长期记忆从 lesson history snapshot 升级为 MongoDB `memory_cards`：由受控抽取任务写入结构化长期记忆，并用 DeepAgents MemoryMiddleware 读取；当前课堂 session 和 transcript 仍必须最高优先级。
+2. 继续完善长短期记忆优先级：当前课堂 session 和最近课堂必须优先于长期记忆卡片；长期记忆只作为背景假设，不能覆盖当前 `current_skill_id`、课堂 transcript 和 lesson state。
+3. 继续改善老师回复的自然度：DeepAgents/LangGraph 应显式准备上下文、RAG 和记忆，但不要把教学过程做成有限状态机；回复生成要保留 LLM 的临场判断、换问法、类比和鼓励能力。
+4. 把当前 DeepAgents middleware 的全量 session context 与 summarization/checkpoint/store 结合：超过阈值后自动压缩历史，但必须保留当前未完成问题、学生最新回答状态和下一步教学动作。
+5. 继续把 DeepAgents 运行态从“工具 + middleware”升级成可观测教学图：节点用于准备材料和记录 trace，不用于锁死教学话术；planner、answer evaluation、lesson state update、RAG retrieval、executor 的顺序应可回放。
+6. 为 MongoDB RAG 增加可审核的召回 trace：记录每轮候选 routes、rerank 分数、最终 chunks、使用的 lesson state / student_answer_status，方便回放“为什么拿了这几条 chunk”。
+7. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
+8. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
+9. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
 
 ## 最新验证状态
 
@@ -920,6 +921,19 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - API smoke：真实后端先开始正负数课堂，再无 session 问“上堂课我们讲到哪儿了？”，`start_skill` 与 `recall_skill` 都是正负数 skill，回复围绕“收入 +10、支出 6 怎么记”继续。
 - 验证结果：`docker compose exec -T backend pytest tests/test_teacher_chat.py tests/test_deepagents_runtime.py tests/test_skill_registry.py` 通过 22 项；`docker compose exec -T backend pytest` 通过 60 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`docker compose exec -T frontend pnpm build` 通过；`git diff --check` 通过。
 - 顶部 `## 当前下一步` 已同步更新：下一阶段优先继续完善长短期记忆优先级，确保当前课堂 session / transcript / lesson state 永远优先于长期记忆卡片。
+
+2026-05-07，审计并接入 DeepAgents 长期记忆框架能力：
+
+- 用户要求再次检查长期记忆能力，确认是否充分利用 DeepAgents 框架能力，不足则重构或新增。
+- 审计 DeepAgents 包能力：`create_deep_agent` 支持 `memory`、`store`、`backend`、`checkpointer`；`deepagents.middleware.memory.MemoryMiddleware` 会从 backend 下载 memory sources，并以 `<agent_memory>` 注入模型系统上下文。项目此前只用了 checkpointer 和自定义短期 `dynamic_prompt` middleware，长期记忆仍是手动塞 prompt。
+- 新增 `backend/app/services/deepagents_memory.py`：`StaticMemoryBackend` 实现 DeepAgents backend 的 `download_files()`，把 OpenTeacher 生成的只读 memory snapshot 暴露为 `/openteacher/student-memory.md`，避免模型直接接触 MongoDB collection。
+- `DeepAgentsTeachingRuntime._build_middleware()` 现在同时返回短期课堂 `dynamic_prompt` middleware 和 DeepAgents 原生 `MemoryMiddleware`；长期记忆以 DeepAgents 框架方式进入 `<agent_memory>`，短期课堂 transcript 仍由 `<open_teacher_short_term_memory>` 注入。
+- `MemoryService` 新增 `format_deepagents_memory()`：生成带优先级说明的 memory file，明确 current lesson transcript / lesson state 是 authoritative，长期记忆只作 background，不能覆盖 `current_skill_id`。
+- `MemoryService.get_student_summary()` 现在也可接收 `recent_lessons`，把最近同学科课堂纳入长期记忆背景；`AgentHarness` 与 `DeepAgents retrieve_student_memory` tool 都传入同学生同学科同年级最近课堂摘要。
+- 新增回归：`test_deepagents_memory_middleware_loads_student_memory_snapshot` 校验 DeepAgents `MemoryMiddleware` 实际读取到正负数课堂 memory snapshot；`test_deepagents_invocation_passes_mongodb_checkpointer_and_thread_config` 校验传入 `create_deep_agent` 的 middleware 中包含 `MemoryMiddleware`。
+- API smoke：真实后端先开始正负数课堂，再无 session 问“上堂课我们讲到哪儿了？”，`start_skill` 与 `recall_skill` 均为 `opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers`，回复继续“收入 +10、支出 6 怎么记”。
+- 验证结果：`docker compose exec -T backend pytest tests/test_deepagents_runtime.py tests/test_teacher_chat.py` 通过 18 项；`docker compose exec -T backend pytest` 通过 61 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 通过。
+- 顶部 `## 当前下一步` 已同步更新：下一阶段优先把 lesson-history memory snapshot 升级为 MongoDB `memory_cards` + 受控抽取任务，再继续由 DeepAgents MemoryMiddleware 读取。
 
 ## 开发风格
 

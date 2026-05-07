@@ -233,6 +233,47 @@ def test_deepagents_short_term_memory_middleware_includes_full_session_context()
     assert graph_state.student_answer_status == "invalid_symbol"
 
 
+def test_deepagents_memory_middleware_loads_student_memory_snapshot() -> None:
+    repository = InMemoryLessonRepository()
+    session = repository.create_session(
+        request=LessonSessionCreate(
+            student_id="deepagents-memory-student",
+            subject="数学",
+            title="正负数课堂",
+            lesson_goal="理解正负数表示相反意义的量",
+        )
+    )
+    repository.update_session_state(
+        session.id,
+        current_skill_id="opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers",
+        current_knowledge_point_id="kp-positive-negative-numbers",
+        current_chapter_id="ch1",
+    )
+    request = TeacherChatRequest(
+        message="上堂课我们讲到哪儿了？",
+        context=StudentContext(
+            student_id="deepagents-memory-student",
+            grade="初一",
+            subject="数学",
+            session_id=session.id,
+        ),
+    )
+    runtime = DeepAgentsTeachingRuntime(memory_service=MemoryService(), lesson_repository=repository)
+
+    graph_state = runtime._build_graph_state(request, make_prompt())
+    middleware = runtime._build_student_memory_middleware(graph_state)
+    response = middleware._backend.download_files(  # type: ignore[attr-defined]
+        middleware.sources
+    )[0]
+    memory_text = response.content.decode("utf-8") if response.content else ""
+
+    assert type(middleware).__name__ == "MemoryMiddleware"
+    assert "OpenTeacher Student Memory" in memory_text
+    assert "正负数课堂" in memory_text
+    assert "current_skill_id" in memory_text or "当前 skill" in memory_text
+    assert "never override current_skill_id" in memory_text
+
+
 def test_deepagents_invocation_passes_mongodb_checkpointer_and_thread_config() -> None:
     captured: dict[str, Any] = {}
 
@@ -273,6 +314,10 @@ def test_deepagents_invocation_passes_mongodb_checkpointer_and_thread_config() -
 
     assert result.reply == "继续看刚才那题：*6 不对。"
     assert captured["create_kwargs"]["checkpointer"] == "fake-mongodb-checkpointer"
+    middleware_names = [
+        type(item).__name__ for item in captured["create_kwargs"]["middleware"]
+    ]
+    assert "MemoryMiddleware" in middleware_names
     assert captured["config"]["configurable"]["thread_id"] == session.id
     assert captured["config"]["metadata"]["session_id"] == session.id
     user_message = captured["payload"]["messages"][0]["content"]

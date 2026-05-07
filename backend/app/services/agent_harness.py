@@ -77,6 +77,11 @@ class AgentHarness:
             request.context.student_id,
             subject=effective_subject,
             lesson_detail=lesson_detail,
+            recent_lessons=self._recent_lesson_summaries(
+                request.context.student_id,
+                effective_subject,
+                request.context.grade,
+            ),
         )
         planner_decision = self.planner_service.plan(
             request,
@@ -163,6 +168,18 @@ class AgentHarness:
 
         next_context = request.context.model_copy(update={"session_id": candidates[0].id})
         return request.model_copy(update={"context": next_context})
+
+    def _recent_lesson_summaries(
+        self,
+        student_id: str,
+        subject: str,
+        grade: str,
+    ):
+        return [
+            session
+            for session in self.lesson_repository.list_sessions(student_id)
+            if session.subject == subject and session.grade == grade
+        ][:3]
 
     def _generate_reply(self, request: TeacherChatRequest, prompt: TeacherPrompt) -> str:
         if settings.agent_runtime == "deepagents":
