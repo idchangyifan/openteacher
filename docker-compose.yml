@@ -63,6 +63,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      mongo:
+        condition: service_started
     volumes:
       - ./backend/app:/app/app
       - ./backend/alembic:/app/alembic
@@ -150,7 +152,6 @@ services:
     image: mongodb/mongodb-atlas-local:8.0
     container_name: openteacher-mongo
     restart: unless-stopped
-    profiles: ["memory"]
     ports:
       - "${MONGODB_HOST_PORT:-127.0.0.1:27017}:27017"
     volumes:
