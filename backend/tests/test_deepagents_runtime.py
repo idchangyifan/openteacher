@@ -76,7 +76,7 @@ def test_deepagents_tools_can_read_memory_and_lesson_state() -> None:
 
     tools = {tool.__name__: tool for tool in runtime._build_tools(request)}
 
-    assert "移项符号容易错" in tools["retrieve_student_memory"]("浮力")
+    assert "浮力入门" in tools["retrieve_student_memory"]("浮力")
     lesson_state = tools["load_lesson_state"]()
     assert "浮力入门" in lesson_state
     assert "理解浮力和重力的关系" in lesson_state

@@ -222,13 +222,14 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 推荐下一步：
 
-1. 继续改善老师回复的自然度：DeepAgents/LangGraph 应显式准备上下文、RAG 和记忆，但不要把教学过程做成有限状态机；回复生成要保留 LLM 的临场判断、换问法、类比和鼓励能力。
-2. 把当前 DeepAgents middleware 的全量 session context 与 summarization/checkpoint/store 结合：超过阈值后自动压缩历史，但必须保留当前未完成问题、学生最新回答状态和下一步教学动作。
-3. 继续把 DeepAgents 运行态从“工具 + middleware”升级成可观测教学图：节点用于准备材料和记录 trace，不用于锁死教学话术；planner、answer evaluation、lesson state update、RAG retrieval、executor 的顺序应可回放。
-4. 为 MongoDB RAG 增加可审核的召回 trace：记录每轮候选 routes、rerank 分数、最终 chunks、使用的 lesson state / student_answer_status，方便回放“为什么拿了这几条 chunk”。
-5. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
-6. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
-7. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
+1. 继续完善长短期记忆优先级：当前课堂 session 和最近课堂必须优先于长期记忆卡片；长期记忆只作为背景假设，不能覆盖当前 `current_skill_id`、课堂 transcript 和 lesson state。
+2. 继续改善老师回复的自然度：DeepAgents/LangGraph 应显式准备上下文、RAG 和记忆，但不要把教学过程做成有限状态机；回复生成要保留 LLM 的临场判断、换问法、类比和鼓励能力。
+3. 把当前 DeepAgents middleware 的全量 session context 与 summarization/checkpoint/store 结合：超过阈值后自动压缩历史，但必须保留当前未完成问题、学生最新回答状态和下一步教学动作。
+4. 继续把 DeepAgents 运行态从“工具 + middleware”升级成可观测教学图：节点用于准备材料和记录 trace，不用于锁死教学话术；planner、answer evaluation、lesson state update、RAG retrieval、executor 的顺序应可回放。
+5. 为 MongoDB RAG 增加可审核的召回 trace：记录每轮候选 routes、rerank 分数、最终 chunks、使用的 lesson state / student_answer_status，方便回放“为什么拿了这几条 chunk”。
+6. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
+7. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
+8. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
 
 ## 最新验证状态
 
@@ -904,6 +905,21 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 前端默认记忆摘要不再显示一元一次方程的假数据，避免新课堂左侧出现旧知识点误导；消息文本支持换行展示，输入框固定高度避免拖拽破坏布局。
 - 验证结果：`docker compose exec -T backend pytest tests/test_deepagents_runtime.py tests/test_teacher_chat.py` 通过 16 项；`docker compose exec -T backend pytest` 通过 59 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`docker compose exec -T frontend pnpm build` 通过；`git diff --check` 通过。
 - 顶部 `## 当前下一步` 已同步更新：下一阶段优先继续改善老师回复自然度，同时把教学图定位为上下文/工具/trace 管线，而不是有限自动机。
+
+2026-05-07，修复长期记忆/最近课堂把正负数课堂带回一元一次方程的问题：
+
+- 用户复现：刚学的是七上正数和负数，但问“上堂课我们讲到哪儿了？”时，老师回答成一元一次方程移项，顶部 skill 也回到 `opent-teacher-junior-math-linear-equation`。
+- 根因一：`MemoryService.get_student_summary()` 仍是 mock 硬编码“移项符号容易错，需要分步骤检查”，会污染任何数学课堂。
+- 根因二：前端在没有 `session_id` 时会先新建空课堂；用户问“上堂课/上节课/继续”这类连续性问题时，后端看到的是一个新的 `lesson_start`，缺少上一堂正负数课堂的 lesson state。
+- `MemoryService` 现在支持传入 `lesson_detail`：有当前课堂时返回课堂标题、目标、当前 skill、当前知识点、课堂摘要和最近老师引导；没有可靠课堂时只返回“暂无可靠长期记忆”，不再默认一元一次方程。
+- `AgentHarness` 现在对“上堂课/上节课/上次/刚才/继续/讲到哪/讲了什么/复习一下/接着”等连续性输入，在缺少 `session_id` 时会自动挂回同学生同科目同年级的最近课堂 session。
+- `SkillRegistry` 对连续性输入优先保留当前 `current_skill_id`，避免无明确切换意图时从正负数课堂退回默认一元一次方程 skill。
+- `DeepAgentsTeachingRuntime.retrieve_student_memory` tool 现在读取当前 lesson detail 后再构造 memory summary，确保工具侧长期记忆也被当前课堂状态约束。
+- 前端 `ensureLessonSession` 现在遇到连续性输入时优先打开最近课堂，而不是直接新建课堂；用户仍可通过“+”按钮明确新建课堂。
+- 新增回归测试：先在正负数 session 中“请开始教学”，随后不带 `session_id` 问“上堂课我们讲到哪儿了？”，后端会把消息追加回原 session，返回 skill 仍为 `opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers`。
+- API smoke：真实后端先开始正负数课堂，再无 session 问“上堂课我们讲到哪儿了？”，`start_skill` 与 `recall_skill` 都是正负数 skill，回复围绕“收入 +10、支出 6 怎么记”继续。
+- 验证结果：`docker compose exec -T backend pytest tests/test_teacher_chat.py tests/test_deepagents_runtime.py tests/test_skill_registry.py` 通过 22 项；`docker compose exec -T backend pytest` 通过 60 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`docker compose exec -T frontend pnpm build` 通过；`git diff --check` 通过。
+- 顶部 `## 当前下一步` 已同步更新：下一阶段优先继续完善长短期记忆优先级，确保当前课堂 session / transcript / lesson state 永远优先于长期记忆卡片。
 
 ## 开发风格
 

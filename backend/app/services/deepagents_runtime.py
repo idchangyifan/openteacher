@@ -181,7 +181,12 @@ class DeepAgentsTeachingRuntime:
         def retrieve_student_memory(query: str) -> str:
             """Retrieve teaching memories for the current student and query."""
 
-            summary = self.memory_service.get_student_summary(request.context.student_id)
+            detail = self._load_session_detail(request)
+            summary = self.memory_service.get_student_summary(
+                request.context.student_id,
+                subject=request.context.subject,
+                lesson_detail=detail,
+            )
             return (
                 f"学生：{request.context.student_id}\n"
                 f"查询：{query}\n"

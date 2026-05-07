@@ -60,6 +60,14 @@ class SkillRegistry:
         message: str = "",
         current_skill_id: str | None = None,
     ) -> TeachingSkill:
+        current_skill = self.get_knowledge_skill_by_id(current_skill_id)
+        if (
+            current_skill is not None
+            and self._target_matches(current_skill, grade, subject)
+            and self._looks_like_continuation_message(message)
+        ):
+            return current_skill
+
         if self._looks_like_equation_message(message) and subject == "数学":
             return self._load_skill("junior-math-linear-equation.yaml")
 
@@ -67,7 +75,6 @@ class SkillRegistry:
         if generated_skill is not None:
             return generated_skill
 
-        current_skill = self.get_knowledge_skill_by_id(current_skill_id)
         if current_skill is not None and self._target_matches(current_skill, grade, subject):
             return current_skill
 
@@ -231,6 +238,25 @@ class SkillRegistry:
                 "继续教学",
                 "继续上课",
                 "上课",
+            ]
+        )
+
+    def _looks_like_continuation_message(self, message: str) -> bool:
+        return any(
+            token in message
+            for token in [
+                "上堂课",
+                "上节课",
+                "上一节",
+                "上次",
+                "刚才",
+                "继续",
+                "讲到哪",
+                "讲到哪里",
+                "讲了什么",
+                "学了什么",
+                "复习一下",
+                "接着",
             ]
         )
 

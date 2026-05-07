@@ -43,6 +43,7 @@ class AgentHarness:
             message=request.message,
             fallback_subject=request.context.subject,
         )
+        request = self._attach_recent_lesson_for_continuation(request, effective_subject)
 
         if request.context.session_id:
             self.lesson_repository.append_message(
@@ -72,7 +73,11 @@ class AgentHarness:
             lesson_detail = self.lesson_repository.get_session_detail(request.context.session_id)
 
         rag_query = self._build_lesson_context_query(request.message, lesson_detail)
-        memory = self.memory_service.get_student_summary(request.context.student_id)
+        memory = self.memory_service.get_student_summary(
+            request.context.student_id,
+            subject=effective_subject,
+            lesson_detail=lesson_detail,
+        )
         planner_decision = self.planner_service.plan(
             request,
             effective_subject=effective_subject,
@@ -135,6 +140,30 @@ class AgentHarness:
             memory_events=[MemoryEvent(kind=event.kind, summary=event.summary)],
         )
 
+    def _attach_recent_lesson_for_continuation(
+        self,
+        request: TeacherChatRequest,
+        effective_subject: str,
+    ) -> TeacherChatRequest:
+        if request.context.session_id or not self._looks_like_lesson_continuation(request.message):
+            return request
+
+        sessions = self.lesson_repository.list_sessions(request.context.student_id)
+        candidates = [
+            session
+            for session in sessions
+            if session.subject == effective_subject and session.grade == request.context.grade
+        ]
+        if not candidates:
+            candidates = [
+                session for session in sessions if session.subject == effective_subject
+            ]
+        if not candidates:
+            return request
+
+        next_context = request.context.model_copy(update={"session_id": candidates[0].id})
+        return request.model_copy(update={"context": next_context})
+
     def _generate_reply(self, request: TeacherChatRequest, prompt: TeacherPrompt) -> str:
         if settings.agent_runtime == "deepagents":
             try:
@@ -157,6 +186,25 @@ class AgentHarness:
         if any(keyword in normalized for keyword in ["语文", "作文", "阅读", "比喻", "修辞"]):
             return "语文"
         return fallback_subject
+
+    def _looks_like_lesson_continuation(self, message: str) -> bool:
+        return any(
+            token in message
+            for token in [
+                "上堂课",
+                "上节课",
+                "上一节",
+                "上次",
+                "刚才",
+                "继续",
+                "讲到哪",
+                "讲到哪里",
+                "讲了什么",
+                "学了什么",
+                "复习一下",
+                "接着",
+            ]
+        )
 
     def _build_lesson_context_query(
         self,

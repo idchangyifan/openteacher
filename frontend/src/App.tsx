@@ -196,13 +196,23 @@ export default function App() {
     void refreshLessons();
   }, [context.student_id]);
 
-  async function refreshLessons() {
+  async function refreshLessons(): Promise<LessonSessionSummary[]> {
     const nextLessons = await listLessons(context.student_id);
     setLessons(nextLessons);
+    return nextLessons;
   }
 
-  async function ensureLessonSession(): Promise<string | undefined> {
+  async function ensureLessonSession(message: string): Promise<string | undefined> {
     if (context.session_id) return context.session_id;
+
+    if (looksLikeLessonContinuation(message)) {
+      const availableLessons = lessons.length > 0 ? lessons : await refreshLessons();
+      const latestLesson = availableLessons[0];
+      if (latestLesson) {
+        await handleOpenLesson(latestLesson.id);
+        return latestLesson.id;
+      }
+    }
 
     const lesson = await createLesson(context);
     if (!lesson) return undefined;
@@ -220,7 +230,7 @@ export default function App() {
 
     setInput("");
     setIsThinking(true);
-    const sessionId = await ensureLessonSession();
+    const sessionId = await ensureLessonSession(text);
     const requestContext = { ...context, session_id: sessionId };
     setMessages((current) => [
       ...current,
@@ -247,6 +257,23 @@ export default function App() {
 
     event.preventDefault();
     event.currentTarget.form?.requestSubmit();
+  }
+
+  function looksLikeLessonContinuation(message: string): boolean {
+    return [
+      "上堂课",
+      "上节课",
+      "上一节",
+      "上次",
+      "刚才",
+      "继续",
+      "讲到哪",
+      "讲到哪里",
+      "讲了什么",
+      "学了什么",
+      "复习一下",
+      "接着"
+    ].some((token) => message.includes(token));
   }
 
   function updateContext<Key extends keyof StudentContext>(key: Key, value: StudentContext[Key]) {

@@ -1,4 +1,8 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.schemas.lesson import LessonSessionDetail
 
 
 @dataclass(frozen=True)
@@ -16,8 +20,36 @@ class MemoryService:
     to PostgreSQL tables.
     """
 
-    def get_student_summary(self, student_id: str) -> str:
-        return "移项符号容易错，需要分步骤检查"
+    def get_student_summary(
+        self,
+        student_id: str,
+        subject: str = "",
+        lesson_detail: "LessonSessionDetail | None" = None,
+    ) -> str:
+        if lesson_detail is not None:
+            session = lesson_detail.session
+            state_parts = [
+                f"课堂：{session.title}",
+                f"目标：{session.lesson_goal}",
+                f"科目：{session.grade}{session.subject}",
+                f"当前 skill：{session.current_skill_id or '未设置'}",
+                f"当前知识点：{session.current_knowledge_point_id or '未设置'}",
+                f"课堂摘要：{session.summary}",
+            ]
+            last_teacher_message = next(
+                (
+                    message.content
+                    for message in reversed(lesson_detail.messages)
+                    if message.role == "teacher"
+                ),
+                "",
+            )
+            if last_teacher_message:
+                state_parts.append(f"最近老师引导：{last_teacher_message}")
+            return "；".join(state_parts)
+
+        subject_note = f"{subject}学习" if subject else "当前学习"
+        return f"暂无可靠长期记忆；优先依据当前课堂记录和学生本轮输入来判断{subject_note}。"
 
     def record_learning_event(
         self,

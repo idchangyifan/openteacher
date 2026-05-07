@@ -183,3 +183,55 @@ def test_teacher_chat_keeps_current_generated_skill_for_short_followup() -> None
     )
     assert session["current_knowledge_point_id"] == "kp-positive-negative-numbers"
     assert session["current_chapter_id"] == "ch1"
+
+
+def test_teacher_chat_uses_recent_lesson_for_last_class_recall_without_session() -> None:
+    client = TestClient(app)
+    create_response = client.post(
+        "/api/v1/lessons",
+        json={
+            "student_id": "last-class-recall-student",
+            "grade": "初一",
+            "subject": "数学",
+            "title": "正负数课堂",
+            "lesson_goal": "理解正数和负数表示相反意义的量",
+        },
+    )
+    session_id = create_response.json()["id"]
+    start_response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "请开始教学",
+            "context": {
+                "student_id": "last-class-recall-student",
+                "grade": "初一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+                "session_id": session_id,
+            },
+        },
+    )
+
+    recall_response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "上堂课我们讲到哪儿了？",
+            "context": {
+                "student_id": "last-class-recall-student",
+                "grade": "初一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+            },
+        },
+    )
+
+    assert start_response.status_code == 200
+    assert recall_response.status_code == 200
+    assert recall_response.json()["skill_id"] == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert recall_response.json()["skill_id"] != "opent-teacher-junior-math-linear-equation"
+
+    detail_response = client.get(f"/api/v1/lessons/{session_id}")
+    messages = detail_response.json()["messages"]
+    assert messages[-2]["content"] == "上堂课我们讲到哪儿了？"
