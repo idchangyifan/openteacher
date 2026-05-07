@@ -44,6 +44,8 @@ def test_deepagents_system_prompt_prioritizes_active_teaching() -> None:
     assert "teaching_mode=active_lesson" in system_prompt
     assert "不要把所有输入都当成一元一次方程解题" in system_prompt
     assert "先确认正确" in system_prompt
+    assert "不是固定脚本" in system_prompt
+    assert "随机应变" in system_prompt
 
 
 def test_deepagents_tools_can_read_memory_and_lesson_state() -> None:
@@ -226,7 +228,8 @@ def test_deepagents_short_term_memory_middleware_includes_full_session_context()
     assert "完整课堂记录" in context
     assert "&6" in context
     assert "与 6啊" in context
-    assert "禁止重新宣布学习目标或重启 lesson_start" in context
+    assert "优先回应当前回答本身" in context
+    assert "可以先承认学生回答里的合理尝试" in context
     assert graph_state.student_answer_status == "invalid_symbol"
 
 

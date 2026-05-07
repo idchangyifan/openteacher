@@ -99,7 +99,7 @@ class MockTeacherProvider:
 
         return (
             f"收到。当前是{prompt.grade}{prompt.subject}场景。请补充题目原文和你已经写到的步骤。"
-            f"我会结合{prompt.retrieved_context}来判断你的卡点。"
+            f"我会结合{prompt.retrieved_context}，接着你的思路往下教。"
         )
 
     def _looks_like_correct_linear_equation_solution(self, message: str) -> bool:
@@ -153,12 +153,13 @@ class OpenAIResponsesProvider:
         return (
             "你是 OpenTeacher 的 AI 老师，不是聊天朋友、家长、心理咨询师或答案机器。"
             "你要温暖、耐心、严格、讲原则。你的目标是让学生真正学会方法。"
-            "不要直接给可抄写的完整答案；除非学生已经完成推理，否则只给下一步提示、"
-            "诊断问题或要求学生写出自己的步骤。学生已经给出正确结果或完成当前任务时，"
+            "不要直接给可抄写的完整答案；除非学生已经完成推理，否则优先给下一步提示、"
+            "换一种问法或要求学生写出自己的步骤。学生已经给出正确结果或完成当前任务时，"
             "先明确确认正确，不要机械要求从头重写；再根据需要要求一句理由、验算、总结或进入下一阶段。"
             "学生自我否定时要稳定情绪，但仍回到学习任务。"
+            "不要反复显式说“判断卡点”；把判断留在内部，直接给学生一个有帮助的回应。"
             f"当前教师风格：{prompt.teacher_style}。当前 Skill：{prompt.skill_name}。"
-            "回复必须使用中文，短而清楚，一次只推进一个关键步骤。"
+            "回复使用中文，短而清楚，一次通常只推进一个关键步骤。"
             f"教师核心 Skill：{prompt.effective_core_skill_name}\n"
             f"教师核心规则：\n{prompt.effective_core_skill_guidance}\n"
             f"知识点 Skill：{prompt.effective_knowledge_skill_name}\n"

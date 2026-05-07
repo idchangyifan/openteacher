@@ -222,12 +222,13 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 推荐下一步：
 
-1. 继续把 DeepAgents 运行态从“工具 + middleware”升级成更显式的教学图：把 planner、answer evaluation、lesson state update、RAG retrieval、executor 的顺序做成可观测 graph node / tool contract。
+1. 继续改善老师回复的自然度：DeepAgents/LangGraph 应显式准备上下文、RAG 和记忆，但不要把教学过程做成有限状态机；回复生成要保留 LLM 的临场判断、换问法、类比和鼓励能力。
 2. 把当前 DeepAgents middleware 的全量 session context 与 summarization/checkpoint/store 结合：超过阈值后自动压缩历史，但必须保留当前未完成问题、学生最新回答状态和下一步教学动作。
-3. 为 MongoDB RAG 增加可审核的召回 trace：记录每轮候选 routes、rerank 分数、最终 chunks、使用的 lesson state / student_answer_status，方便回放“为什么拿了这几条 chunk”。
-4. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
-5. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
-6. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
+3. 继续把 DeepAgents 运行态从“工具 + middleware”升级成可观测教学图：节点用于准备材料和记录 trace，不用于锁死教学话术；planner、answer evaluation、lesson state update、RAG retrieval、executor 的顺序应可回放。
+4. 为 MongoDB RAG 增加可审核的召回 trace：记录每轮候选 routes、rerank 分数、最终 chunks、使用的 lesson state / student_answer_status，方便回放“为什么拿了这几条 chunk”。
+5. 继续完善 `TextbookToTeachingSkill` 的 chunk 元数据与 schema：把 `teaching_phase`、`retrieval_tags`、`source_section_id`、`difficulty`、`student_error_pattern_ids` 写入正式规格文档，并准备后续 MongoDB Atlas Vector Search index / embedding 字段。
+6. 继续补齐教材切片质量：在七上第一章现有例题、步骤、变式、易错对照和小结基础上，加入章节复习、跨知识点衔接、分层练习和学生回答评价依据；仍按知识点/教学动作组织，不做机械 token 切块，且离线加工不要调用豆包。
+7. PostgreSQL 只保留给用户、账号、权限、班级、教师/志愿者、运营关系等关系型产品数据；不要把长短期记忆、课程状态、checkpoint、RAG 或向量库新写入 PostgreSQL。
 
 ## 最新验证状态
 
@@ -892,6 +893,17 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 新增回归：超过 6 条历史消息时，`load_lesson_state`、DeepAgents RAG tool、AgentHarness RAG context 都能看到最早课堂消息，防止再次退回“最近 6 条”的设计。
 - 验证结果：`docker compose exec -T backend pytest tests/test_deepagents_runtime.py tests/test_textbook_file_rag.py` 通过 16 项；`docker compose exec -T backend pytest` 通过 59 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`git diff --check` 通过。
 - 顶部 `## 当前下一步` 已同步更新：下一阶段优先把 planner、answer evaluation、lesson state update、RAG retrieval、executor 升级为更显式、可观测的 DeepAgents / LangGraph 教学图节点；随后接 summarization/checkpoint/store 的自动压缩。
+
+2026-05-07，放松僵硬教学约束并优化前端输入体验：
+
+- 用户担心“显式教学图节点”会把老师做成有限状态机，并指出当前回答显得僵硬死板；已明确项目方向：DeepAgents / LangGraph 节点用于准备上下文、RAG 和记忆并记录 trace，不用于锁死教学话术，回复生成仍应保留 LLM 的临场判断。
+- `backend/app/services/deepagents_runtime.py` 已把 system prompt 和 short-term memory middleware 从“必须/禁止/只能”的命令式约束改成教学原则：Planner 是工作假设而非固定脚本；老师可以承认学生合理尝试、换问法、类比、鼓励和根据语气随机应变。
+- `plan_next_teaching_move` 工具改为 reflective guidance：建议真实老师式地理解学生意图、选择提示/换问法/确认/变式练习等动作，避免每轮显式说“判断卡点”。
+- `backend/app/services/llm_provider.py` 的 mock/OpenAI provider prompt 也同步去掉“判断你的卡点”的固定表述，避免 fallback 路径继续显得模板化。
+- 前端 `frontend/src/App.tsx` 已优化输入交互：Enter 直接发送，Shift+Enter 保留换行；等待文案从“老师正在判断你的卡点...”改为“老师正在组织下一句...”；发送按钮等待态改为“思考中”。
+- 前端默认记忆摘要不再显示一元一次方程的假数据，避免新课堂左侧出现旧知识点误导；消息文本支持换行展示，输入框固定高度避免拖拽破坏布局。
+- 验证结果：`docker compose exec -T backend pytest tests/test_deepagents_runtime.py tests/test_teacher_chat.py` 通过 16 项；`docker compose exec -T backend pytest` 通过 59 项；`docker compose exec -T backend ruff check app tests alembic` 通过；`docker compose exec -T frontend pnpm build` 通过；`git diff --check` 通过。
+- 顶部 `## 当前下一步` 已同步更新：下一阶段优先继续改善老师回复自然度，同时把教学图定位为上下文/工具/trace 管线，而不是有限自动机。
 
 ## 开发风格
 

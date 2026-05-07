@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useRef, useState } from "react";
 import { BookOpen, History, Plus, RotateCcw, Send, UserRound } from "lucide-react";
 
 type Role = "teacher" | "student";
@@ -88,7 +88,7 @@ function localTeacherReply(message: string): string {
     return "先停在第一步，不要跳答案。请你写出去括号后的式子，并说明每一项的符号为什么这样变。";
   }
 
-  return "收到。请补充题目原文和你已经写到的步骤，我会先判断你的卡点。";
+  return "收到。把题目原文和你已经写到的步骤发来，我会接着你的思路往下教。";
 }
 
 async function askTeacher(message: string, context: StudentContext): Promise<TeacherResponse> {
@@ -242,6 +242,13 @@ export default function App() {
     }
   }
 
+  function handleComposerKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) return;
+
+    event.preventDefault();
+    event.currentTarget.form?.requestSubmit();
+  }
+
   function updateContext<Key extends keyof StudentContext>(key: Key, value: StudentContext[Key]) {
     setContext((current) => ({ ...current, [key]: value }));
   }
@@ -391,11 +398,7 @@ export default function App() {
                 </li>
               ))
             ) : (
-              <>
-                <li>一元一次方程：移项符号容易错</li>
-                <li>需要分步骤检查，不适合直接长讲解</li>
-                <li>上次能独立完成去括号</li>
-              </>
+              <li>暂无新的课堂记忆；开始互动后会在这里更新。</li>
             )}
           </ul>
         </section>
@@ -410,7 +413,7 @@ export default function App() {
           </div>
           <div className="lesson-status">
             <strong>{activeLesson?.current_phase ?? "lesson_start"}</strong>
-            <span>{activeLesson?.pending_student_action ?? "回答老师的第一个诊断问题"}</span>
+            <span>{activeLesson?.pending_student_action ?? "准备继续当前课堂"}</span>
           </div>
           <div className="topbar-actions">
             <span className={`api-state ${apiState}`}>
@@ -443,7 +446,7 @@ export default function App() {
               <p>{message.content}</p>
             </article>
           ))}
-          {isThinking && <p className="thinking">老师正在判断你的卡点...</p>}
+          {isThinking && <p className="thinking">老师正在组织下一句...</p>}
           <div ref={chatEndRef} />
         </div>
 
@@ -451,12 +454,13 @@ export default function App() {
           <textarea
             value={input}
             onChange={(event) => setInput(event.target.value)}
+            onKeyDown={handleComposerKeyDown}
             placeholder="例如：请开始教学 / 数轴是什么 / 绝对值我不懂"
             rows={3}
           />
-          <button type="submit" disabled={isThinking}>
+          <button type="submit" disabled={isThinking || !input.trim()}>
             <Send size={18} />
-            {isThinking ? "判断中" : "发送"}
+            {isThinking ? "思考中" : "发送"}
           </button>
         </form>
       </section>
