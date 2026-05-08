@@ -175,6 +175,9 @@ class SkillRegistry:
         if subject == "数学" and grade in {"初一", "七年级"} and self._looks_like_lesson_start(message):
             return sorted(generated_skills, key=self._course_order_key)[0]
 
+        if subject == "数学" and grade in {"初一", "七年级"}:
+            return sorted(generated_skills, key=self._course_order_key)[0]
+
         return None
 
     def _course_order_key(self, skill: TeachingSkill) -> tuple[int, str]:

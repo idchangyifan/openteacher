@@ -67,13 +67,20 @@ class AgentHarness:
             if request.context.session_id
             else None
         )
+        current_skill_id = (
+            lesson_detail.session.current_skill_id if lesson_detail is not None else None
+        ) or self._recent_continuity_skill_id(
+            student_id=request.context.student_id,
+            subject=effective_subject,
+            grade=request.context.grade,
+            current_session_id=request.context.session_id,
+            message=request.message,
+        )
         skills = self.skill_registry.pick_skills(
             request.context.grade,
             effective_subject,
             message=request.message,
-            current_skill_id=(
-                lesson_detail.session.current_skill_id if lesson_detail is not None else None
-            ),
+            current_skill_id=current_skill_id,
         )
         if request.context.session_id:
             self.lesson_repository.update_session_state(
@@ -191,6 +198,36 @@ class AgentHarness:
 
         next_context = request.context.model_copy(update={"session_id": candidates[0].id})
         return request.model_copy(update={"context": next_context})
+
+    def _recent_continuity_skill_id(
+        self,
+        *,
+        student_id: str,
+        subject: str,
+        grade: str,
+        current_session_id: str | None,
+        message: str,
+    ) -> str | None:
+        if not self._looks_like_lesson_continuation(message):
+            return None
+
+        sessions = [
+            session
+            for session in self.lesson_repository.list_sessions(student_id)
+            if session.id != current_session_id
+            and session.subject == subject
+            and session.grade == grade
+            and session.current_skill_id
+        ]
+        if not sessions:
+            sessions = [
+                session
+                for session in self.lesson_repository.list_sessions(student_id)
+                if session.id != current_session_id
+                and session.subject == subject
+                and session.current_skill_id
+            ]
+        return sessions[0].current_skill_id if sessions else None
 
     def _recent_lesson_summaries(
         self,

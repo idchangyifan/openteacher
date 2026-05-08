@@ -237,6 +237,74 @@ def test_teacher_chat_uses_recent_lesson_for_last_class_recall_without_session()
     assert messages[-2]["content"] == "上堂课我们讲到哪儿了？"
 
 
+def test_teacher_chat_uses_recent_lesson_skill_for_empty_new_session_recall() -> None:
+    client = TestClient(app)
+    student_id = "empty-new-session-recall-student"
+    previous_response = client.post(
+        "/api/v1/lessons",
+        json={
+            "student_id": student_id,
+            "grade": "初一",
+            "subject": "数学",
+            "title": "正负数课堂",
+            "lesson_goal": "理解正数和负数表示相反意义的量",
+        },
+    )
+    previous_session_id = previous_response.json()["id"]
+    start_response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "请开始教学",
+            "context": {
+                "student_id": student_id,
+                "grade": "初一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+                "session_id": previous_session_id,
+            },
+        },
+    )
+    new_response = client.post(
+        "/api/v1/lessons",
+        json={
+            "student_id": student_id,
+            "grade": "初一",
+            "subject": "数学",
+            "title": "数学主动课堂",
+            "lesson_goal": "围绕当前课程位置先诊断，再讲解、练习和复盘",
+        },
+    )
+    new_session_id = new_response.json()["id"]
+
+    recall_response = client.post(
+        "/api/v1/teacher/chat",
+        json={
+            "message": "上节课讲哪儿啦？",
+            "context": {
+                "student_id": student_id,
+                "grade": "初一",
+                "subject": "数学",
+                "teacher_style": "严格但温暖",
+                "session_id": new_session_id,
+            },
+        },
+    )
+
+    assert start_response.status_code == 200
+    assert recall_response.status_code == 200
+    assert recall_response.json()["skill_id"] == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert recall_response.json()["skill_id"] != "opent-teacher-junior-math-linear-equation"
+
+    detail_response = client.get(f"/api/v1/lessons/{new_session_id}")
+    session = detail_response.json()["session"]
+    assert session["current_skill_id"] == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert session["current_knowledge_point_id"] == "kp-positive-negative-numbers"
+
+
 def test_teacher_chat_asks_placement_when_grade_is_not_covered() -> None:
     client = TestClient(app)
 

@@ -164,6 +164,23 @@ def test_memory_service_marks_mastery_when_student_explains_sign_without_number(
     assert service.cards[0].summary == "学生能够解释正数和负数表示相反意义的量"
 
 
+def test_memory_service_does_not_extract_progress_from_lesson_recall_question() -> None:
+    service = CapturingMemoryService()
+
+    event = service.record_learning_event(
+        student_id="memory-card-student",
+        subject="数学",
+        message="上节课讲哪儿啦？",
+        reply="上节课我们学习了正数和负数。",
+        source_session_id="lesson-positive-negative",
+    )
+
+    assert event.kind == "conversation"
+    assert service.cards == []
+    assert service.jobs[0].event_kind == "conversation"
+    assert service.jobs[0].card_ids == []
+
+
 def test_memory_service_does_not_downgrade_mastery_on_later_topic_mention() -> None:
     service = CapturingMemoryService()
     service.record_learning_event(

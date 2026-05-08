@@ -30,6 +30,15 @@ def test_skill_registry_uses_first_generated_skill_for_lesson_start() -> None:
     assert "正数和负数" in skills.knowledge.name
 
 
+def test_skill_registry_does_not_fallback_to_legacy_equation_for_generic_junior_math() -> None:
+    skills = SkillRegistry().pick_skills("初一", "数学", message="上节课讲哪儿啦？")
+
+    assert skills.knowledge.id == (
+        "opent-teacher-rj-junior-math-grade7-vol1-kp-positive-negative-numbers"
+    )
+    assert skills.knowledge.id != "opent-teacher-junior-math-linear-equation"
+
+
 def test_skill_registry_uses_available_textbook_start_when_grade_is_not_covered() -> None:
     skills = SkillRegistry().pick_skills("高一", "数学", message="请开始教学")
 

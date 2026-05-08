@@ -283,6 +283,9 @@ class MemoryService:
                 confidence=0.82,
             )
 
+        if self._looks_like_lesson_memory_question(message):
+            return LearningEvent(kind="conversation", summary=f"学生询问{subject}课堂进度")
+
         if self._looks_like_positive_negative_placement_question(message):
             return LearningEvent(
                 kind="course_placement",
@@ -435,6 +438,28 @@ class MemoryService:
 
     def _looks_like_student_stuck(self, message: str) -> bool:
         return any(token in message for token in ["不知道", "不懂", "不会", "没学过", "看不懂", "听不懂"])
+
+    def _looks_like_lesson_memory_question(self, message: str) -> bool:
+        return any(
+            token in message
+            for token in [
+                "上堂课",
+                "上节课",
+                "上一节",
+                "上次",
+                "刚才讲",
+                "讲到哪",
+                "讲到哪里",
+                "讲了什么",
+                "学了什么",
+                "学到哪",
+                "学到哪里",
+                "记得我学",
+                "你知道我学",
+                "我学到哪",
+                "我学到哪里",
+            ]
+        )
 
     def _resolve_learning_status(
         self,

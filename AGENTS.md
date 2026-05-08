@@ -85,7 +85,7 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 ## 当前进度
 
-截至 2026-05-07，当前工作区已完成长期记忆 v2.2：异步记忆更新队列、课堂历史删除管理、跨年级起课回落到可用教材 skill、正负数学习状态更新机制。
+截至 2026-05-08，当前工作区已完成长期记忆 v2.3：修复一元一次方程兜底串线、空新课堂继承最近课堂 skill、元问题不进入长期记忆。
 
 已完成的主线能力：
 
@@ -106,6 +106,9 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 - 历史课堂支持软删除：`DELETE /api/v1/lessons/{session_id}` 会把课堂标为 `deleted`，列表和详情不再返回，但保留原始消息和已抽取记忆；对应记忆只标记 `source_session_deleted=True`，不级联删除。
 - 当前课堂 transcript、lesson state、`current_skill_id` 永远高于最近课堂和长期记忆卡片；长期记忆只作为背景假设。
 - 修复了“刚学正负数，问上堂课却回到一元一次方程”的问题：连续性输入会挂回最近同学科课堂，skill registry 会保留当前 skill。
+- 修复了“新建空课堂后问上节课讲哪儿，又跳到一元一次方程”的问题：初一数学泛化输入不再兜底到 legacy 方程 demo；新建空课堂遇到上节课/上次/继续类输入，会继承最近同学科课堂的 skill。
+- 长期记忆抽取会跳过“上节课讲哪儿/你知道我学到哪儿”这类课堂进度元问题，不再把老师回答中的知识点反向写成学生长期记忆。
+- 测试环境已强制 `MEMORY_UPDATE_QUEUE_BACKEND=inline`，避免在开发服务器运行 pytest 时把测试记忆任务写入真实 MongoDB。
 - 修复了“学生已解释收入/支出相反意义后，新开会话仍从正负数入门重启”的问题：正负数 mastery 判定不再要求答案必须包含 `-6`，lesson start 会把 `mastered` 记忆转成复盘 + 迁移练习/下一小节。
 - 修复了高一数学没有专属教材 skill 时误入 general/绝对值的问题：数学起课和“为什么不先教负数”会回落到当前可用的人教七上正负数 skill，并先询问学生起点。
 - 前端已优化：Enter 发送、Shift+Enter 换行；等待文案更自然；默认记忆摘要不再展示一元一次方程假数据。
@@ -113,6 +116,7 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 ## 当前已知问题
 
 - 记忆更新队列目前是 in-process worker + MongoDB durable queue；生产级 Kafka/consumer group/dead-letter dashboard 还未接入。
+- 课程历史仍缺“重置测试环境/清理当前学生画像”的产品化入口；目前只能通过 MongoDB 运维命令清理。
 - `memory_cards` 已有抽取任务、来源审计和学习状态更新，但仍缺人工审核界面、冲突解决、过期/撤销策略和更细粒度 rerank。
 - DeepAgents summarization/checkpoint/store 还没有完整合流：长课堂会话超过阈值后的自动压缩策略尚未实现。
 - RAG 还缺可审核 trace：需要记录候选 routes、rerank 分数、最终 chunks 和使用的 lesson state / student_answer_status。
@@ -121,25 +125,33 @@ ssh -L 5173:127.0.0.1:5173 -L 8000:127.0.0.1:8000 root@<ubuntu-host>
 
 ## 推荐下一步
 
-1. 给 `memory_update_tasks` 和 `memory_cards` 补管理面板：查看 pending/failed/dead-letter、手动重试、停用错误记忆、改 `review_status`、处理 `conflict_group`；审核操作应保留审计日志。
-2. 把 MongoDB queue adapter 扩展为 Kafka adapter，适合需要独立 consumer、consumer group、监控告警和 dead-letter topic 的部署；主链路继续只依赖 `MemoryUpdateDispatcher`。
-3. 把记忆抽取从当前启发式升级为更完整的受控抽取器：识别“已掌握/需要支持/需要定位起点/行为偏好”等事件，但离线抽取不要调用豆包。
-4. 接入 DeepAgents summarization/checkpoint/store：超过阈值后压缩完整课堂历史，但保留当前未完成问题、学生最新回答状态和下一步教学动作。
-5. 为 MongoDB RAG 增加可审核召回 trace：记录 routes、rerank 分数、最终 chunks、lesson state、student_answer_status，方便回放“为什么用了这些 chunk”。
-6. 继续完善 TextbookToTeachingSkill：把 chunk 元数据写入正式 schema，准备 MongoDB Atlas Vector Search index / embedding 字段。
+1. 给前端/后端补“清空当前学生测试数据”管理动作：可删除 lesson sessions、messages、memory cards、memory jobs、checkpoints，但保留 textbook chunks，避免手工进 Mongo 清理。
+2. 给 `memory_update_tasks` 和 `memory_cards` 补管理面板：查看 pending/failed/dead-letter、手动重试、停用错误记忆、改 `review_status`、处理 `conflict_group`；审核操作应保留审计日志。
+3. 把记忆抽取从当前启发式升级为更完整的受控抽取器：识别“已掌握/需要支持/需要定位起点/行为偏好/课堂进度元问题”等事件，但离线抽取不要调用豆包。
+4. 把 MongoDB queue adapter 扩展为 Kafka adapter，适合需要独立 consumer、consumer group、监控告警和 dead-letter topic 的部署；主链路继续只依赖 `MemoryUpdateDispatcher`。
+5. 接入 DeepAgents summarization/checkpoint/store：超过阈值后压缩完整课堂历史，但保留当前未完成问题、学生最新回答状态和下一步教学动作。
+6. 为 MongoDB RAG 增加可审核召回 trace：记录 routes、rerank 分数、最终 chunks、lesson state、student_answer_status，方便回放“为什么用了这些 chunk”。
 
 ## 最新验证
 
-2026-05-07 最后一次完整验证：
+2026-05-08 最后一次完整验证：
 
-- `docker compose exec -T backend pytest tests/test_memory.py tests/test_memory_update_queue.py tests/test_memory_guided_start.py tests/test_teacher_chat.py`：23 passed。
-- `docker compose exec -T backend pytest`：78 passed。
+- `docker compose exec -T backend pytest tests/test_skill_registry.py tests/test_memory.py tests/test_teacher_chat.py tests/test_memory_update_queue.py`：31 passed。
+- `docker compose exec -T backend pytest`：81 passed。
 - `docker compose exec -T backend ruff check app tests alembic`：通过。
 - `git diff --check`：通过。
-- Health smoke：`GET /api/v1/health` 返回 `{"status":"ok"}`。
-- MongoDB async queue smoke：记忆更新任务完成，正负数解释型回答生成 `learning_status=mastered`。
+- MongoDB cleanup/smoke：已删除污染的一元一次方程会话和所有长期记忆/抽取/更新任务；测试后确认 `memory_cards=0`、`memory_extraction_jobs=0`、`memory_update_tasks=0`，保留 `lesson_sessions=2`、`lesson_messages=36`、`textbook_chunks=112`。
 
 ## 最近工作日志
+
+2026-05-08，一元一次方程串线与测试污染修复：
+
+- `SkillRegistry` 不再让初一数学泛化输入兜底到 legacy `junior-math-linear-equation`；只有明确方程/移项/含 x 的输入才会选方程 skill。
+- `AgentHarness` 在“新建空课堂 + 上节课/上次/继续类输入”时，会从最近同学科课堂继承 `current_skill_id`，避免前端新 session 打断课堂连续性。
+- `MemoryService` 对“上节课讲哪儿/你知道我学到哪儿”这类课堂进度元问题返回 conversation，不生成长期记忆卡片。
+- 测试 fixture 强制记忆更新队列走 inline，避免 pytest 触发 MongoDB 后台 worker 写入真实开发库。
+- 已清理本轮污染数据：删除错误的一元一次方程会话、所有 `memory_cards`、`memory_extraction_jobs`、`memory_update_tasks`；教材 chunks 保留。
+- 验证：目标测试 31 passed，后端全量 81 passed，ruff 通过，测试后 MongoDB 记忆相关集合仍为 0。
 
 2026-05-07，异步记忆更新队列与新会话起点修复：
 
